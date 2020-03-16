@@ -1,0 +1,59 @@
+
+body{
+    margin:0;
+    padding: 0;
+    background: url(../img/img1.jpg) no-repeat center top;
+    background-size: cover;
+    height: 100vh;
+    font-family: sans-serif;
+    height: 100vh;
+}
+
+.login-box {
+  width: 320px;
+  height: 220px;
+  background: #f7f9f9 ;
+  color: #85929e ;
+  top: 50%;
+  left: 50%;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  padding: 70px 30px;
+  border-radius: 20px;
+}
+
+.login-box .avatar{
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    position: absolute;
+    top:-50px;
+    left: calc(50% - 50px);
+}
+
+.login-box h1{
+    margin: 0;
+    padding: 0 0 20px;
+    text-align: center;
+    font-size: 22px;
+    font-family: "Droid Sans Mono";
+}
+
+.login-box h2{
+    margin: 0;
+    padding: 0 0 20px;
+    font-size: 13px;
+    text-align:left;
+    font-family: initial;
+}
+
+
+
+
+
+
+
+
+
+
