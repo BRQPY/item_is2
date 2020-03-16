@@ -1,0 +1,16 @@
+"""
+views.py
+====================================
+The core module of my example project
+"""
+
+
+from django.shortcuts import render
+
+
+
+def login_prueba(request):
+    return render(request, 'login.html')
+
+def bienvenido(request):
+    return render(request, 'login_Aprobado.html')
