@@ -173,8 +173,7 @@ class TestViews(TestCase):
 
         proyecto = Proyecto.objects.get(id=proyecto.id)
         self.assertEquals(proyecto.estado, "deshabilitado")
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'home.html')
+        self.assertEquals(response.status_code, 302)
 
     def test_proyectoDeshabilitar_POST_FAIL(self):
         user = User.objects.create(username="user", password="user")
