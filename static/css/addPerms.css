@@ -1,0 +1,48 @@
+section {
+    position: absolute;
+    margin: auto;
+    border: 2px solid rgba(0,0,0,0.2);
+    box-shadow: 0 0 2px rgba(0,0,0,0.1);
+    background-color: rgba(197,175,170,0.7);
+    border-radius: 5px;
+    margin-left: 25%;
+    margin-top: 2%;
+    width: 55%;
+    height: 500px;
+}
+
+div{
+    margin-left: 25px;
+}
+
+.form-check input{
+    border: 2px solid rgba(0,0,0,0.9);
+    box-shadow: 0 0 2px rgba(0,0,0,0.9);
+    left: 20px;
+}
+.form-check-label{
+    margin-bottom: 2em;
+    left: 10px;
+}
+
+h4{
+    color: black;
+    font-family: SansSerif, fantasy;
+    margin-left: 5em;
+    text-decoration:none ;
+}
+
+#but{
+    top:5%;
+    right:10%;
+}
+#button{
+    position: absolute;
+    top:90%;
+    right:17%;
+}
+
+
+
+
+
