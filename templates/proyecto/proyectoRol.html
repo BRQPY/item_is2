@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ROLES DE PROYECTO</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/proyectoRol.css' %}">
+</head>
+<body>
+    <style> body{background-color: lavender }</style>
+    <section>
+        <h4>Lista de Roles del Proyecto</h4>
+        {%for r in roles%}
+            <br>{{r.nombre}}
+        {%endfor%}
+           <p>
+                <form id="bot" action="/proyecto/proyectoRol/create/">
+                    <br><input  type="submit" name="removeperm" value="Crear Rol">
+                    <br><input type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                </form><br>
+           </p>
+           <p>
+                <form id="bot" action="/proyecto/proyectoRol/modify/">
+                       <br> <input  type="submit" name="removeperm" value="Modificar Rol">
+                       <br> <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                </form><br>
+           </p>
+            <p>
+                <form id="bot" action="/proyecto/proyectoRol/asignar/">
+                   <br> <input type="submit" name="removeperm" value="Asignar Roles a Usuarios">
+                   <br> <input type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                </form><br>
+            </p>
+            <p>
+                    <form id="bot" action="/proyecto/proyectoRol/remove/">
+                        <br><input type="submit" name="removeperm" value="Remover Roles de Usuarios">
+                        <br><input type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                    </form><br>
+            </p>
+           <p>
+                <form id="bot" action="/proyecto/proyectoRol/delete/">
+                  <br><input type="submit" name="removeperm" value="Remover Rol del Proyecto">
+                  <br><input type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                </form><br>
+           </p>
+        {% endfor %}
+    </section>
+</body>
+</html>

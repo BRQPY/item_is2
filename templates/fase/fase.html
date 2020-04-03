@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PROYECTO</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/fase.css' %}">
+</head>
+<body>
+    <section>
+        <h3>{{fase.nombre}}</h3>
+        {% load guardian_tags %}
+        {% get_obj_perms request.user for fase as "fase_perms" %}
+        {% get_obj_perms request.user for proyecto as "proyecto_perms" %}
+
+        {% if "view_fase" in fase_perms or "view_proyecto" in proyecto_perms%}
+            <div>Tienes el permiso para ver fase en esta Fase</div>
+        {%else%}
+            <div>No tienes el permiso para ver fase en esta Fase</div>
+        {%endif%}
+    </section>
+</body>
+</html>

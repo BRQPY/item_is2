@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestion de Usuarios</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/gestionUser.css' %}">
+    <div id="sidebar" >
+            <ul>
+                <li>
+                    <img src="{% static 'img/logo.jpg' %}" alt="logotipo" class="logo">
+                    <br><h4>{{user.username}}</h4>
+                </li>
+                <li><a href="home.html">Home</a></li>
+                <li><a href="#">Log Out</a></li>
+            </ul>
+
+    </div>
+</head>
+<body>
+    <style> body{background-color: lavender }</style>
+    <section id="menu">
+        <ul>
+            <li><a href="gestionUser.html">Gestionar Usuarios</a></li>
+            <li><a href="gestionProyecto.html">Gestionar Proyectos</a></li>
+        </ul>
+    </section>
+    <section id="sol">
+        <form action="/gestionUser/conf/">
+            <input type="submit" value="Confirmar Usuarios" />
+        </form><br>
+        <form action="/gestionUser/permisos/">
+            <input type="submit" value="Permisos del Sistema"/>
+        </form><br>
+        <form action="/gestionUser/ver/">
+            <input type="submit" value="Ver Usuarios"/>
+        </form><br>
+        <form action="/gestionUser/modify/">
+            <input type="submit" value="Modificar Usuarios"/>
+        </form><br>
+        <form action="/gestionUser/deshabilitar/">
+            <input type="submit" value="Deshabilitar Usuarios"/>
+        </form><br>
+    </section>
+</body>
+</html>

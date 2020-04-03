@@ -1,0 +1,46 @@
+section {
+    position: absolute;
+    margin: auto;
+    border: 2px solid rgba(0,0,0,0.2);
+    box-shadow: 0 0 2px rgba(0,0,0,0.1);
+    background-color: rgba(197,175,170,0.7);
+    border-radius: 5px;
+    margin-left: 20%;
+    margin-top: 3%;
+    width: 60%;
+    height: 750px;
+}
+
+h5 {
+    color: black;
+    font-family: SansSerif, fantasy;
+    margin-top: 4%;
+    margin-left: 6%;
+    text-decoration:none ;
+ }
+
+.cla {
+    margin-left: 6%;
+}
+
+#lab{
+    text-decoration:none ;
+    margin-top: 4%;
+    margin-left: 6%;
+}
+#button1, #camposadd, #camposextra {
+    text-decoration:none ;
+    border-radius: 4%;
+}
+
+#but{
+    position: absolute;
+    top:14%;
+    right:  20%;
+}
+
+#boton{
+    position: absolute;
+    top:90%;
+    right:  15%;
+}

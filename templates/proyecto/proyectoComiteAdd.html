@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Agregar Miembros al Comite</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/proyectoComiteAdd.css' %}">
+</head>
+<body>
+    <style> body{background-color: lavender }</style>
+    <section>
+        <form action="/proyecto/proyectoComite/add/" method="post">
+            {% csrf_token %}
+            {{mensaje}}
+            <h2>Selecciona Miembros</h2>
+             <div class="form-check">
+                 {% for m in miembros %}
+                    <input class="form-check-input" type="checkbox" value={{m.id}} id="username" name="miembros">
+                    <label class="form-check-label" for="username">{{m.username}}</label>
+                 {% endfor %}
+                 <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+            </div>
+
+            <button type="submit"">Agregar Miembro al Comite</button>
+        </form>
+    </section>
+</body>
+</html>

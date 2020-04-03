@@ -1,0 +1,21 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestion de Permisos</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/permisos.css' %}">
+</head>
+<body>
+    <style> body{background-color: lavender }</style>
+    <section>
+        <h4>Gestion de Permisos del Sistema</h4>
+        <form action="/gestionUser/permisos/agregar/">
+            <br><input type="submit" value="Agregar Permisos a Usuario"/>
+        </form>
+        <form action="/gestionUser/permisos/remover">
+            <br><input type="submit" value="Remover Permisos a Usuario "/>
+        </form>
+    </section>
+</body>
+</html>

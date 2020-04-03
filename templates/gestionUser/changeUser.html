@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Modificar Usuarios</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/changeUser.css' %}"
+</head>
+<body>
+    <style> body{background-color: lavender }</style>
+    <section>
+        <p>
+        <form action="." method="POST">{% csrf_token %}
+           <label for="usuarios">Seleccione un Usuario a Modificar:</label>
+           <select id="usuarios" name="usuarios">
+           {% for u in usuarios %}
+                <option value="{{u.id}}">{{u.username}}</option>
+           {% endfor %}
+
+           </select><br>
+           <br><input type='submit' name="seleccion" value="Seleccionar Usuario" />
+       </form>
+        {% if select is not None %}
+            <form action="." method="POST">{% csrf_token %}
+            <p><div>
+                <label for="nombre">Username:</label>
+                <input type="text" id="nombre" name="nombre" value={{select.username}}>
+            </div></p>
+            <p><div>
+                <label for="firstname">Nombre:</label>
+                <input type="text" id="firstname" name="firstname" value={{select.first_name}}>
+            </div></p>
+            <p><div>
+                <label for="lastname">Apellido:</label>
+                <input type="text" id="lastname" name="lastname" value={{select.last_name}}>
+            </div></p>
+                <input type="hidden" id="usuario" name="usuario" value="{{select.id}}">
+                <br><input type="submit" name="changeuser" value="Modificar">
+            </form>
+        {% endif %}
+    </section>
+</body>
+</html>
+

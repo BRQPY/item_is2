@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Modificar Tipo de Item</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/modifTipodeItem.css' %}">
+</head>
+<body>
+    <style> body{background-color: lavender }</style>
+    <section>
+        {{proyectoid}}
+        <form action="." method="POST">{% csrf_token %}
+            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+            <label for="tipo">Seleccione un Tipo de Item a modificar:</label>
+            <select id="tipo" name="tipo">
+            {% for tipo in tipos %}
+                 <option value="{{tipo.id}}">{{tipo.nombre}}</option>
+            {% endfor %}
+
+            </select>
+            <input id="but" type='submit' name="seleccion" value="Modificar Tipo de Item" />
+        <p>
+        <br>
+        </form>
+        {% if select is not None %}
+            <form action="." method="POST">{% csrf_token %}
+                <p></p><label id="lab" for="nombretipo">Nombre del Tipo de Item:</label><br>
+                <input class="cla"  type="text" id="nombretipo" name="nombretipo" value="{{ select.nombre }}"><br></p>
+                <p><label class="cla"  for="descripciontipo">Descripción del Tipo de Item:</label><br>
+                <input class="cla"  type="text" id="descripciontipo" name="descripciontipo" value="{{ select.descripcion }}"></p>
+                <input class="cla"  type="hidden" id="tipodeitem_id" name="tipodeitem_id" value="{{ select.id }}">
+                <br>
+                <h5>Campos agregados por los Usuarios: <br></h5>
+                {% for c in select.campo_extra %}
+                   <br>
+                        <input class="cla" type="text" id="{{ c }}" name="campos" value="{{ c }}">
+                        <input id="inp" type="button"  onclick="document.getElementById('{{ c }}').value=''" value="Eliminar Campo">
+                  <br>
+                {% endfor %}
+                <br>
+
+                <h5>Agregar campos extra al tipo de Item: <br></h5>
+                <input class="cla" type="text" id="camposextra">
+                <input class="cla"  type="button" id="button1" value="Agregar" onclick="add_element_to_array();">
+                <input class="cla"  type="hidden" id="camposadd" name="camposadd">
+                <p><input id="boton" type='submit' name="cambio" value="Guardar cambios" /></p>
+                <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+
+        </form>
+
+        {% endif %}
+        </p>
+    </section>
+</body>
+<script>
+ var x = 0;
+    var array = Array();
+
+    function add_element_to_array()
+    {
+        array[x] = document.getElementById("camposextra").value;
+        alert("El campo extra: \"" + array[x] + "\" fue agregado exitosamente." );
+        x++;
+        document.getElementById("camposextra").value = "" ;
+        document.getElementById("camposadd").value = array;
+
+    }
+</script>
+</html>

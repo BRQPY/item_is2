@@ -1,0 +1,32 @@
+section {
+    position: absolute;
+    margin: auto;
+    border: 2px solid rgba(0,0,0,0.2);
+    box-shadow: 0 0 2px rgba(0,0,0,0.1);
+    background-color: rgba(197,175,170,0.7);
+    border-radius: 5px;
+    margin-left: 35%;
+    margin-top: 3%;
+    width: 38%;
+    height: 400px;
+}
+
+h4{
+    color: black;
+    font-family: SansSerif, fantasy;
+    margin-top: 4%;
+    margin-left: 15%;
+    text-decoration:none ;
+}
+
+.cla{
+    text-decoration:none ;
+    border-radius: 6px;
+    margin-left: 4%;
+}
+
+#button{
+    position: absolute;
+    top:90%;
+    right:  12%;
+}

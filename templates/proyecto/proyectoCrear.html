@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CREAR PROYECTO</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/proyectoCrear.css' %}">
+</head>
+<body>
+    <style> body{background-color: lavender }</style>
+    <section>
+        <form action="/proyecto/proyectoCrear/" method="post">
+            {% csrf_token %}
+            <p>{{mensaje}}</p>
+            <p><div>
+                <label for="nombre">Nombre del Proyecto:</label>
+                <input type="text" id="nombre" name="nombre">
+            </div></p>
+            <p><div>
+                <label for="descripcion">Descripcion:</label>
+                <textarea id="descripcion" rows="1" cols="50" name="descripcion"></textarea>
+            </div></p>
+            <p><div>
+                <label for="fechaini">Fecha de Inicio:</label>
+                <input type="text" id="fechaini" name="fechaini">
+            </div></p>
+            <p><div>
+                <label for="fechafin">Fecha de Fin:</label>
+                <input type="text" id="fechafin" name="fechafin">
+            </div></p>
+            <p><div>
+                 <label for="gerente">Gerente:</label>
+
+                <select id="gerente" name="gerente">
+                    {%for u in usuarios%}
+                        <option value={{u.id}}>{{u.username}}</option>
+                    {%endfor%}
+                </select>
+            </div></p>
+            <button type="submit" onclick="myFunction()">Guardar</button>
+        </form>
+    </section>
+</body>
+<script>
+        function myFunction() {
+            alert("Proyecto creado correctamente.");
+        }
+</script>
+</html>

@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <<link rel="stylesheet" type="text/css" href="{% static 'css/gestionartipodeitem.css' %}">
+</head>
+<body>
+    <style> body{background-color: lavender }</style>
+    <section>
+            <h4>Gestionar Tipos de Item</h4>
+            {%for t in tipos%}
+                {{t.nombre}}<br>
+            {%endfor%}
+            <br>
+            <br>
+            <form action="/proyecto/creartipo/">
+                <input class="cla" type="submit" value="Crear Tipo de Item"/>
+                <input class="cla"  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+            </form><br>
+            <form action="/proyecto/modifdeItem/">
+                <input class="cla"  type="submit" value="Modificar Tipo de Item"/>
+                <input class="cla"  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+            </form><br>
+            <form action="/proyecto/importTdeItem/">
+                <input class="cla"  type="submit" value="Importar Tipo de Item"/>
+                <input class="cla"  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+            </form><br>
+            <form action="/proyecto/removerTdeItem/">
+                <input class="cla"  type="submit" value="Remover Tipo de Item"/>
+                <input class="cla"  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+            </form><br>
+    </section>
+</body>
+</html>

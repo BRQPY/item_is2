@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %} Menu_Principal{% endblock %}</title>
+        <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+         <div id="sidebar" >
+            <ul>
+                <li>
+                    <img src="{% static 'img/logo.jpg' %}" alt="logotipo" class="logo">
+                    <br><h4>{{user.username}}</h4>
+                </li>
+                <li><a href="home.html">Home</a></li>
+                <li><a href="#">Log Out</a></li>
+            </ul>
+
+        </div>
+    </head>
+    <body>
+    <style> body{background-color: lavender }</style>
+            <section id="menu">
+                <ul>
+                    <li><a href="gestionUser.html">Gestionar Usuarios</a></li>
+                    <li><a href="home.html">HOME</a></li>
+                </ul>
+            </section>
+
+    {% block content %}
+    {% endblock%}
+
+    </body>
+</html>

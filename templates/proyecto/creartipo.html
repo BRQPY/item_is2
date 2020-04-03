@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/creartipo.css' %}">
+</head>
+<body>
+    <style> body{background-color: lavender }</style>
+    <section>
+        <form action="." method="POST" > {% csrf_token %}
+            <p></p><label id="nombre" for="nombretipo">Nombre del Tipo de Item:</label><br>
+            <input id="nombre" type="text" id="nombretipo" name="nombretipo"><br></p>
+            <p><label for="descripciontipo">Descripción del Tipo de Item:</label><br>
+            <input type="text" id="descripciontipo" name="descripciontipo"></p>
+            <p>
+                <i>Cada Tipo de Item creado cuenta por defecto con los siguientes campos: <br>
+                Fecha, versión, estado, costo, relación con otros ítems, observaciones y la posibilidad de adjuntar archivos.<br>
+                    <br>El usuario podrá agregar campos extra al tipo de item.</i>
+
+
+            </p>
+            <p>
+                <label for="camposextra">Campos extra:</label><br>
+                <input type="text" id="camposextra">
+                <input type="button" id="button1" value="Agregar" onclick="add_element_to_array();">
+                <input type="hidden" id="Campos" name="Campos">
+                <div id="Result"></div>
+            </p>
+            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+           <input id="button" type='submit' value="Crear Tipo de Item" />
+
+        </form>
+    </section>
+
+</body>
+<script>
+    var x = 0;
+    var array = Array();
+
+    function add_element_to_array()
+    {
+        array[x] = document.getElementById("camposextra").value;
+        alert("El campo extra: \"" + array[x] + "\" fue agregado exitosamente." );
+        x++;
+        document.getElementById("camposextra").value = "" ;
+        var e = "<br>";
+
+        for (var y=0; y<array.length; y++)
+        {
+            e += "Campo Extra " + (y+1) + " = " + array[y] + "<br/>";
+        }
+        document.getElementById("Campos").value = array;
+        document.getElementById("Result").innerHTML = e;
+    }
+
+</script>
+</html>

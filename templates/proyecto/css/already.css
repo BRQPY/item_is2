@@ -1,0 +1,27 @@
+div {
+    position: absolute ;
+    margin: auto;
+    border: 2px solid rgba(0,0,0,0.2);
+    box-shadow: 0 0 2px rgba(0,0,0,0.1);
+    background-color: rgba(197,175,170,0.7);
+    border-radius: 5px;
+    margin-left: 30%;
+    margin-top: 15%;
+    width: 42%;
+    height: 140px;
+}
+
+
+h5{
+    color: black;
+    font-family: SansSerif, fantasy;
+    margin-top: 4%;
+    margin-left: 3em;
+    text-decoration:none ;
+}
+
+button{
+    position: absolute;
+    top:80%;
+    right:  10%;
+}

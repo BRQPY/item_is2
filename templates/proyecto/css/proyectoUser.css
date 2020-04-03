@@ -1,0 +1,24 @@
+section {
+    position: absolute center ;
+    margin: auto;
+    border: 2px solid rgba(0,0,0,0.2);
+    box-shadow: 0 0 2px rgba(0,0,0,0.1);
+    background-color: rgba(197,175,170,0.7);
+    border-radius: 5px;
+    margin-left: 30%;
+    margin-top: 5%;
+    width: 40%;
+    height: 450px;
+}
+
+h3, p {
+    color: black;
+    font-family: SansSerif, fantasy;
+    display: center;
+    margin-left: 3em;
+    text-decoration:none ;
+}
+
+input{
+    position: center;
+}

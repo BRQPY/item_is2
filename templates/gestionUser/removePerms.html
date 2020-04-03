@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Remover Permisos</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/removePerms.css' %}">
+</head>
+<body>
+    <style> body{background-color: lavender }</style>
+    <div>
+        <form action="." method="POST">{% csrf_token %}
+           <label for="usuarios">Seleccione un Usuario a Agregar Permisos:</label>
+           <select id="usuarios" name="usuarios">
+           {% for u in usuarios %}
+                <option value="{{u.id}}">{{u.username}}</option>
+           {% endfor %}
+           </select><br>
+           <br><input type='submit' name="seleccion" value="Seleccionar Usuario" />
+       </form>
+        {% if select is not None %}
+           <form action="." method="post">
+            {% csrf_token %}
+            <h4>Selecciona los Permisos a remover para {{select.username}}</h4>
+                 {% for p in permisos %}
+                    <input class="form-check-input" type="checkbox" value={{p.codename}} id="username" name="perms">
+                    <label class="form-check-label" for="username">{{p.codename}}</label>
+                 {% endfor %}
+               <input type="hidden" id="usuario" name="usuario" value="{{select.id}}"><br>
+            <br><input type="submit" name="removeperm" onclick="myFunction()" value="Remover">
+           </form>
+       {% endif %}
+    </div>
+</body>
+<script>
+        function myFunction() {
+            alert("Permiso removido correctamente.");
+        }
+</script>
+</html>
+
