@@ -1,47 +1,33 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>GESTION DE PROYECTO</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/gestionProyecto.css' %}">
-    <div id="sidebar" >
-            <ul>
-                <li>
-                    <img src="{% static 'img/logo.jpg' %}" alt="logotipo" class="logo">
-                    <br><h4>{{user.username}}</h4><br>
-                </li>
-                <li><a href="home.html">Home</a></li>
-                <li><a href="#">Log Out</a></li>
-            </ul>
-
-        </div>
 </head>
 <body>
-    <style> body{background-color: lavender }</style>
-    <section id="menu">
-                <ul>
-                    <li><a href="gestionUser.html">Gestionar Usuarios</a></li>
-                    <li><a href="gestionProyecto.html">Gestionar Proyectos</a></li>
-                </ul>
-    </section>
-    <section id="sol">
-        <form action="/proyecto/modify/">
-            <input type="submit" value="Modificar Proyecto"/>
-            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-        </form><br>
-        <form action="/proyecto/proyectoUser/">
-            <input type="submit" value="Miembros"/>
-            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-        </form><br>
-        <form action="/proyecto/proyectoRol/">
-            <input type="submit" value="Roles"/>
-            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-        </form><br>
-        <form action="/proyecto/unable/">
-            <input type="submit" value="Deshabilitar Proyecto" />
-            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-        </form><br>
-    </section>
+    <form action="/proyecto/modify/">
+        <h3>Modificar Proyecto<input type="submit" value="Ir" /> </h3>
+        <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+    </form>
+    <form action="/proyecto/proyectoUser/">
+        <h3>Miembros<input type="submit" value="Ir" /> </h3>
+        <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+    </form>
+    <form action="/proyecto/proyectoTipodeItem/">
+        <h3>Tipos de Item<input type="submit" value="Ir" /> </h3>
+        <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+    </form>
+    <form action="/proyecto/proyectoComite/">
+        <h3>Comite de Control de Cambios<input type="submit" value="Ir" /> </h3>
+        <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+    </form>
+    <form action="/proyecto/proyectoRol/">
+        <h3>Roles<input type="submit" value="Ir" /> </h3>
+        <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+    </form>
+    <form action="/proyecto/unable/">
+        <h3>Deshabilitar Proyecto<input type="submit" value="Ir" /> </h3>
+        <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+    </form>
 </body>
 </html>

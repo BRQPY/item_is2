@@ -330,7 +330,7 @@ def verUserView(request):
     u = User.objects.all()
     for user in u:
         """Filtrar que el usuario no sea staff"""
-        if user.is_staff == False:
+        if user.is_staff == False and user.is_active==True:
             usuarios.append(user)
 
     """Template a renderizar: verUser.html"""

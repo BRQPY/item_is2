@@ -9,7 +9,7 @@
 <body>
     <style> body{background-color: lavender }</style>
     <section>
-        {{proyectoid}}
+
         <form action="." method="POST">{% csrf_token %}
             <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
             <label for="tipo">Seleccione un Tipo de Item a modificar:</label>

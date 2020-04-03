@@ -11,36 +11,37 @@
                     <img src="{% static 'img/logo.jpg' %}" alt="logotipo" class="logo">
                     <br><h4>{{user.username}}</h4>
                 </li>
-                <li><a href="home.html">Home</a></li>
+                <li><a href="/home">Home</a></li>
                 <li><a href="http://127.0.0.1:8000/accounts/logout/">Log Out</a></li>
             </ul>
 
         </div>
     </head>
-    <body>
+
     <style> body{background-color: lavender }</style>
             <section id="menu">
                 <ul>
-                    <li><a href="gestionUser/gestionUser.html">Gestionar Usuarios</a></li>
-                    <li><a href="proyecto/gestionProyecto.html">Gestionar Proyectos</a></li>
+                    <li><a href="{% url 'gestionUserView' %}">Gestionar Usuarios</a></li>
                 </ul>
             </section>
     {% block content %}
     <div id="central">
         <form action="/gestionUser/">
-            <br><input type="submit" value="Gestion Administrativo de Usuarios" />
+            <br><input type="submit" value="Gestion Administrativa de Usuarios" />
         </form>
         <form action="/proyecto/proyectoCrear/">
             <br><input type="submit" value="Crear Proyecto" />
         </form>
-       <br> <h3>Lista de Proyectos</h3>
+       <br> <h3>Lista de Proyectos</h3><br>
         {% if cant == 0 %}
             <li>Aun no cuenta con ningun proyecto.</li>
         {% else %}
             {%for p in proyectos%}
                 {%if p.estado != "deshabilitado"%}
-                <h6><a href="{%url 'proyectoView' p.id%}">{{p.nombre}}</a></h6>
+                    <p><a href="{%url 'proyectoView' p.id%}">{{p.nombre}}</a></p>
+                    <br>
                 {%endif%}
+
             {%endfor%}
         {% endif %}
     </div>

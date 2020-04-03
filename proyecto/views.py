@@ -175,7 +175,7 @@ def proyectoDeshabilitar(request):
         proyecto.save()
 
         """Template a renderizar: home.html"""
-        return render(request, "home.html")
+        return redirect("/home/")
 
     """Confirmar accion -> no"""
     """Template a renderizar: gestionProyecto.html con parametro -> proyectoid"""
