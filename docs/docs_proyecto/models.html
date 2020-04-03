@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>models.py</title>
+  <link rel="stylesheet" href="pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>models.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">User</span><span class="p">,</span> <span class="n">Group</span>
+<span class="kn">from</span> <span class="nn">django.contrib.postgres.fields</span> <span class="kn">import</span> <span class="n">ArrayField</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">TipodeItem</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">nombre</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+    <span class="n">descripcion</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+    <span class="n">campo_extra</span> <span class="o">=</span> <span class="n">ArrayField</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">40</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">campo_extra_valores</span> <span class="o">=</span> <span class="n">ArrayField</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">40</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">file</span><span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">FileField</span><span class="p">(</span><span class="n">upload_to</span><span class="o">=</span><span class="s1">&#39;media&#39;</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      <p>fecha= models.DateField(auto_now=False, auto_now_add=False,blank=True, default= None)
+estado = models.CharField(max_length=40, blank=True, null=True)
+observacion = models.CharField(max_length=50, blank=True, default= None)
+relaciones_items = ArrayField(models.CharField(max_length=200), default=list, blank=True)
+costo= models.IntegerField(default=0, blank=True)</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">Fase</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">nombre</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">permissions</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;create_item&quot;</span><span class="p">,</span> <span class="s2">&quot;Can create item&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;aprove_item&quot;</span><span class="p">,</span> <span class="s2">&quot;Can aprove item&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;unable_item&quot;</span><span class="p">,</span> <span class="s2">&quot;Can unable item&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;reversionar_item&quot;</span><span class="p">,</span> <span class="s2">&quot;Reversionar item&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;relacionar_item&quot;</span><span class="p">,</span> <span class="s2">&quot;Relacionar item&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;change_item&quot;</span><span class="p">,</span> <span class="s2">&quot;Can change item&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;establecer_itemPendienteAprob&quot;</span><span class="p">,</span> <span class="s2">&quot;Establecer ítem como pendiente de aprobación.&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;establecer_itemDesarrollo&quot;</span><span class="p">,</span> <span class="s2">&quot;Establecer ítem como en desarrollo.&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;obtener_trazabilidadItem&quot;</span><span class="p">,</span> <span class="s2">&quot;Obtener trazabilidad de ítem.&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;view_item&quot;</span><span class="p">,</span> <span class="s2">&quot;Visualizar ítem.&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;deshabilitar_item&quot;</span><span class="p">,</span> <span class="s2">&quot;Deshabilitar Item&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;obtener_calculoImpacto&quot;</span><span class="p">,</span> <span class="s2">&quot;Obtener cálculo de impacto de ítem.&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;create_lineaBase&quot;</span><span class="p">,</span> <span class="s2">&quot;Crear Línea Base.&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;solicitar_roturaLineaBase&quot;</span><span class="p">,</span> <span class="s2">&quot;Solicitar rotura de línea base.&quot;</span><span class="p">),</span>
+        <span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">FaseUser</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
+    <span class="n">fase</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Fase</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">Rol</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">nombre</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">perms</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Group</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">faseUser</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="n">FaseUser</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">Proyecto</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">nombre</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">descripcion</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">fecha_inicio</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">fecha_fin</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">gerente</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;gerente&#39;</span><span class="p">)</span>
+    <span class="n">creador</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;creador&#39;</span><span class="p">)</span>
+    <span class="n">estado</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">usuarios</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">comite</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;comite&#39;</span><span class="p">)</span>
+    <span class="n">roles</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Rol</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">fases</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Fase</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">through</span><span class="o">=</span><span class="s1">&#39;ProyectoFase&#39;</span><span class="p">)</span>
+    <span class="n">tipoItem</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="n">TipodeItem</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">permissions</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;is_gerente&quot;</span><span class="p">,</span> <span class="s2">&quot;Can do anything in project&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;create_tipoItem&quot;</span><span class="p">,</span> <span class="s2">&quot;Crear tipo de item&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;import_tipoItem&quot;</span><span class="p">,</span> <span class="s2">&quot;Importar tipo de item&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;view_tipoItem&quot;</span><span class="p">,</span> <span class="s2">&quot;Visualizar tipo de ítem.&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;change_tipoItem&quot;</span><span class="p">,</span> <span class="s2">&quot;Modificar tipo de item&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;delete_tipoItem&quot;</span><span class="p">,</span> <span class="s2">&quot;Eliminar tipo de item&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;add_miembros&quot;</span><span class="p">,</span> <span class="s2">&quot;Can add miembros&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;delete_miembros&quot;</span><span class="p">,</span> <span class="s2">&quot;Can delete miembros&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;view_miembros&quot;</span><span class="p">,</span> <span class="s2">&quot;Can view miembros&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;create_rol&quot;</span><span class="p">,</span> <span class="s2">&quot;Can create rol&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;change_rol&quot;</span><span class="p">,</span> <span class="s2">&quot;Can change rol&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;delete_rol&quot;</span><span class="p">,</span> <span class="s2">&quot;Can delete rol&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;view_rol&quot;</span><span class="p">,</span> <span class="s2">&quot;Can view rol&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;assign_rol&quot;</span><span class="p">,</span> <span class="s2">&quot;Can assign rol&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;remove_rol&quot;</span><span class="p">,</span> <span class="s2">&quot;Can remove rol&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;create_comite&quot;</span><span class="p">,</span> <span class="s2">&quot;Can create comite&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;change_comite&quot;</span><span class="p">,</span> <span class="s2">&quot;Can change comite&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;view_comite&quot;</span><span class="p">,</span> <span class="s2">&quot;Can view_comite comite&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;aprobar_rotura_lineaBase&quot;</span><span class="p">,</span> <span class="s2">&quot;Romper Línea Base.&quot;</span><span class="p">),</span>
+
+        <span class="p">)</span>
+
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="s1">&#39;Proyecto&#39;</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="s1">&#39;Proyectos&#39;</span>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;nombre&#39;</span><span class="p">]</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">ProyectoFase</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">proyecto</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Proyecto</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
+    <span class="n">fase</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Fase</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>
