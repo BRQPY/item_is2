@@ -1,5 +1,0 @@
-AUTO GENERADOR
-=====================
-
-.. automodule:: main
-
