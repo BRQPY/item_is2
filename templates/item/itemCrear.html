@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crear Item</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/modifTipodeItem.css' %}">
+</head>
+<body>
+    {{mensaje}}
+    <style> body{background-color: lavender }</style>
+    <section>
+        <form action="/fase/faseVer/faseid={{faseid}}proyectoid={{proyectoid}}">
+            <input type="submit" value="Atras" />
+        </form>
+        <form action="." method="POST">{% csrf_token %}
+            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+            <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+            <label for="tipo">Seleccione un Tipo de Item:</label>
+            <select id="tipo" name="tipo">
+            {% for tipo in tipos %}
+                 <option value="{{tipo.id}}">{{tipo.nombreTipo}}</option>
+            {% endfor %}
+
+            </select>
+            <input id="but" type='submit' name="seleccion" value="Seleccionar" />
+        <p>
+        <br>
+        </form>
+        {% if select is not None %}
+            <form action="." method="POST">{% csrf_token %}
+                <p><div>
+                    <label for="nombre">Nombre del Item:</label>
+                    <input type="text" id="nombre" name="nombre" required>
+                </div></p>
+                    <label for="fecha">Fecha:</label>
+                    <input type="date" id="fecha" name="fecha" required>
+                </div></p>
+                <p><div>
+                    <label for="observacion">Observacion:</label>
+                    <input type="text" id="observacion" name="observacion" required>
+                </div></p>
+                <p><div>
+                    <label for="costo">Costo:</label>
+                    <input type="number" id="costo" name="costo" required>
+                </div></p>
+                <p><div>
+                    {%for c in select.campo_extra%}
+                        <p><div>
+                            <label for="campoextra">{{c}}:</label>
+                            <input type="text" id="campoextra" name="{{c}}" required>
+                        </div></p>
+                    {%endfor%}
+                <p><div>
+                <p><input id="boton" type='submit' name="crear" value="Crear" /></p>
+                <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+                <input  type="hidden" id="tipodeitem_id" name="tipodeitem_id" value="{{ select.id }}">
+
+            </form>
+
+        {% endif %}
+        </p>
+    </section>
+</body>
+</html>

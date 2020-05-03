@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Deshabilitar Usuario{% endblock %}
+{% block content %}
+
+    <style>
+          #unable_user{
+            position: absolute;
+            margin-top: 2%;
+            width: 70%;
+          }
+          .card horizontal{
+            width:45%;
+            height: 50%;
+          }
+
+        h4{
+            color: black;
+            margin-left: 3em;
+            text-decoration:none ;
+            font-size: 20px;
+        }
+        p{
+            color: black;
+            margin-left: 3em;
+            text-decoration:none ;
+            font-size: 15px;
+        }
+        #guar{
+            top:95%;
+            left:80%;
+        }
+    </style>
+    <section id="unable_user">
+        <form action="/gestionUser/">
+            <br><input type="submit" value="Atras" />
+        </form>
+        <div class="col s12 m7">
+            <div class="card horizontal">
+                <div class="card-stacked">
+                    <div class="card-content">
+                        <form action="/gestionUser/deshabilitar/" method="post" id="unable" onsubmit="return confirm('Esta seguro?');">
+                            {% csrf_token %}
+                            <h4>Selecciona un Usuario</h4>
+                             <div class="form-check">
+                                 {% for u in usuarios %}
+                                    <label>
+                                        <input type="checkbox" class="filled-in"  value={{u.id}} id="username" name="users">
+                                        <span><p>{{u.username}}</p></span>
+                                    </label><br>
+                                 {% endfor %}
+                            </div>
+                           </form>
+                        <div class="card-action">
+                                <form action="/gestionUser/">
+                                    <br><button id ="guar" class="btn blue waves-effect waves-light" type="submit" value="Guardar">
+                                            <i class="material-icons left">save</i>GUARDAR
+                                        </button>
+                                </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}

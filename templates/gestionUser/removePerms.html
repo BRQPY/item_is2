@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Remover Permisos{% endblock %}
+{% block content %}
+    <style>
+        #remover_permisos{
+            position: absolute;
+            margin-top: 2%;
+            margin-left: 20%;
+            width: 50%;
+            height: 60%;
+        }
+        .col s12 m7 {
+            left: 15%;
+        }
+         #usuarios{
+            width: 25%;
+            top:5%;
+            margin-left: 40%;
+
+        }
+         h4, p {
+            color: black;
+            margin-left: 3em;
+            text-decoration:none ;
+            font-size: 15px;
+        }
+        span{
+            color: black;
+            margin-left: 5%;
+        }
+        #but{
+            top:17%;
+            margin-left: 68%;
+            font-size: 15px;
+            position: absolute;
+        }
+        #guar{
+            top:95%;
+            left:70%;
+        }
+    </style>
+    <section id="remover_permisos">
+        <form action="/gestionUser/permisos/">
+            <input type="submit" value="Atras"/>
+        </form><br>
+        <div class="col s12 m7">
+            <div class="card horizontal">
+                <div class="card-stacked">
+                    <div class="card-content">
+                        <form action="." method="POST">{% csrf_token %}
+                            <div class="input-field col s12">
+                                <br><p><label for="usuarios">Seleccione un Usuario a Agregar Permisos:</label></p>
+                                <select id="usuarios" class="browser-default" name="usuarios">
+                                        <option value="" disabled selected>Seleccionar Usuario</option>
+                                       {% for u in usuarios %}
+                                            <option value="{{u.id}}">{{u.username}}</option>
+                                       {% endfor %}
+                                </select>
+                            </div><br>
+                            <br>
+                            <button id="but"  type="submit"  class="btn blue waves-light btn-small" name="seleccion" value="Seleccionar Usuario">
+                                <i class="material-icons left">person</i>
+                                USUARIO SELECCIONADO
+                            </button>
+                           <br>
+                       </form>
+                    </div>
+                    {% if select is not None %}
+                           <form action="." method="post">
+                            {% csrf_token %}
+                            <h4>Selecciona los Permisos a remover para {{select.username}}</h4>
+                                 {% for p in permisos %}
+                                    <input class="form-check-input right" type="checkbox" value={{p.codename}} id="perm" name="perms">
+                                    {% for key, value in dic.items %}
+                                        {% if key == p.codename %}
+                                            <label class="form-check-label" for="perm">{{value}}</label>
+                                        {% endif %}
+                                    {% endfor %}
+                                 {% endfor %}
+                               <input type="hidden" id="usuario" name="usuario" value="{{select.id}}"><br>
+                           </form>
+                            <div class="card-action">
+                                <form action="/gestionUser/">
+                                    <br><button id ="guar" class="btn blue waves-effect waves-light" type="submit" name="removeperm" onclick="myFunction()" value="Remover">
+                                            <i class="material-icons left">save</i>REMOVER
+                                        </button>
+                                </form>
+                            </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+<script>
+        function myFunction() {
+            alert("Permiso removido correctamente.");
+        }
+</script>
+
+{% endblock %}
+
+

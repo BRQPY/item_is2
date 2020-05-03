@@ -7,6 +7,7 @@ from .models import Proyecto, Fase, FaseUser, Rol, TipodeItem
 
 class TestViews(TestCase):
 
+    longMessage = True
     def setUp(self):
 
         client = Client()
@@ -21,11 +22,13 @@ class TestViews(TestCase):
         self.client.login(username="user", password="user")
         response = self.client.get('/proyecto/proyectoCrear/')
 
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/proyectoCrear.html')
+        self.assertEquals(response.status_code, 200, "El usuario no cuenta con los permisos necesarios.")
+        self.assertTemplateUsed(response, 'proyecto/proyectoCrear.html',
+                                "El template renderizado debe ser proyecto/proyectoCrear.html.")
 
 
     def test_proyectoCrear_GET_FAIL(self):
+
         user = User.objects.create(username="user", password="user")
         user.set_password("user")
         user.save()
@@ -33,7 +36,7 @@ class TestViews(TestCase):
         self.client.login(username="user", password="user")
         response = self.client.get('/proyecto/proyectoCrear/')
 
-        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response.status_code, 302, "El usuario cuenta con los permisos necesarios, no deberia.")
 
 
     def test_proyectoCrear_POST(self):
@@ -68,7 +71,7 @@ class TestViews(TestCase):
         proyecto = Proyecto.objects.create(nombre = "Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010", fecha_fin="10/12/2010", gerente=user)
         assign_perm("view_proyecto", user, proyecto)
 
-        string = "/proyecto/proyectoVer/"+str(proyecto.id)+"/"
+        string = "/proyecto/proyectoVer/proyectoid="+str(proyecto.id)+"/"
         self.client.login(username='user', password='user')
         response = self.client.get(string)
 
@@ -82,7 +85,7 @@ class TestViews(TestCase):
         user.save()
         proyecto = Proyecto.objects.create(nombre = "Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010", fecha_fin="10/12/2010", gerente=user)
 
-        string = "/proyecto/proyectoVer/" + str(proyecto.id) + "/"
+        string = "/proyecto/proyectoVer/proyectoid=" + str(proyecto.id) + "/"
         self.client.login(username='user', password='user')
         response = self.client.get(string)
 
@@ -173,8 +176,10 @@ class TestViews(TestCase):
 
         proyecto = Proyecto.objects.get(id=proyecto.id)
         self.assertEquals(proyecto.estado, "deshabilitado")
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'home.html')
+        self.assertEquals(response.status_code, 302, "No se ha redirigido a la vista.")
+        self.assertRedirects(response, '/home/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido al url esperado.")
 
     def test_proyectoDeshabilitar_POST_FAIL(self):
         user = User.objects.create(username="user", password="user")
@@ -384,14 +389,16 @@ class TestViews(TestCase):
         proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
                                            fecha_fin="10/12/2010", gerente=user)
         assign_perm("is_gerente", user, proyecto)
-        Rol.objects.create(nombre="Rol_prueba")
+        rol = Rol.objects.create(nombre="Rol_prueba")
+        proyecto.roles.add(rol)
+        proyecto.save()
 
         self.client.login(username='user', password='user')
         response = self.client.post('/proyecto/proyectoRol/create/',
                                     {'proyectoid': proyecto.id, 'nombre': "Rol_prueba", })
 
         proyecto = Proyecto.objects.get(id=proyecto.id)
-        self.assertEquals(proyecto.roles.filter(nombre="Rol_prueba").exists(), False)
+        self.assertEquals(proyecto.roles.filter(nombre="Rol_prueba").exclude(id=rol.id).exists(), False)
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'proyecto/proyectoRolCrear.html')
 
@@ -441,9 +448,10 @@ class TestViews(TestCase):
 
         permiso1 = Permission.objects.get(codename="add_fase")
         permiso2 = Permission.objects.get(codename="change_fase")
+        permiso3 = Permission.objects.get(codename="view_fase")
         rol1 = Rol.objects.get(id=rol1.id)
         self.assertEquals(rol1.nombre, "Rol_prueba")
-        self.assertEquals(list(rol1.perms.permissions.all()), [permiso1, permiso2])
+        self.assertEquals(list(rol1.perms.permissions.all()), [permiso1, permiso2, permiso3])
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
 
@@ -454,6 +462,8 @@ class TestViews(TestCase):
         proyecto = Proyecto.objects.create(nombre = "Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010", fecha_fin="10/12/2010", gerente=user)
         assign_perm("is_gerente", user, proyecto)
         rol2 = Rol.objects.create(nombre="Rol_prueba2")
+        proyecto.roles.add(rol2)
+        proyecto.save()
         rol1 = Rol.objects.create(nombre="Rol_prueba1")
         grupo = Group.objects.create(name="Rol_prueba1")
         permiso1 = Permission.objects.get(codename="view_fase")
@@ -482,7 +492,7 @@ class TestViews(TestCase):
         permiso1 = Permission.objects.get(codename="view_fase")
         grupo.permissions.add(permiso1)
         rol1.perms = grupo
-        fase = Fase.objects.create(nombre="Fase1")
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
         faseuser = FaseUser.objects.create(user=user, fase=fase)
         rol1.faseUser.add(faseuser)
         rol1.save()
@@ -556,7 +566,7 @@ class TestViews(TestCase):
         grupo.permissions.add(permiso)
         rol.perms = grupo
         proyecto.roles.add(rol)
-        fase = Fase.objects.create(nombre="Fase1")
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
         faseuser = FaseUser.objects.create(user=user, fase=fase)
         rol.faseUser.add(faseuser)
         rol.save()
@@ -608,8 +618,8 @@ class TestViews(TestCase):
         grupo.permissions.add(permiso)
         rol.perms = grupo
         rol.save()
-        fase = Fase.objects.create(nombre="Fase1")
-        fase2 = Fase.objects.create(nombre="Fase2")
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        fase2 = Fase.objects.create(nombre="Fase2", descripcion="Descripcion", estado="abierta")
 
         self.client.login(username='user', password='user')
         response = self.client.post('/proyecto/proyectoRol/asignar/', {'proyectoid': proyecto.id, 'roles': rol.id,
@@ -637,8 +647,8 @@ class TestViews(TestCase):
         permiso = Permission.objects.get(codename="view_fase")
         grupo.permissions.add(permiso)
         rol.perms = grupo
-        fase = Fase.objects.create(nombre="Fase1")
-        fase2 = Fase.objects.create(nombre="Fase2")
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        fase2 = Fase.objects.create(nombre="Fase2", descripcion="Descripcion", estado="abierta")
         faseUser = FaseUser.objects.create(user=prueba, fase=fase2)
         rol.faseUser.add(faseUser)
         rol.save()
@@ -695,8 +705,8 @@ class TestViews(TestCase):
         permiso = Permission.objects.get(codename="view_fase")
         grupo.permissions.add(permiso)
         rol.perms = grupo
-        fase = Fase.objects.create(nombre="Fase1")
-        fase2 = Fase.objects.create(nombre="Fase2")
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        fase2 = Fase.objects.create(nombre="Fase2", descripcion="Descripcion", estado="abierta")
         faseUser = FaseUser.objects.create(user=prueba, fase=fase)
         faseUser2 = FaseUser.objects.create(user=prueba, fase=fase2)
         assign_perm("view_fase", grupo, fase)
@@ -731,8 +741,8 @@ class TestViews(TestCase):
         permiso = Permission.objects.get(codename="view_fase")
         grupo.permissions.add(permiso)
         rol.perms = grupo
-        fase = Fase.objects.create(nombre="Fase1")
-        fase2 = Fase.objects.create(nombre="Fase2")
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        fase2 = Fase.objects.create(nombre="Fase2", descripcion="Descripcion", estado="abierta")
         faseUser = FaseUser.objects.create(user=prueba, fase=fase)
         assign_perm("view_fase", grupo, fase)
         rol.faseUser.add(faseUser)
@@ -821,7 +831,7 @@ class TestViews(TestCase):
         proyecto1 = Proyecto.objects.get(nombre="Proyecto1")
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
-        self.assertEquals(TipodeItem.objects.first().nombre, 'RF1')
+        self.assertEquals(TipodeItem.objects.first().nombreTipo, 'RF1')
         self.assertEquals(list(proyecto1.tipoItem.all()), [TipodeItem.objects.first()])
 
 
@@ -843,7 +853,7 @@ class TestViews(TestCase):
         user.save()
         proyecto1 = Proyecto.objects.create(nombre = "Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010", fecha_fin="10/12/2010", gerente=user)
         assign_perm("is_gerente", user, proyecto1)
-        tipo1 = TipodeItem.objects.create(nombre="Tipo1", descripcion="DTipo1")
+        tipo1 = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
         proyecto1.tipoItem.add(tipo1)
 
         self.client.login(username="user", password="user")
@@ -852,7 +862,7 @@ class TestViews(TestCase):
                                                                'campos': [], 'camposadd': ""})
 
         tipo1 = TipodeItem.objects.get(id=tipo1.id)
-        self.assertEquals(tipo1.nombre, "tipo1")
+        self.assertEquals(tipo1.nombreTipo, "tipo1")
         self.assertEquals(tipo1.descripcion, "dtipo1")
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
@@ -879,8 +889,8 @@ class TestViews(TestCase):
         proyecto1 = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
                                             fecha_fin="10/12/2010", gerente=user)
         assign_perm("is_gerente", user, proyecto1)
-        tipo1 = TipodeItem.objects.create(nombre="Tipo1", descripcion="DTipo1")
-        tipo2 = TipodeItem.objects.create(nombre="Tipo2", descripcion="DTipo2")
+        tipo1 = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
+        tipo2 = TipodeItem.objects.create(nombreTipo="Tipo2", descripcion="DTipo2")
 
         self.client.login(username="user", password="user")
         response = self.client.post('/proyecto/importTdeItem/', {'proyectoid': proyecto1.id, 'importados': [tipo1.id, tipo2.id], })
@@ -911,8 +921,8 @@ class TestViews(TestCase):
         proyecto1 = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
                                             fecha_fin="10/12/2010", gerente=user)
         assign_perm("is_gerente", user, proyecto1)
-        tipo1 = TipodeItem.objects.create(nombre="Tipo1", descripcion="DTipo1")
-        tipo2 = TipodeItem.objects.create(nombre="Tipo2", descripcion="DTipo2")
+        tipo1 = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
+        tipo2 = TipodeItem.objects.create(nombreTipo="Tipo2", descripcion="DTipo2")
         proyecto1.tipoItem.add(tipo1)
         proyecto1.tipoItem.add(tipo2)
 

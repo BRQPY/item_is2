@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MODIFICAR ITEM</title>
+     <link rel="stylesheet" type="text/css" href="{% static 'css/proyectoModificar.css' %}">
+</head>
+<body>
+    <form action="/item/gestionItem/">
+            <input type="submit" value="Atras" />
+            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+            <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+            <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+    </form>
+    {{mensaje}}
+    <style> body{background-color: lavender }</style>
+    <section>
+        <form action="/item/modify/" method="post">
+            {% csrf_token %}
+            <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+            <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+            <p><div>
+                <label for="nombre">Nombre del Item:</label>
+                <input type="text" id="nombre" name="nombre" value={{item.nombre}} required>
+            </div></p>
+            <p><div>
+                <label for="fecha">Fecha:</label>
+                <input type="date" id="fecha" name="fecha" value={{item.fecha}} required>
+            </div></p>
+            <p><div>
+                <label for="observacion">Observacion:</label>
+                <input type="text" id="observacion" name="observacion" value={{item.observacion}} required>
+            </div></p>
+            <p><div>
+                <label for="costo">Costo:</label>
+                <input type="text" id="costo" name="costo" value={{item.costo}} required>
+            </div></p>
+                {%for c, c2 in campos%}
+                    <p><div>
+                        <label for="campoextra">{{c}}:</label>
+                        <input type="text" id="campoextra" name="{{c}}" value={{c2}} required>
+                    </div></p>
+                {%endfor%}
+            <button type="submit" onclick="myFunction()">Guardar</button>
+        </form>
+    </section>
+</body>
+<script>
+        function myFunction() {
+            alert("Item modificado correctamente.");
+        }
+</script>
+</html>

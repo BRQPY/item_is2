@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MIEMBROS DEL COMITE</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/proyectoComite.css' %}">
+</head>
+<body>
+    <style> body{background-color: lavender }</style>
+    <section>
+        <form action="/proyecto/gestionProyecto/">
+            <input type="submit" value="Atras" />
+            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+        </form>
+        <h4>Lista de Miembros</h4>
+             <div>
+                 {% for c in comite %}
+                    {%if c.is_active%}
+                        <p>{{c.username}}</p>
+                    {%else%}
+                        <p>{{c.username}}(deshabilitado)</p>
+                    {%endif%}
+                 {%empty%}
+                    {{"Todavia no existen miembros en el comite."}}
+                 {% endfor %}
+            </div>
+
+        <p><form action="/proyecto/proyectoComite/add/">
+            <input type="submit" value="Agregar Miembros" />
+            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+        </form></p>
+        <form action="/proyecto/proyectoComite/remove/">
+            <input type="submit" value="Remover Miembros" />
+            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+        </form>
+    </section>
+</body>
+</html>

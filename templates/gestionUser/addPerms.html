@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Agregar Permisos{% endblock %}
+{% block content %}
+
+    <style>
+        #add_Perms{
+            position: absolute;
+            margin-top: 2%;
+            width: 70%;
+            margin-left: 20%;
+            height: 60%;
+        }
+        .card-stacked{
+            width:45%;
+            height: 50%;
+        }
+        #form-check{
+            margin-left: 5%;
+
+        }
+         #usuarios{
+            width: 25%;
+            top:5%;
+            margin-left: 35%;
+
+        }
+         span{
+             color: black;;
+         }
+        h4{
+            color: black;
+            margin-left: 3%;
+            text-decoration:none ;
+            font-size: 15px;
+        }
+        p{
+            color: black;
+            margin-left: 5%;
+            text-decoration:none ;
+            font-size: 15px;
+        }
+        #but{
+            top:17%;
+            margin-left: 68%;
+            font-size: 15px;
+            position: absolute;
+        }
+        #guar {
+            top: 85%;
+            left: 70%;
+        }
+    </style>
+    <section id="add_Perms">
+        <form action="/gestionUser/permisos/">
+            <input type="submit" value="Atras"/>
+    </form><br>
+        <div class="col s12 m7">
+            <div class="card horizontal">
+                <div class="card-stacked">
+                    <div class="card-content">
+                        <form action="." method="POST">{% csrf_token %}
+                                <div class="input-field col s12">
+                                       <select class="browser-default" id="usuarios" name="usuarios">
+                                            <option value="" disabled selected>Seleccionar Usuario</option>
+                                           {% for u in usuarios %}
+                                                <option value="{{u.id}}">{{u.username}}</option>
+                                           {% endfor %}
+                                       </select><label for="usuarios"><p>Seleccione un Usuario a Agregar Permisos</p></label>
+                                </div>
+                            <button id="but"  type="submit"  class="btn blue waves-light btn-small" name="seleccion" value="Seleccionar Usuario">
+                                    <i class="material-icons left">person</i>
+                                    USUARIO SELECCIONADO
+                            </button>
+
+                       </form>
+                    </div>
+                    {% if select is not None %}
+                           <form action="." method="post">
+                                {% csrf_token %}
+                                <h4>Selecciona los Permisos a agregar para {{select.username}}</h4>
+                                <div  id="form-check">
+
+                                        <label >
+                                            <input type="checkbox" class="filled-in"  value="1" id="permiso" name="perms">
+                                            <span>Ver Menu</span>
+                                        </label>
+                                        <input  type="hidden" value={{user.id}} id="user" name="userid">
+                                </div>
+                                <div id="form-check">
+
+                                        <label >
+                                            <input type="checkbox" class="filled-in" value="2" id="permiso" name="perms">
+                                            <span>Asignar Permisos</span>
+                                        </label>
+                                </div>
+                                 <div id="form-check">
+
+                                        <label >
+                                            <input type="checkbox" class="filled-in" value="3" id="permiso" name="perms">
+                                            <span>Crear Usuario</span>
+                                        </label>
+                                </div>
+                                 <div id="form-check">
+
+                                        <label >
+                                            <input type="checkbox" class="filled-in" value="4" id="permiso" name="perms">
+                                            <span>Modificar Usuario</span>
+                                        </label>
+                                </div>
+                                 <div id="form-check">
+
+                                        <label >
+                                            <input type="checkbox" class="filled-in"  value="5" id="permiso" name="perms">
+                                            <span>Deshabilitar Usuario</span>
+                                        </label>
+                                </div>
+                                 <div id="form-check">
+
+                                        <label >
+                                            <input type="checkbox" class="filled-in"  value="6" id="permiso" name="perms">
+                                            <span>Visualizar Usuario</span>
+                                        </label>
+                                </div>
+                                 <div id="form-check">
+                                        <label >
+                                            <input type="checkbox" class="filled-in"  value="7" id="permiso" name="perms">
+                                            <span>Consultar Reporte</span>
+                                        </label>
+                                </div>
+                                 <div id="form-check">
+
+                                        <label >
+                                            <input type="checkbox" class="filled-in"  value="8" id="permiso" name="perms">
+                                            <span>Crear Proyecto</span><br>
+                                        </label>
+
+                                </div>
+                                <input type="hidden" id="usuario" name="usuario" value="{{select.id}}">
+                           </form>
+                            <div class="card-action">
+                                <form action="/gestionUser/">
+                                    <br><button id ="guar" class="btn blue waves-effect waves-light" type="submit" name="addperm" onclick="myFunction();" value="Guardar">
+                                        <i class="material-icons left">save</i>GUARDAR
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+<script>
+        function myFunction() {
+            alert("Permiso agregado correctamente.");
+        }
+</script>
+
+
+{% endblock %}
+
+
+
+

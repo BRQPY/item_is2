@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Remover MIembros</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/proyectoUserRemove.css' %}">
+</head>
+<body>
+    <style> body{background-color: lavender }</style>
+    <section>
+        <form action="/proyecto/proyectoUser/">
+        <input type="submit" value="Atras" />
+        <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+        </form>
+        <form action="/proyecto/proyectoUser/remove/" method="post" onsubmit="return confirm('Esta seguro?');">
+            {% csrf_token %}
+            <h4>Selecciona Usuarios</h4>
+             <div class="form-check">
+                 {% for u in usuarios %}
+                    <input class="form-check-input" type="checkbox" value={{u.id}} id="username" name="users">
+                    {%if u.is_active%}
+                         <label class="form-check-label" for="username">{{u.username}}</label>
+                    {%else%}
+                         <label class="form-check-label" for="username">{{u.username}}(deshabilitado)</label>
+                    {%endif%}
+                 {% endfor %}
+                 <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+            </div>
+
+            <button type="submit">Remover Miembro</button>
+        </form>
+    </section>
+</body>
+</html>

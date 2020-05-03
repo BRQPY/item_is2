@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Ver Dato{% endblock %}
+{% block content %}
+    <style>
+        #ver_Data{
+            position: absolute;
+            margin-top: 2%;
+            width: 70%;
+        }
+        .col s12 m7{
+            margin-left: 17%;
+            width:45%;
+            height: 50%;
+        }
+        h4, p{
+            color: black;
+            margin-left: 3em;
+            text-decoration:none ;
+            font-size: 18px;
+        }
+        #guar{
+            top:95%;
+            left:80%;
+        }
+    </style>
+    <section id="ver_Data">
+        <div class="col s12 m7">
+            <div class="card horizontal">
+                <div class="card-stacked">
+                    <div class="card-content">
+                        <h4>Informacion de Usuario {{usuario.username}}</h4>
+                        <p>Email: {{usuario.email}}</p>
+                        <p>Permisos:</p>
+                        {%for p in permisos%}
+                            <p>{{p}}</p>
+                        {%endfor%}
+                    </div>
+                    <div class="card-action">
+                        <form action="/gestionUser/">
+                            <button id="guar" type="submit" class="btn blue darken-1 right">
+                                <i class="material-icons white-text left">keyboard_return</i>VOLVER A GESTION DE USUARIOS
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}

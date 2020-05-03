@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Gestion Usuario{% endblock %}
+{% block content %}
+    <style>
+        #gestion_user{
+            position: absolute;
+            margin-top: 2%;
+            width: 70%;
+
+        }
+        h4{
+            color: black;
+            margin-left: 50%;
+            text-decoration:none ;
+            font-size: 30px;
+        }
+        #guar{
+            font-size: 15px;
+        }
+    </style>
+    <section id="gestion_user">
+        <form action="/home/">
+            <br><input type="submit" value="Atras" />
+        </form>
+        <h4>ADMINISTRAR USUARIOS </h4>
+        <form action="/gestionUser/conf/">
+            <br><button id ="guar" class="btn blue waves-effect waves-light" type="submit" value="Confirmar Usuarios">
+                    <i class="material-icons left">assignment_turned_in</i>CONFIRMAR USUARIOS
+                </button>
+        </form><br>
+        <form action="/gestionUser/permisos/">
+            <br><button id ="guar" class="btn blue waves-effect waves-light" type="submit" value="Permisos del Sistema">
+                    <i class="material-icons left">vpn_key</i>PERMISOS DEL SISTEMA
+                </button>
+        </form><br>
+        <form action="/gestionUser/ver/">
+            <br><button id ="guar" class="btn blue waves-effect waves-light" type="submit" value="Ver Usuarios">
+                    <i class="material-icons left">assignment_ind</i> VER USUARIOS
+                </button>
+        </form><br>
+        <form action="/gestionUser/modify/">
+            <br><button id ="guar" class="btn blue waves-effect waves-light" type="submit" value="Modificar Usuarios">
+                    <i class="material-icons left">create</i>MODIFICAR USUARIOS
+                </button>
+        </form><br>
+        <form action="/gestionUser/deshabilitar/">
+            <br><button id ="guar" class="btn blue waves-effect waves-light" type="submit" value="Deshabilitar Usuarios">
+                    <i class="material-icons left">person_outline</i> DESHABILITAR USUARIOS
+                </button>
+        </form><br>
+        <form action="/gestionUser/habilitar/">
+            <br><button id ="guar" class="btn blue waves-effect waves-light" type="submit" value="Deshabilitar Usuarios">
+                    <i class="material-icons left">person_outline</i> VOLVER A HABILITAR USUARIOS
+                </button>
+        </form><br>
+    </section>
+
+{% endblock %}

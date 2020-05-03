@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MIEMBROS DE PROYECTO</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/proyectoUser.css' %}">
+</head>
+<body>
+    <form action="/proyecto/gestionProyecto/">
+            <input type="submit" value="Atras" />
+            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+    </form>
+    <style> body{background-color: lavender }</style>
+    <section>
+        <h3>Lista de Miembros</h3>
+             <div>
+                 {% for u in usuarios %}
+                    {%if u.is_active%}
+                        <p>{{u.username}}</p>
+                    {%else%}
+                        <p>{{u.username}}(deshabilitado)</p>
+                    {%endif%}
+                 {% endfor %}
+            </div>
+        <p><form action="/proyecto/proyectoUser/add/">
+            <input type="submit" value="Agregar Miembros" />
+            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+        </form></p>
+        <form action="/proyecto/proyectoUser/remove/">
+            <input type="submit" value="Remover Miembros" />
+            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+        </form>
+    </section>
+</body>
+</html>
