@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PROYECTO</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/fase.css' %}">
+</head>
+<body>
+    <form action="/proyecto/proyectoVer/proyectoid={{proyecto.id}}">
+        <input type="submit" value="Atras" />
+    </form>
+    <section>
+        <h3>{{fase.nombre}}</h3>
+        {%for u, r in userRol %}
+            {{hola }}
+            {{u}}: {{ r.nombre }}
+        {% endfor %}
+        {%if proyecto.estado != "cancelado"%}
+            <form action="/fase/gestionFase/">
+                <h3>Gestion de Fase<input type="submit" value="Ir" /> </h3>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+            </form>
+        {%endif%}
+        {%if proyecto.estado != "pendiente"%}
+            {%if proyecto.estado == "inicializado"%}
+                <form action="/item/itemCrear/">
+                    <h3>Crear Item<input type="submit" value="Ir" /> </h3>
+                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                    <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                </form>
+            {%endif%}
+                {%for i in items%}
+                    <div><a href="{%url 'itemView' i.id fase.id proyecto.id%}">{{i.nombre}}({{i.estado}})</a></div>
+                {%endfor%}
+        {%else%}
+            Aun no es posible trabajar en la fase. El proyecto no ha sido inicializado.
+        {%endif%}
+    </section>
+</body>
+</html>

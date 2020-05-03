@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PROYECTO</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/proyecto.css' %}">
+
+</head>
+<body>
+    <style> body{background-color: lavender }</style>
+    <section>
+        <form action="/home/">
+            <br><input type="submit" value="Atras" />
+        </form>
+        <h3>{{proyecto.nombre}}</h3>
+        <form action="/proyecto/gestionProyecto/">
+             <br><input type="submit" value="Gestion de Proyecto" />
+             <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        </form>
+        {%if proyecto.estado == "pendiente"%}
+            <form action="/proyecto/proyectoInicializar/">
+                <br><input type="submit" value="Inicializar Proyecto" />
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            </form>
+            <form action="/fase/faseCrear/">
+                <br><input type="submit" value="Agregar Fase" />
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            </form>
+        {%endif%}
+        {%if proyecto.estado != "cancelado"%}
+            <form action="/proyecto/proyectoCancelar/">
+                <br><input type="submit" value="Cancelar Proyecto" />
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            </form>
+        {%endif%}
+        <p>
+        {%if fases%}
+            {%if fasesUser%}
+                {%for f in fasesUser%}
+                    <div><a href="{%url 'faseView' f.id proyecto.id%}">{{f.nombre}}({{f.estado}})</a></div>
+                {%endfor%}
+            {%else%}
+                Aun no puede visualizar ninguna fase.
+            {%endif%}
+        {%else%}
+            El proyecto aun no cuenta con fases creadas.
+        {%endif%}
+
+    </section>
+</body>
+</html>

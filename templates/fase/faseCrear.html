@@ -1,0 +1,34 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CREAR FASE</title>
+</head>
+<body>
+    <section>
+        <form action="/proyecto/proyectoVer/proyectoid={{proyectoid}}">
+        <input type="submit" value="Atras" />
+        </form>
+        <form action="/fase/faseCrear/" method="post">
+            {% csrf_token %}
+            <p>{{mensaje}}</p>
+            <p><div>
+                <label for="nombre">Nombre de la Fase:</label>
+                <input type="text" id="nombre" name="nombre" required>
+            </div></p>
+            <p><div>
+                <label for="descripcion">Descripcion:</label>
+                <textarea id="descripcion" rows="1" cols="50" name="descripcion" required></textarea>
+            </div></p>
+            <button type="submit" onclick="myFunction()">Guardar</button>
+            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+        </form>
+    </section>
+</body>
+<script>
+        function myFunction() {
+            alert("Fase creada correctamente.");
+        }
+</script>
+</html>

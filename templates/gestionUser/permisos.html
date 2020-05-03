@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Permisos{% endblock %}
+{% block content %}
+
+    <style>
+        #PERMISOS{
+            position: absolute;
+            margin-top: 2%;
+            width: 70%;
+        }
+        h4 {
+            color: black;
+            margin-left: 40%;
+            text-decoration:none ;
+            font-size: 40px;
+        }
+    </style>
+    <section id="PERMISOS">
+        <form action="/gestionUser/">
+        <br><input type="submit" value="Atras" />
+        </form>
+        <h4>Gestion de Permisos del Sistema</h4><br>
+        <form action="/gestionUser/permisos/agregar/">
+            <button class="btn blue waves-effect waves-light" type="submit" value="Agregar Permisos a Usuario">
+                    <i class="material-icons left">add</i>AGREGAR PERMISOS A USUARIO
+            </button>
+        </form>
+        <br>
+        <form action="/gestionUser/permisos/remover">
+            <button class="btn blue waves-effect waves-light" type="submit" value="Remover Permisos a Usuario">
+                    <i class="material-icons left">remove</i>REMOVER PERMISOS A USUARIO
+            </button>
+        </form>
+    </section>
+
+{% endblock %}

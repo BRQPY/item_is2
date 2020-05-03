@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+.accordion {
+  background-color: #F2F2F2;
+  color: 	#000000;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 18px;
+  transition: 0.1s;
+}
+.accordion:focus{
+    outline: none;
+    background-color: #F2F2F2;
+}
+.accordion:hover {
+  background-color: #E5E5E5;
+}
+
+.accordion:after {
+  content: '\002B';
+  color: #5AB9EA;
+  font-weight: bold;
+  float: right;
+  margin-left: 5px;
+}
+
+.active:after {
+  content: "\2212";
+}
+
+.panel {
+  padding: 0 18px;
+  background-color: white;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
+}
+
+</style>
+
+    <div class="container">
+        <h2 style="text-align: center">{{ proyecto.nombre }}</h2>
+        <h4 style="text-align: center" class="grey-text">Panel de Configuración del Proyecto</h4>
+        <h8 style="text-align: left" class="grey-text">Haga click en el ícono + para desplegar la configuración de algún módulo del proyecto.</h8>
+        <button class="accordion" >
+            Información General del Proyecto
+            <i class="material-icons blue-text left">info_outline</i>
+        </button>
+        <div class="panel">
+            <section class="DescripcionProyecto">
+
+           <p style="font-size:18px; padding-left: 50px">
+              <div class="col s12 md6 xl3">
+                <div class="card-panel">
+                    <b>Nombre:</b>  {{ proyecto.nombre }}<br>
+                    <b>Descripción:</b>   {{ proyecto.descripcion }}<br>
+                    <b>Fecha de inicio:</b>   {{ proyecto.fecha_inicio }}<br>
+                    <b>Fecha de finalización:</b>   {{proyecto.fecha_fin}}<br>
+                </div>
+                <form action="/proyecto/modify/">
+                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                    <button type="submit" class="btn blue darken-3 right" >
+                        Modificar info
+                        <i class="material-icons white-text left">info_outline</i>
+                    </button>
+                </form>
+               </div>
+           </p>
+        <br><br>
+       </section>
+        </div>
+
+        <button class="accordion">
+                Miembros
+              <i class="material-icons blue-text left">people</i>
+        </button>
+        <div class="panel">
+            <h8 style="text-align: left" class="grey-text">Lista de Usuarios que forman parte del proyecto.</h8>
+            <section class="MiembrosProyecto">
+          <div class="col s12 md6 xl3">
+             <div class="card-panel">
+                 {% for u in usuarios %}
+                  <b>{{ u.username}} &emsp;&emsp;</b>
+                 {% endfor %}
+             </div>
+          </div>
+            <form action="/proyecto/proyectoUser/remove/">
+                <button type="submit" class="btn-small blue darken-3 right" >
+                    Remover Miembros
+                     <i class="material-icons white-text left">person_outline</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+             </form>
+             <form action="/proyecto/proyectoUser/add/">
+                 <button type="submit" class="btn-small blue darken-3 center">
+                     Agregar Miembros
+                     <i class="material-icons white-text left">person_add</i>
+                 </button>
+
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+             </form>
+       </section>
+        </div>
+        <button class="accordion">
+                Roles
+              <i class="material-icons blue-text left">assignment_ind</i>
+        </button>
+        <div class="panel">
+            <div class="RolesProyecto">
+                <div class="col s12 md6 xl3">
+                    <div class="card-panel">
+                        {% for r in roles %}
+                            <b>{{ r.nombre}}{{ r.id }} &emsp;&emsp;</b>
+                        {% endfor %}
+                    </div>
+                 </div>
+            </div>
+            <form action="/proyecto/proyectoRol/">
+                   <button type="submit" name="removeperm" class="btn blue darken-3 right" >
+                        Administrar Roles del Proyecto
+                        <i class="material-icons white-text left">settings</i>
+                    </button>
+                 <input type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            </form>
+        </div>
+        <button class="accordion">
+                Tipos de Item
+              <i class="material-icons blue-text left">web</i>
+        </button>
+        <div class="panel">
+            <div class="TiposProyecto">
+                <div class="col s12 md6 xl3">
+                    <div class="card-panel">
+                        {% for t in tipoItem %}
+                            <b>{{ t.nombreTipo}} &emsp;&emsp;</b>
+                        {% endfor %}
+                    </div>
+                 </div>
+            </div>
+            <form action="/proyecto/proyectoTipodeItem/">
+                   <button type="submit" name="removeperm" class="btn blue darken-3 right" >
+                        Administrar Tipos de Item del Proyecto
+                        <i class="material-icons white-text left">settings</i>
+                    </button>
+                 <input type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            </form>
+        </div>
+         <button class="accordion">
+                Comité de Control de Cambios
+              <i class="material-icons blue-text left">next_week</i>
+        </button>
+        <div class="panel">
+            <h8 style="text-align: left" class="grey-text">Miembros del Proyecto asignados como Comité de Control de Cambios.</h8>
+            <div class="TiposProyecto">
+                <div class="col s12 md6 xl3">
+                    <div class="card-panel">
+                        {% for c in comite %}
+                            <b>{{ c}} &emsp;&emsp;</b>
+                        {% endfor %}
+                    </div>
+                 </div>
+            </div>
+            <form action="/proyecto/proyectoComite/remove/">
+                <button type="submit" class="btn blue darken-3 right" >
+                    Remover Miembros
+                     <i class="material-icons white-text left">person_outline</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+             </form>
+             <form action="/proyecto/proyectoComite/add/">
+                 <button type="submit" class="btn blue darken-3 center">
+                     Agregar Miembros
+                     <i class="material-icons white-text left">person_add</i>
+                 </button>
+
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+             </form>
+        </div>
+        <br>
+        <form action="/proyecto/proyectoIniciado/" method="POST">{% csrf_token %}
+            <button type="submit" class="btn green darken-2 right" >
+                    <b>Iniciar Proyecto</b>
+                <i class="material-icons white-text left">near_me</i>
+            </button>
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        </form>
+        <form action="/fase/faseCrear/">
+                <br><input type="submit" value="Agregar Fase" />
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        </form>
+        {%if fases%}
+            {%if fasesUser%}
+                {%for f in fasesUser%}
+                    <div><a href="{%url 'faseView' f.id proyecto.id%}">{{f.nombre}}({{f.estado}})</a></div>
+                {%endfor%}
+            {%else%}
+                Aun no puede visualizar ninguna fase.
+            {%endif%}
+        {%else%}
+            El proyecto aun no cuenta con fases creadas.
+        {%endif%}
+        <button type="submit" class="btn red darken-3 left" >
+                   <b>Deshabilitar Proyecto</b>
+                <i class="material-icons white-text left">block</i>
+         </button>
+    </div>
+
+<script>
+var acc = document.getElementsByClassName("accordion");
+var i;
+
+for (i = 0; i < acc.length; i++) {
+  acc[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var panel = this.nextElementSibling;
+    if (panel.style.maxHeight) {
+      panel.style.maxHeight = null;
+    } else {
+      panel.style.maxHeight = panel.scrollHeight + "px";
+    }
+  });
+}
+</script>
+
+{% endblock%}

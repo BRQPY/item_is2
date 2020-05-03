@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GESTION DE FASE</title>
+</head>
+<body>
+    <form action="/fase/faseVer/faseid={{faseid}}proyectoid={{proyectoid}}">
+        <input type="submit" value="Atras" />
+    </form>
+    {{mensaje}}
+    <form action="/fase/modify/">
+        <h3>Modificar Fase<input type="submit" value="Ir" /> </h3>
+        <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+        <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+    </form>
+    <form action="/fase/unable/">
+        <h3>Deshabilitar Fase<input type="submit" value="Ir" /> </h3>
+        <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+        <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+    </form>
+</body>
+</html>

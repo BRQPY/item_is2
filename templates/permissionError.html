@@ -1,0 +1,20 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PERMISSION ERROR</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/permissionError.css' %}">
+
+</head>
+<body>
+    <style> body{background-color: lavender }</style>
+    <section>
+        <p>Logged in as: {{user.username}}</p>
+        <h4>Lo sentimos...Al parecer no cuenta con los permisos para acceder a esta seccion.</h4>
+        <form action="/home/">
+            <input type="submit" value="Volver a Menu Principal"/>
+        </form>
+    </section>
+</body>
+</html>

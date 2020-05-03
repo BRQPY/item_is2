@@ -2,7 +2,137 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3b550c6f-6889-41a8-a15f-df37160c84dc" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fase/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fase/admin.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fase/apps.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fase/migrations/0001_initial.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fase/migrations/0002_fase_descripcion.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fase/migrations/0003_fase_estado.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fase/migrations/0004_auto_20200413_2310.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fase/migrations/0005_fase.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fase/migrations/0006_delete_fase.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fase/migrations/0007_fase.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fase/migrations/0008_delete_fase.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fase/migrations/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fase/models.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fase/tests.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fase/views.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gestionUser/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gestionUser/admin.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gestionUser/apps.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gestionUser/migrations/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gestionUser/models.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gestionUser/tests.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gestionUser/views.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0002_remove_proyecto_fases.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0003_remove_faseuser_fase.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0004_remove_proyectofase_fase.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0005_delete_fase.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0006_auto_20200413_2310.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0007_remove_item_file.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0008_auto_20200414_1949.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0009_item_idtipo.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0010_remove_item_idtipo.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0011_item_idtipo.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0012_auto_20200418_2255.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0013_auto_20200418_2258.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0014_remove_item_idtipo.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0015_auto_20200419_0004.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0016_auto_20200419_0006.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0017_auto_20200423_1729.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0018_auto_20200424_0124.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0019_auto_20200425_2107.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0020_auto_20200425_2153.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0021_auto_20200426_0110.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proyecto/migrations/0022_auto_20200503_0559.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prueba3/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prueba3/static/css/hover-min.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prueba3/static/css/hover.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prueba3/static/css/hover.css.map" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prueba3/static/css/style.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prueba3/static/img/Logo_iTem_fondo_azul-min.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prueba3/static/img/Logo_iTem_transparente_blanco.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prueba3/static/img/favicon.ico" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prueba3/static/img/fondoazulresize.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prueba3/static/img/fondotransparente.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prueba3/static/img/logo.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prueba3/static/img/logoazul.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/css/hover-min.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/css/hover.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/css/hover.css.map" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/css/style.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/img/Logo_iTem_fondo_azul-min.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/img/Logo_iTem_transparente_blanco.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/img/favicon.ico" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/img/fondoazulresize.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/img/fondotransparente.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/img/logo.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/img/logoazul.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/fase/fase.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/fase/faseCrear.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/fase/faseModificar.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/fase/gestionFase.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/fase/static/css/fase.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/gestionUser/addPerms.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/gestionUser/already.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/gestionUser/changeUser.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/gestionUser/conf.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/gestionUser/enableUser.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/gestionUser/gestionUser.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/gestionUser/permisos.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/gestionUser/removePerms.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/gestionUser/success.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/gestionUser/unableUser.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/gestionUser/verData.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/gestionUser/verUser.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/home.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/item/gestionItem.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/item/item.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/item/itemCrear.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/item/itemModificar.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/permissionError.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/already.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/creartipo.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/gestionProyecto.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/gestionartipodeitem.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/importartipo.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/inicializarFail.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/modifTipodeItem.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/proyecto.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/proyectoComite.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/proyectoComiteAdd.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/proyectoComiteRemove.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/proyectoCrear.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/proyectoDeshabilitar.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/proyectoModificar.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/proyectoPendiente.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/proyectoRol.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/proyectoRolAsignar.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/proyectoRolCrear.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/proyectoRolEliminar.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/proyectoRolModificar.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/proyectoRolRemover.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/proyectoUser.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/proyectoUserAdd.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/proyectoUserRemove.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/removertipo.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/success.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/proyecto/verfase.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/success.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/wrong.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/manage.py" beforeDir="false" afterPath="$PROJECT_DIR$/manage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/perms/migrations/0001_initial.py" beforeDir="false" afterPath="$PROJECT_DIR$/perms/migrations/0001_initial.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/proyecto/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/proyecto/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/proyecto/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/proyecto/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/proyecto/migrations/0001_initial.py" beforeDir="false" afterPath="$PROJECT_DIR$/proyecto/migrations/0001_initial.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/proyecto/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/proyecto/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/proyecto/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/proyecto/tests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/proyecto/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/proyecto/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/prueba3/asgi.py" beforeDir="false" afterPath="$PROJECT_DIR$/prueba3/asgi.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/prueba3/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/prueba3/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/prueba3/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/prueba3/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/prueba3/wsgi.py" beforeDir="false" afterPath="$PROJECT_DIR$/prueba3/wsgi.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -15,7 +145,6 @@
   <component name="ProjectId" id="1a2CDZW31T17aBupgVfKmx4sVyK" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
-    <option name="showExcludedFiles" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
@@ -66,6 +195,7 @@
       <option name="presentableId" value="Default" />
       <updated>1585924183057</updated>
       <workItem from="1585924187768" duration="8598000" />
+      <workItem from="1588536533655" duration="44000" />
     </task>
     <servers />
   </component>
@@ -73,9 +203,10 @@
     <option name="version" value="1" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="456" y="154" width="424" height="484" key="FileChooserDialogImpl" timestamp="1585924304841">
+    <state x="456" y="154" width="424" height="484" key="FileChooserDialogImpl" timestamp="1588536602974">
       <screen x="0" y="27" width="1366" height="741" />
     </state>
+    <state x="456" y="154" key="FileChooserDialogImpl/0.27.1366.741/1366.0.1024.768@0.27.1366.741" timestamp="1588536602974" />
     <state x="456" y="154" width="424" height="484" key="FileChooserDialogImpl/0.27.1366.741@0.27.1366.741" timestamp="1585924304841" />
     <state x="172" y="31" key="SettingsEditor" timestamp="1585924322653">
       <screen x="0" y="27" width="1366" height="741" />

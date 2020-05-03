@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GESTION DE ITEM</title>
+</head>
+<body>
+    <form action="/item/itemVer/itemid={{itemid}}faseid={{faseid}}proyectoid={{proyectoid}}">
+        <input type="submit" value="Atras" />
+    </form>
+    {{mensaje}}
+    <form action="/item/modify/">
+        <h3>Modificar Item<input type="submit" value="Ir" /> </h3>
+        <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+        <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+        <input  type="hidden" value={{itemid}} id="itemid" name="itemid">
+    </form>
+    <form action="/item/unable/">
+        <h3>Deshabilitar Item<input type="submit" value="Ir" /> </h3>
+        <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+        <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+        <input  type="hidden" value={{itemid}} id="itemid" name="itemid">
+    </form>
+</body>
+</html>

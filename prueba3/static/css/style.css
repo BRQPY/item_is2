@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;1,300&display=swap');
+
+/* General */
+html {
+  font-family: 'Montserrat', sans-serif;
+  background-color: #E0E0E0;
+}
+h1, h6, h5 {
+  font-weight: bold;
+}
+.bold {
+  font-weight: bold;
+}
+.row {
+  margin: 0!important;
+}
+.row .col {
+  padding-left: 0!important;
+}
+.ListaProyectos {
+  margin-top: 250px;
+  padding: 0px
+}
+.noproject-wrapper h3 {
+  padding: 10px;
+  margin-bottom: 50px;
+}
+.ProyectoCrear {
+  padding-left: 30px!important;
+}
+.ProyectoCrear .btn blue darken-1 right {
+  padding: 0px!important;
+}
+.ProyectoCrear h3 {
+  padding: 0px;
+}
+

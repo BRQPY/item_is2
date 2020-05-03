@@ -1,0 +1,34 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DESHABILITAR PROYECTO</title>
+     <link rel="stylesheet" type="text/css" href="{% static 'css/proyectoDeshabilitar.css' %}">
+</head>
+<body>
+    <style> body{background-color: lavender }</style>
+    <section>
+        <form action="/proyecto/gestionProyecto/">
+            <input type="submit" value="Atras" />
+            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+        </form>
+        <form action="/proyecto/unable/" method="post">
+            {% csrf_token %}
+                <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                <label for="pregunta">Esta seguro que desea deshabilitar este proyecto?</label>
+                <div>
+                    <input class="form-check-input" type="radio" value="si" id="pregunta" name="pregunta">
+                    <label class="form-check-label" for="pregunta">SI</label>
+                    <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                </div>
+                <div>
+                    <input class="form-check-input" type="radio" value="no" id="pregunta" name="pregunta">
+                    <label class="form-check-label" for="pregunta">NO</label>
+                 <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                </div>
+            <button type="submit">Guardar</button>
+        </form>
+    </section>
+</body>
+</html>
