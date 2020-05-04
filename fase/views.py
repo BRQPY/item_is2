@@ -20,8 +20,11 @@ def gestionFase(request):
     faseid = request.GET.get('faseid')
     """Fase correspondiente"""
     fase = Fase.objects.get(id=faseid)
-    """Verificar que el usuario que realiza el request cuente con el permiso para ver la fase correspondiente o bien,
-    sea el gerente del proyecto."""
+    """
+    Verificar que el usuario que realiza el request cuente con el 
+    permiso para ver la fase correspondiente o bien,
+    sea el gerente del proyecto.
+    """
     if not (request.user.has_perm("view_fase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
         """Al no contar con los permisos, niega el acceso, redirigiendo."""
         return redirect('/permissionError/')
@@ -50,17 +53,28 @@ def faseCrear(request):
         proyecto = Proyecto.objects.get(id=proyectoid)
         """Verificar que el estado del proyecto sea distinto a pendiente."""
         if proyecto.estado != "pendiente":
-            """Si el estado del proyecto es pendiente, no accede a gestion de fase y redirige a la vista del proyecto."""
+            """
+            Si el estado del proyecto es pendiente,
+            no accede a gestion de fase y redirige
+            a la vista del proyecto.
+             """
             return redirect('proyectoView', id=proyectoid)
 
         """Nombre de la Fase"""
         nombre = request.POST.get('nombre')
-        """Verificar que no exista otra fase en el proyecto con el mismo nombre, excluyendo a
-         las fases deshabilitadas."""
+        """
+        Verificar que no exista otra fase en el 
+        proyecto con el mismo nombre, excluyendo a
+        las fases deshabilitadas.
+         """
         if proyecto.fases.filter(nombre=nombre).exclude(estado="deshabilitada").exists():
-            """Si existe otra fase con el mismo nombre en el proyecto, volver a mostrar el formulario de creacion
+            """
+            Si existe otra fase con el mismo nombre en el proyecto, 
+            volver a mostrar el formulario de creacion
             de fases, emitiendo un mensaje de error.
-            Template a renderizar: faseCrear.html con parametros -> proyectoid y mensaje de error."""
+            Template a renderizar: faseCrear.html con 
+            parametros -> proyectoid y mensaje de error.
+            """
             return render(request, 'fase/faseCrear.html', {'proyectoid': proyectoid,
                                                            'mensaje': "Lo sentimos, el nombre ya pertenece a otra fase"
                                                                       "del proyecto", })
@@ -77,7 +91,10 @@ def faseCrear(request):
         return redirect('proyectoView', id=proyectoid)
 
     else:
-        """GET request, muestra el template correspondiente para crear la fase."""
+        """
+        GET request, muestra el template 
+        correspondiente para crear la fase.
+        """
         """ID del proyecto correspondiente."""
         proyectoid = request.GET.get('proyectoid')
         """Proyecto en el cual crear la fase."""
@@ -119,8 +136,11 @@ def faseModificar(request):
 
         """Verificar que el estado del proyecto sea distinto a pendiente."""
         if proyecto.estado != "pendiente":
-            """Si el estado del proyecto es pendiente,
-             no accede al formulario de modificacion de fase y redirige a gestion de Fase."""
+            """
+            Si el estado del proyecto es pendiente,
+             no accede al formulario de modificacion de fase 
+             y redirige a gestion de Fase.
+             """
             return render(request, 'fase/gestionFase.html', {'proyectoid': proyectoid, 'faseid': faseid,
                                                              'mensaje': "No se puede modificar la fase, el proyecto"
                                                                         " no se encuentra en estado pendiente."})
@@ -142,12 +162,20 @@ def faseModificar(request):
     faseid = request.POST.get('faseid')
     """Fase a modificar"""
     fase = Fase.objects.get(id=faseid)
-    """Verificar que no exista otra fase en el proyecto con el mismo nombre, excluyendo a
-         las fases deshabilitadas y a la fase correspondiente a modificar, en caso de que el nombre se mantenga."""
+    """
+    Verificar que no exista otra fase en el proyecto 
+    con el mismo nombre, excluyendo a
+    las fases deshabilitadas y a la fase correspondiente a modificar, 
+    en caso de que el nombre se mantenga.
+    """
     if proyecto.fases.filter(nombre=nombre).exclude(estado="deshabilitada").exclude(id=faseid).exists():
-        """Si existe otra fase con el mismo nombre en el proyecto, volver a mostrar el formulario de modificacion
+        """
+        Si existe otra fase con el mismo nombre en el proyecto, 
+        volver a mostrar el formulario de modificacion
         de fases, emitiendo un mensaje de error.
-        Template a renderizar: faseModificar.html con parametros -> proyectoid y mensaje de error."""
+        Template a renderizar: faseModificar.html 
+        con parametros -> proyectoid y mensaje de error.
+        """
         return render(request, 'fase/faseModificar.html', {'fase': fase, 'proyectoid': proyectoid,
                                                            'mensaje': "Lo sentimos, el nombre ya pertenece a otra fase"
                                                                       "del proyecto.", })
@@ -188,8 +216,11 @@ def faseDeshabilitar(request):
 
     """Verificar que el estado del proyecto sea distinto a pendiente."""
     if proyecto.estado != "pendiente":
-        """Si el estado del proyecto es pendiente,
-        no accede al formulario de modificacion de fase y redirige a gestion de Fase."""
+        """
+        Si el estado del proyecto es pendiente,
+        no accede al formulario de modificacion de fase y 
+        redirige a gestion de Fase.
+        """
         return render(request, 'fase/gestionFase.html', {'proyectoid': proyectoid, 'faseid': faseid,
                                                          'mensaje': "No se puede deshabilitar la fase,"
                                                                     " el proyecto no se encuentra en estado pendiente."})
@@ -231,15 +262,24 @@ def itemCrear(request):
             dato= request.POST
             """Tipo de item establecido para el item."""
             obj = proyecto.tipoItem.get(id=dato['tipodeitem_id'])
-            """Verifica que no exista otro item con el mismo nombre en la fase, excluyendo a los items
-             deshabilitados."""
+            """
+            Verifica que no exista otro item con el mismo nombre en la fase, 
+            excluyendo a los items
+             deshabilitados.
+             """
             if fase.items.filter(nombre=dato['nombre']).exclude(estado="deshabilitado").exists():
-                """En el caso de que ya exista un item con el mismo nombre en la fase, se vuelve a mostrar el
-                formulario de creacion de item con un mensaje de error."""
+                """
+                En el caso de que ya exista un item con el mismo nombre
+                 en la fase, se vuelve a mostrar el
+                formulario de creacion de item con un mensaje de error.
+                """
                 """Se obtiene todos los tios de item del proyecto."""
                 tipos = proyecto.tipoItem.all()
-                """Template a renderizar: itemCrear.html cpn parametros -> proyectoid, faseid, tipos de item, 
-                seleccion de tipo de item y mensaje de error."""
+                """
+                Template a renderizar: itemCrear.html 
+                con parametros -> proyectoid, faseid, tipos de item, 
+                seleccion de tipo de item y mensaje de error.
+                """
                 return render(request, "item/itemCrear.html",
                               {'proyectoid': proyectoid, 'faseid': faseid, 'tipos': tipos, 'select': seleccion,
                                'mensaje': "Lo sentimos, el nombre ya pertenece a otro item en la fase."})
@@ -256,7 +296,7 @@ def itemCrear(request):
 
             """Guardar."""
             item.save()
-            """Agregaro item a fase."""
+            """Agregar item a fase."""
             fase.items.add(item)
             """Redirigir a la vista de la fase correspondiente."""
             return redirect('proyectoView',id=proyectoid)
@@ -276,8 +316,12 @@ def itemCrear(request):
             """Guarda en la variable seleccion el tipo de Item seleccionado por el usuario."""
             seleccion = TipodeItem.objects.get(id=request.POST['tipo'])
 
-            """Template a renderizar: itemCrear.html cpn parametros -> proyectoid, faseid, tipos de item, 
-                seleccion de tipo de item."""
+            """
+            Template a renderizar: itemCrear.html 
+            con parametros -> proyectoid, 
+            faseid, tipos de item, 
+            seleccion de tipo de item.
+            """
             return render(request, "item/itemCrear.html",
                           {'proyectoid': proyectoid, 'faseid': faseid, 'tipos': tipos, 'select': seleccion})
 
@@ -290,7 +334,10 @@ def itemCrear(request):
     proyecto = Proyecto.objects.get(id=proyectoid)
     """Fase en la cual crear el item."""
     fase = Fase.objects.get(id=faseid)
-    """Verificar que el usuario cuente con los permisos necesarios."""
+    """
+    Verificar que el usuario cuente 
+    con los permisos necesarios.
+    """
     if not (request.user.has_perm("create_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
         """Al no contar con los permisos, niega el acceso, redirigiendo."""
         return redirect('/permissionError/')
@@ -302,12 +349,16 @@ def itemCrear(request):
 
     """
     Se asigna a la variable "tipos" todos los Tipos de Item
-    con los que cuenta el proyecto en el cual se encuentra el usuario
+    con los que cuenta el proyecto en el 
+    cual se encuentra el usuario
     """
     tipos = proyecto.tipoItem.all()
 
-    """Template a renderizar: itemCrear.html cpn parametros -> proyectoid, faseid, tipos de item, 
-    seleccion de tipo de item."""
+    """
+    Template a renderizar: itemCrear.html c
+    on parametros -> proyectoid, faseid, tipos de item, 
+    seleccion de tipo de item.
+    """
     return render(request, "item/itemCrear.html", {'proyectoid': proyectoid, 'faseid': faseid,
                                                    'tipos': tipos, 'select': seleccion})
 
@@ -335,9 +386,13 @@ def itemView(request, itemid, faseid, proyectoid):
         """Al no contar con los permisos, niega el acceso, redirigiendo."""
         return redirect('/permissionError/')
 
-    """Template a renderizar: item.html con parametros -> faseid, proyectoid, item, proyecto, campos extra de item,
-    permiso para establecer item como pendiente de aprobacion, permiso para establecer item como parobado y choices
-    con los distintos estados del item."""
+    """
+    Template a renderizar: item.html con parametros -> faseid, 
+    proyectoid, item, proyecto, campos extra de item,
+    permiso para establecer item como pendiente de aprobacion, 
+    permiso para establecer item como parobado y choices
+    con los distintos estados del item.
+    """
     return render(request, 'item/item.html',
                         {'faseid': faseid, 'proyectoid': proyectoid, 'item': item, 'proyecto': proyecto,
                                     'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
@@ -372,12 +427,18 @@ def gestionItem(request):
 
     """Verificar que el estado del proyecto sea inicializado."""
     if proyecto.estado != "inicializado":
-        """En caso contrario, no permite la acceder a gestion de item y redirige a la vista de fase."""
+        """
+        En caso contrario, no permite la acceder a 
+        gestion de item y redirige a la vista de fase.
+        """
         return redirect('faseView', faseid=faseid, proyectoid=proyectoid)
 
     """ID de item correspondiente."""
     itemid=request.GET.get('itemid')
-    """Template a renderizar: gestionItem.html con parametro -> proyectoid, faseid, itemid"""
+    """
+    Template a renderizar: gestionItem.html 
+    con parametro -> proyectoid, faseid, itemid
+    """
     return render(request, 'item/gestionItem.html', {'proyectoid': proyectoid, 'faseid': faseid, 'itemid': itemid, })
 
 
@@ -414,15 +475,25 @@ def itemModificar(request):
             """En caso contrario, no permite modificar el item y redirige a la vista de fase."""
             return redirect('proyectoView', id=proyectoid)
 
-        """Verificar que el estado del item se encuentre en desarrollo, permitiendo modificaciones."""
+        """
+        Verificar que el estado del item se 
+        encuentre en desarrollo, permitiendo modificaciones.
+        """
         if item.estado == "pendiente de aprobacion" or item.estado == "aprobado":
             mensaje = "El estado actual del item no permite la modificacion del mismo."
-            """En caso contrario, no permite la modificacion del item y vuelve a gestion de Item con mensaje de error.
-            Template a renderizar: gestionItem.html con parametros -> proyectoid, faseid, itemid y mensaje de error."""
+            """
+            En caso contrario, no permite la modificacion del item y 
+            vuelve a gestion de Item con mensaje de error.
+            Template a renderizar: gestionItem.html con 
+            parametros -> proyectoid, faseid, itemid y mensaje de error.
+            """
             return redirect('proyectoView',id=proyectoid)
 
 
-        """Template a renderizar: itemModificar con parametros -> proyectoid, faseid, item y campos extra."""
+        """
+        Template a renderizar: itemModificar 
+        con parametros -> proyectoid, faseid, item y campos extra.
+        """
         return render(request, 'item/itemModificar.html',
                       {'faseid': faseid, 'proyectoid': proyectoid, 'item': item,
                        'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores), })
@@ -434,13 +505,23 @@ def itemModificar(request):
     item = Item.objects.get(id=dato['itemid'])
     """Fase en el que sed encuentra el item."""
     fase = Fase.objects.get(id=dato['faseid'])
-    """Verifica que no exista otro item con el mismo nombre en la fase, excluyendo a los items
-    deshabilitados y al item a modificar en caso de que el nombre se mantenga."""
+    """
+    Verifica que no exista otro item con el 
+    mismo nombre en la fase, excluyendo a los items
+    deshabilitados y al item a modificar en
+    caso de que el nombre se mantenga.
+    """
     if fase.items.filter(nombre=dato['nombre']).exclude(estado="deshabilitado").exclude(id=dato['itemid']).exists():
-        """En el caso de que ya exista un item con el mismo nombre en la fase, se vuelve a mostrar el
-        formulario de modificacion de item con un mensaje de error."""
-        """Template a renderizar: itemModificar con parametros -> proyectoid, faseid, item, campos extra
-        y mensaje de error."""
+        """
+        En el caso de que ya exista un item con el 
+        mismo nombre en la fase, se vuelve a mostrar el
+        formulario de modificacion de item con un mensaje de error.
+        """
+        """
+        Template a renderizar: itemModificar con 
+        parametros -> proyectoid, faseid, item, campos extra
+        y mensaje de error.
+        """
         return redirect('proyectoView', id=dato['proyectoid'])
 
     """Actualizar nombre del item."""
@@ -461,7 +542,10 @@ def itemModificar(request):
     """Guardar"""
     item.save()
 
-    """Template a renderizar: gestionItem con parametro -> proyectoid, faseid, itemid"""
+    """
+    Template a renderizar: gestionItem con 
+    parametro -> proyectoid, faseid, itemid
+    """
     return redirect('proyectoView',id=dato['proyectoid'])
 
 
@@ -513,9 +597,13 @@ def itemCambiarEstado(request):
         item.save()
 
 
-    """Template a renderizar: item.html con parametros -> faseid, proyectoid, item, proyecto, campos extra de item,
-    permiso para establecer item como pendiente de aprobacion, permiso para establecer item como parobado, choices
-    con los distintos estados del item y el mensaje correspondiente."""
+    """
+    Template a renderizar: item.html 
+    con parametros -> faseid, proyectoid, item, proyecto, campos extra de item,
+    permiso para establecer item como pendiente de aprobacion, 
+    permiso para establecer item como parobado, choices
+    con los distintos estados del item y el mensaje correspondiente.
+    """
     return render(request, 'item/item.html',
                   {'faseid': dato['faseid'], 'proyectoid': dato['proyectoid'], 'item': item,
                    'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
@@ -527,12 +615,12 @@ def itemCambiarEstado(request):
 
 def itemDeshabilitar(request):
     """
-                   **itemDeshabilitar:**
-                    Vista utilizada para deshabilitar Item.
-                    Solicita que el usuario que realiza el request
-                    cuente con los permisos para deshabilitar los
-                     items de fase, o bien, los permisos de gerente del proyecto
-                    y que (indirectamente) haya iniciado sesion.
+        **itemDeshabilitar:**
+         Vista utilizada para deshabilitar Item.
+          Solicita que el usuario que realiza el request
+           cuente con los permisos para deshabilitar los
+            items de fase, o bien, los permisos de gerente del proyecto
+            y que (indirectamente) haya iniciado sesion.
     """
     """ID del proyecto"""
     proyectoid = request.GET.get('proyectoid')
@@ -559,8 +647,11 @@ def itemDeshabilitar(request):
     """Verificar que el estado del item sea en desarrollo."""
     if item.estado == "pendiente de aprobacion" or item.estado == "aprobado":
         mensaje = "El estado actual del item no permite la deshabilitacion del mismo."
-        """En caso contrario niega la deshabilitacion del mismo y vuelve a gestion de item mostrando un mensaje de error.
-        Template a renderizar gestionItem.html con parametros -> proyectoid, faseid, itemid y mensaje de error."""
+        """
+        En caso contrario niega la deshabilitacion del mismo y 
+        vuelve a gestion de item mostrando un mensaje de error.
+        Template a renderizar gestionItem.html con parametros -> proyectoid, faseid, itemid y mensaje de error.
+        """
         return render(request, 'item/gestionItem.html',
                       {'proyectoid': proyectoid, 'faseid': faseid, 'itemid': itemid, 'mensaje': mensaje, })
 
