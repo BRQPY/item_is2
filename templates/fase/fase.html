@@ -1,42 +1,50 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>PROYECTO</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/fase.css' %}">
-</head>
-<body>
-    <form action="/proyecto/proyectoVer/proyectoid={{proyecto.id}}">
-        <input type="submit" value="Atras" />
+
+{% block content %}
+    <form action="/proyecto/proyectoFase/proyectoid={{proyecto.id}}">
+            <button type="submit" class="waves-effect waves-teal btn-flat">
+                    Volver a Gestión de Fases del Proyecto
+                    <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
     </form>
-    <section>
-        <h3>{{fase.nombre}}</h3>
-        {%for u, r in userRol %}
-            {{hola }}
-            {{u}}: {{ r.nombre }}
-        {% endfor %}
+    <div class="container">
+        <h3 style="text-align: center">{{fase.nombre}}</h3>
+        <h5 style="text-align: center" class="grey-text">Panel de Configuración de la fase {{fase.nombre}}</h5>
+        <div class="container">
+            <br>
+            <h6 style="text-align: center"><b>Descripción</b></h6>
+            <div class="col s12 md6 x8">
+                <div class="card-panel">
+                    {{ fase.descripcion }}
+                </div>
+            </div>
+            <h6 style="text-align: center"><b>Usuarios miembros de la Fase</b></h6>
+            <div class="col s12 md6 xl3">
+                <div class="card-panel">
+                     {%for u, r in userRol %}
+                        <b>{{u}}</b> Roles: {{ r.nombre }}<br>
+                     {% endfor %}
+                </div>
+            </div>
+        </div>
         {%if proyecto.estado != "cancelado"%}
-            <form action="/fase/gestionFase/">
-                <h3>Gestion de Fase<input type="submit" value="Ir" /> </h3>
+            <form action="/fase/modify/">
+                <button type="submit" class="btn blue darken-3 right">
+                    Modificar Fase
+                   <i class="material-icons white-text left">edit</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+             </form>
+            <form action="/fase/unable/">
+                <button type="submit" class="btn red darken-5 left">
+                    Deshabilitar Fase
+                   <i class="material-icons white-text left">delete</i>
+                </button>
                 <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
                 <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
             </form>
         {%endif%}
-        {%if proyecto.estado != "pendiente"%}
-            {%if proyecto.estado == "inicializado"%}
-                <form action="/item/itemCrear/">
-                    <h3>Crear Item<input type="submit" value="Ir" /> </h3>
-                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                    <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-                </form>
-            {%endif%}
-                {%for i in items%}
-                    <div><a href="{%url 'itemView' i.id fase.id proyecto.id%}">{{i.nombre}}({{i.estado}})</a></div>
-                {%endfor%}
-        {%else%}
-            Aun no es posible trabajar en la fase. El proyecto no ha sido inicializado.
-        {%endif%}
-    </section>
-</body>
-</html>
+    </div>
+{% endblock%}

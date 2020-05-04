@@ -2,75 +2,44 @@
 {% load static %}
 {% block title %}Confirmar Usuarios{% endblock %}
 {% block content %}
-    <style>
-        #conf{
-            position: absolute;
-            margin-top: 2%;
-            margin-left: 15%;
-            width: 55%;
-            height: 60%;
-        }
 
-        .card-stacked{
-            margin-left: 5%;
-            width: 85%;
-        }
-        h4 {
-            color: black;
-            margin-left:0;
-            text-decoration:none ;
-            font-size: 20px;
-        }
-         h5,p {
-            color: black;
-            margin-left:2%;
-            text-decoration:none ;
-            font-size: 15px;
-        }
-        #guar{
-            top:95%;
-            left:80%;
-        }
-    </style>
-    <section id="conf">
-    <form action="/gestionUser/">
-        <br><input type="submit" value="Atras" />
-    </form>
-        <div class="col s12 m7">
-            <div class="card horizontal">
-                <div class="card-stacked">
-                    <div class="card-content">
-                        <h4>Confirmar Usuarios</h4>
-                        <h5>Selecciona usuarios para confirmar acceso</h5>
-                        <form action="/gestionUser/conf/" method="post">
-                            {% csrf_token %}
-                            {%for u in usuarios%}
-                                <label >
-                                    <input  type="checkbox" class="filled-in"  value={{u.id}} id="username" name="users"/>
-                                    <span><p>{{u.username}}</p></span>
-                                </label>
-                                <br>
-                            {%endfor%}
-                        </form>
-                    </div>
-                        <div class="card-action">
-                                <form action="/gestionUser/">
-                                    <br><button id ="guar" class="btn blue waves-effect waves-light" type="submit" name="addperm" onclick="myFunction();" value="Guardar">
-                                            <i class="material-icons left">save</i>GUARDAR
-                                        </button>
-                                </form>
-                        </div>
-                </div>
-             </div>
-        </div>
-    </section>
+     <form action="/gestionUser/">
+           <button type="submit" class="waves-effect waves-teal btn-flat">
+                    Volver a Gestión de Usuarios
+                    <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
+     </form>
+    <div class="container">
+            <h3 style="text-align: center">Confirmar Usuarios</h3>
+            <h5 style="text-align: center" class="grey-text">Selecciona un usuario para confirmar</h5><br>
+              <form action="/gestionUser/conf/" method="post">{% csrf_token %}
+                    {%for u in usuarios%}
+                       <label>
+                        <input  type="checkbox" class="filled-in"  value={{u.id}} id="username" name="users"/>
+                         <span>{{u.username}}</span>
+                       </label>
+                       <br>
+                    {%endfor%}
 
 
-<script>
-        function myFunction() {
-            alert("Usuario confirmado correctamente.");
-        }
-</script>
+                <br>
+
+                 <button id ="guar" class="btn blue darken-3 right" type="submit" name="addperm" onclick="myFunction();" value="Guardar">
+                      <i class="material-icons left">verified_user</i>Confirmar Usuarios
+                  </button>
+              </form>
+
+
+        </section>
+
+
+        <script>
+                function myFunction() {
+                    alert("Usuario confirmado correctamente.");
+                }
+        </script>
+
+    </div>
 
 
 {% endblock %}

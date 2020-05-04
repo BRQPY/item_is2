@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/proyectoRolModificar.css' %}">
 </head>
 <body>
+{{ mensaje }}
     <style> body{background-color: lavender }</style>
     <section>
         <form action="/proyecto/proyectoRol/">
@@ -31,7 +32,7 @@
             <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
             <input  type="hidden" value={{select.id}} id="rolid" name="rolid">
             <label for="Rolname">Nombre del Rol:</label><br>
-            <input type="text" id="Rolname" name="nombre" value={{select.nombre}}>
+            <input type="text" id="Rolname" name="nombre" value="{{select.nombre}}" required>
             <h5>Permisos:</h5>
             {%if "add_fase" in permisos%}
                     <input class="form-check-input" type="checkbox" value="1" id="permiso" name="perms" checked>
@@ -164,11 +165,7 @@
         {%endif%}
     </section>
 </body>
-<script>
-        function myFunction() {
-            alert("Rol modificado correctamente.");
-        }
-</script>
+
 <script>
     function myFunction2(obj) {
         var verItem = document.getElementById('verItem')

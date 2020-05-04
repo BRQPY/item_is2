@@ -69,7 +69,7 @@ def confUserView(request):
             """
             usuario = User.objects.get(id=u)
             usuario.user_permissions.add(permiso)
-
+            usuario.save()
         """
         Template a renderizar: gestionUser.html.
         """

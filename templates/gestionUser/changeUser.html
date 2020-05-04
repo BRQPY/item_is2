@@ -2,95 +2,51 @@
 {% load static %}
 {% block title %}Cambiar Usuario{% endblock %}
 {% block content %}
-    <style>
-        #change_user{
-            position: absolute;
-            margin-top: 2%;
-            margin-left: 0%;
-            width: 60%;
-            height: 80%;
-        }
-         #usuarios{
-            width: 25%;
-            top:5%;
-            margin-left: 35%;
-
-        }
-        h4, p {
-            color: black;
-            margin-left: 3em;
-            text-decoration:none ;
-            font-size: 15px;
-        }
-        #nombre,#lastname,#firstname{
-            margin-left: 7%;
-            width: 85%;
-        }
-
-        #but{
-            top:17%;
-            margin-left: 68%;
-            font-size: 15px;
-            position: absolute;
-        }
-        #guar{
-            top:95%;
-            left:80%;
-        }
-    </style>
-    <section id="change_user">
     <form action="/gestionUser/">
-        <br><input type="submit" value="Atras" />
-    </form>
-            <div class="col s12 m7">
-                <div class="card horizontal">
-                    <div class="card-stacked">
-                        <form action="." method="POST">{% csrf_token %}
+           <button type="submit" class="waves-effect waves-teal btn-flat">
+                    Volver a Gestión de Usuarios
+                    <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
+     </form>
+    <div class="container">
+        <h3 style="text-align: center">Modificar Usuarios</h3>
+        <form action="." method="POST">{% csrf_token %}
                             <div class="input-field col s12">
                                 <select id="usuarios" class="browser-default" name="usuarios">
-                                    <option value="" disabled selected>Seleccionar Usuario</option>
+                                    <option value="" disabled selected>Seleccione un Usuario para modificar su información</option>
                                     {% for u in usuarios %}
                                         <option value="{{u.id}}">{{u.username}}</option>
                                     {% endfor %}
-                                </select><br><label for="usuarios"><p>Seleccione un Usuario a Modificar</p></label>
+                                </select>
                             </div>
-                            <button id="but"  type="submit"  class="btn blue waves-light btn-small" name="seleccion" value="Seleccionar Usuario">
-                                <i class="material-icons left">person</i>
-                                USUARIO SELECCIONADO
+                            <button id="but"  type="submit"  class="btn-small blue darken-3 right" name="seleccion" value="Seleccionar Usuario">
+                              Confirmar
                             </button>
                         </form><br>
                         {% if select is not None %}
                             <div action="." method="POST"> {% csrf_token %}
-                                <p>
+
                                     <label><p>Username:</p>
                                         <input type="text" id="nombre" name="nombre" value={{select.username}}>
                                     </label>
-                                </p>
-                                <p>
+
                                     <label for="firstname"><p>Nombre:</p>
                                         <input type="text" id="firstname" name="firstname" value={{select.first_name}}>
                                     </label>
-
-                                </p>
-                                <p>
                                     <label for="lastname"><p>Apellido:</p>
                                         <input type="text" id="lastname" name="lastname" value={{select.last_name}}>
                                     </label>
-                                </p>
                                 <input type="hidden" id="usuario" name="usuario" value="{{select.id}}">
                             </div>
                         {% endif %}
-                        <div class="card-action">
                             <form action="/gestionUser/">
-                                <br><button id ="guar" class="btn blue waves-effect waves-light" type="submit" name="changeuser"  value="Modificar">
-                                    <i class="material-icons left">save</i>MODIFICAR
+                                <br><button id ="guar" class="btn-small blue darken-3 right" type="submit" name="changeuser"  value="Modificar">
+                                    <i class="material-icons left">edit</i>MODIFICAR información
                                 </button>
                             </form>
-                        </div>
+
                     </div>
-                </div>
-            </div>
-     </section>
+
 
 
 {% endblock %}

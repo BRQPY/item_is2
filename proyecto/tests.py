@@ -76,7 +76,7 @@ class TestViews(TestCase):
         response = self.client.get(string)
 
         self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/proyecto.html')
+        self.assertTemplateUsed(response, 'proyecto/proyectoIniciado.html')
 
 
     def test_proyectoView_GET_FAIL(self):
@@ -291,8 +291,10 @@ class TestViews(TestCase):
         self.assertEquals(list(proyecto.usuarios.all()), [prueba, prueba2])
         self.assertEquals(prueba.has_perm("view_proyecto", proyecto), True)
         self.assertEquals(prueba2.has_perm("view_proyecto", proyecto), True)
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido al url esperado.")
 
     def test_proyectoUserRemove_GET_OK(self):
         user = User.objects.create(username="user", password="user")
@@ -338,8 +340,10 @@ class TestViews(TestCase):
         self.assertEquals(list(proyecto.usuarios.all()), [])
         self.assertEquals(prueba.has_perm("view_proyecto", proyecto), False)
         self.assertEquals(prueba2.has_perm("view_proyecto", proyecto), False)
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido al url esperado.")
 
     def test_proyectoRol_GET_OK(self):
         user = User.objects.create(username="user", password="user")
@@ -379,8 +383,10 @@ class TestViews(TestCase):
         proyecto = Proyecto.objects.get(id=proyecto.id)
         self.assertEquals(Rol.objects.filter(nombre="Rol_prueba").exists(), True)
         self.assertEquals(proyecto.roles.filter(nombre="Rol_prueba").exists(), True)
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido al url esperado.")
 
     def test_proyectoRolCrear_POST_FAIL(self):
         user = User.objects.create(username="user", password="user")
@@ -452,8 +458,10 @@ class TestViews(TestCase):
         rol1 = Rol.objects.get(id=rol1.id)
         self.assertEquals(rol1.nombre, "Rol_prueba")
         self.assertEquals(list(rol1.perms.permissions.all()), [permiso1, permiso2, permiso3])
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido al url esperado.")
 
     def test_proyectoRolModificar_POST_FAIL1(self):
         user = User.objects.create(username="user", password="user")
@@ -551,8 +559,10 @@ class TestViews(TestCase):
 
         proyecto = Proyecto.objects.get(id=proyecto.id)
         self.assertEquals(list(proyecto.roles.all()), [])
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido al url esperado.")
 
     def test_proyectoRolEliminar_POST_FAIL(self):
         user = User.objects.create(username="user", password="user")
@@ -632,8 +642,10 @@ class TestViews(TestCase):
         self.assertEquals(prueba.has_perm("view_fase", fase2), True)
         self.assertEquals(rol.faseUser.filter(user=prueba, fase=fase).exists(), True)
         self.assertEquals(rol.faseUser.filter(user=prueba, fase=fase2).exists(), True)
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido al url esperado.")
 
     def test_proyectoRolAsignar_POST_FAIL(self):
         user = User.objects.create(username="user", password="user")
@@ -726,8 +738,11 @@ class TestViews(TestCase):
         self.assertEquals(prueba.has_perm("view_fase", fase2), False)
         self.assertEquals(rol.faseUser.filter(user=prueba, fase=fase).exists(), False)
         self.assertEquals(rol.faseUser.filter(user=prueba, fase=fase2).exists(), False)
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
+
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
+                         status_code=302, fetch_redirect_response=False,
+                         msg_prefix="No se ha redirigido al url esperado.")
 
     def test_proyectoRolRemover_POST_FAIL(self):
         user = User.objects.create(username="user", password="user")
@@ -829,8 +844,10 @@ class TestViews(TestCase):
         })
 
         proyecto1 = Proyecto.objects.get(nombre="Proyecto1")
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto1.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido al url esperado.")
         self.assertEquals(TipodeItem.objects.first().nombreTipo, 'RF1')
         self.assertEquals(list(proyecto1.tipoItem.all()), [TipodeItem.objects.first()])
 
@@ -864,8 +881,10 @@ class TestViews(TestCase):
         tipo1 = TipodeItem.objects.get(id=tipo1.id)
         self.assertEquals(tipo1.nombreTipo, "tipo1")
         self.assertEquals(tipo1.descripcion, "dtipo1")
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto1.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido al url esperado.")
 
 
     def test_importar_tipo_de_item_GET(self):
@@ -897,8 +916,10 @@ class TestViews(TestCase):
 
         proyecto1 = Proyecto.objects.get(nombre="Proyecto1")
         self.assertEquals(list(proyecto1.tipoItem.all()), [tipo1, tipo2])
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto1.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido al url esperado.")
 
     def test_remover_tipo_de_item_GET(self):
         user = User.objects.create(username="user", password="user")
@@ -931,8 +952,10 @@ class TestViews(TestCase):
 
         proyecto1 = Proyecto.objects.get(id=proyecto1.id)
         self.assertEquals(list(proyecto1.tipoItem.all()), [])
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto1.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido al url esperado.")
 
 
 
@@ -979,8 +1002,10 @@ class TestViews(TestCase):
         proyecto1 = Proyecto.objects.get(id=proyecto1.id)
         self.assertEquals(proyecto1.comite.filter(id=user.id).exists(), True)
         self.assertEquals(user.has_perm("aprobar_rotura_lineaBase", proyecto1), True)
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto1.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido al url esperado.")
 
 
     def test_proyectoComiteRemove_GET(self):
@@ -1015,5 +1040,7 @@ class TestViews(TestCase):
         proyecto1 = Proyecto.objects.get(id=proyecto1.id)
         self.assertEquals(proyecto1.comite.filter(id=user.id).exists(), False)
         self.assertEquals(user.has_perm("aprobar_rotura_lineaBase", proyecto1), False)
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto1.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido al url esperado.")

@@ -1,40 +1,51 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/gestionartipodeitem.css' %}">
-</head>
-<body>
-    <style> body{background-color: lavender }</style>
-    <section>
-            <form action="/proyecto/gestionProyecto/">
-            <input type="submit" value="Atras" />
+
+{% block content %}
+    <form action="/proyecto/proyectoVer/proyectoid={{proyectoid}}">
+         <button type="submit" class="waves-effect waves-teal btn-flat">
+                    Volver a Gestión de Proyecto
+                    <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
             <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-            </form>
-            <h4>Gestionar Tipos de Item</h4>
+    </form>
+	<div class="container">
+        <section>
+            <h3 style="text-align: center">Tipos de Item</h3>
+        <h5 style="text-align: center" class="grey-text">Panel de Configuración de Tipos de ítem</h5>
+        <h5 style="text-align: left">Tipos de ítem del Proyecto</h5><br>
             {%for t in tipos%}
                 {{t.nombreTipo}}<br>
             {%endfor%}
             <br>
-            <br>
             <form action="/proyecto/creartipo/">
-                <input class="cla" type="submit" value="Crear Tipo de Item"/>
+                <button  type="submit" class="btn blue darken-3 left" >
+                    Crear Tipo de Item
+                    <i class="material-icons white-text left">add_circle</i>
+                </button>
                 <input class="cla"  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-            </form><br>
+            </form><br><br><br>
             <form action="/proyecto/modifdeItem/">
-                <input class="cla"  type="submit" value="Modificar Tipo de Item"/>
+                <button  type="submit" class="btn blue darken-3 left" >
+                    Modificar Tipo de Item
+                    <i class="material-icons white-text left">edit</i>
+                </button>
                 <input class="cla"  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-            </form><br>
+            </form><br><br><br>
             <form action="/proyecto/importTdeItem/">
-                <input class="cla"  type="submit" value="Importar Tipo de Item"/>
+                <button  type="submit" class="btn blue darken-3 left" >
+                    Importar Tipo de Item
+                    <i class="material-icons white-text left">import_export</i>
+                </button>
                 <input class="cla"  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-            </form><br>
+            </form><br><br><br>
             <form action="/proyecto/removerTdeItem/">
-                <input class="cla"  type="submit" value="Remover Tipo de Item"/>
+                <button  type="submit" class="btn blue darken-3 left" >
+                    Remover Tipo de Item
+                    <i class="material-icons white-text left">remove_circle</i>
+                </button>
                 <input class="cla"  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
             </form><br>
     </section>
-</body>
-</html>
+	</div>
+{% endblock%}

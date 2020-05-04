@@ -259,7 +259,7 @@ def itemCrear(request):
             """Agregaro item a fase."""
             fase.items.add(item)
             """Redirigir a la vista de la fase correspondiente."""
-            return redirect('faseView', faseid=faseid, proyectoid=proyectoid)
+            return redirect('proyectoView',id=proyectoid)
         else:
             """POST para seleccionar tipo de item"""
             """ID del proyecto correspondiente."""
@@ -412,15 +412,15 @@ def itemModificar(request):
         """Verificar que el estado del proyecto sea inicializado."""
         if proyecto.estado != "inicializado":
             """En caso contrario, no permite modificar el item y redirige a la vista de fase."""
-            return redirect('faseView', faseid=faseid, proyectoid=proyectoid)
+            return redirect('proyectoView', id=proyectoid)
 
         """Verificar que el estado del item se encuentre en desarrollo, permitiendo modificaciones."""
         if item.estado == "pendiente de aprobacion" or item.estado == "aprobado":
             mensaje = "El estado actual del item no permite la modificacion del mismo."
             """En caso contrario, no permite la modificacion del item y vuelve a gestion de Item con mensaje de error.
             Template a renderizar: gestionItem.html con parametros -> proyectoid, faseid, itemid y mensaje de error."""
-            return render(request, 'item/gestionItem.html',
-                          {'proyectoid': proyectoid, 'faseid': faseid, 'itemid': itemid, 'mensaje': mensaje, })
+            return redirect('proyectoView',id=proyectoid)
+
 
         """Template a renderizar: itemModificar con parametros -> proyectoid, faseid, item y campos extra."""
         return render(request, 'item/itemModificar.html',
@@ -441,10 +441,7 @@ def itemModificar(request):
         formulario de modificacion de item con un mensaje de error."""
         """Template a renderizar: itemModificar con parametros -> proyectoid, faseid, item, campos extra
         y mensaje de error."""
-        return render(request, 'item/itemModificar.html',
-                      {'faseid': dato['faseid'], 'proyectoid': dato['proyectoid'], 'item': item,
-                       'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
-                       'mensaje': "Lo sentimos, el nombre ya pertenece a otro item en la fase", })
+        return redirect('proyectoView', id=dato['proyectoid'])
 
     """Actualizar nombre del item."""
     item.nombre = dato['nombre']
@@ -465,8 +462,7 @@ def itemModificar(request):
     item.save()
 
     """Template a renderizar: gestionItem con parametro -> proyectoid, faseid, itemid"""
-    return render(request, 'item/gestionItem.html', {'proyectoid': dato['proyectoid'], 'faseid': dato['faseid'],
-                                                     'itemid': dato['itemid'], })
+    return redirect('proyectoView',id=dato['proyectoid'])
 
 
 def itemCambiarEstado(request):
@@ -558,7 +554,7 @@ def itemDeshabilitar(request):
     """Verificar que el estado del proyecto sea inicializado."""
     if proyecto.estado != "inicializado":
         """En caso contrario, no permite deshabilitar el item y redirige a la vista de fase."""
-        return redirect('faseView', faseid=faseid, proyectoid=proyectoid)
+        return redirect('proyectoView',id=proyectoid)
 
     """Verificar que el estado del item sea en desarrollo."""
     if item.estado == "pendiente de aprobacion" or item.estado == "aprobado":
@@ -573,7 +569,7 @@ def itemDeshabilitar(request):
     """Guardar."""
     item.save()
     """Redirige a la vista de la fase correspondiente."""
-    return redirect('faseView', faseid=faseid, proyectoid=proyectoid)
+    return redirect('proyectoView', id=proyectoid)
 
 
 

@@ -1,52 +1,50 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>CREAR PROYECTO</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/proyectoCrear.css' %}">
-</head>
-<body>
-    <style> body{background-color: lavender }</style>
-    <section>
-        <form action="/home/">
-            <br><input type="submit" value="Atras" />
-        </form>
+
+{% block content %}
+    <form action="/home/">
+         <button type="submit" class="waves-effect waves-teal btn-flat">
+                    Volver a Home
+                    <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
+            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+    </form>
+    {{ mensaje }}
+	<div class="container">
         <form action="/proyecto/proyectoCrear/" method="post">
             {% csrf_token %}
             <p>{{mensaje}}</p>
             <p><div>
                 <label for="nombre">Nombre del Proyecto:</label>
-                <input type="text" id="nombre" name="nombre">
+                <input type="text" id="nombre" name="nombre" required>
             </div></p>
             <p><div>
                 <label for="descripcion">Descripcion:</label>
-                <textarea id="descripcion" rows="1" cols="50" name="descripcion"></textarea>
+                <textarea id="descripcion" rows="1" cols="50" name="descripcion" required></textarea>
             </div></p>
             <p><div>
                 <label for="fechaini">Fecha de Inicio:</label>
-                <input type="text" id="fechaini" name="fechaini">
+                <input type="date" id="fechaini" name="fechaini" required>
             </div></p>
             <p><div>
                 <label for="fechafin">Fecha de Fin:</label>
-                <input type="text" id="fechafin" name="fechafin">
+                <input type=date id="fechafin" name="fechafin" required>
             </div></p>
             <p><div>
                  <label for="gerente">Gerente:</label>
 
-                <select id="gerente" name="gerente">
+                <select id="gerente" name="gerente" class="browser-default" required>
+                    <option value="" disabled selected>Seleccione un Usuario para designar como Gerente</option>
                     {%for u in usuarios%}
                         <option value={{u.id}}>{{u.username}}</option>
                     {%endfor%}
                 </select>
             </div></p>
-            <button type="submit" onclick="myFunction()">Guardar</button>
+            <button type="submit" class="btn-small blue darken-3 right">Guardar
+             <i class="material-icons left">add_circle</i></button>
         </form>
-    </section>
-</body>
-<script>
-        function myFunction() {
-            alert("Proyecto creado correctamente.");
-        }
-</script>
-</html>
+
+
+</section>
+	</div>
+{% endblock%}

@@ -1,52 +1,67 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>ROLES DE PROYECTO</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/proyectoRol.css' %}">
-</head>
-<body>
-    <style> body{background-color: lavender }</style>
-    <section>
-        <form action="/proyecto/gestionProyecto/">
-            <input type="submit" value="Atras" />
+
+{% block content %}
+    <form action="/proyecto/proyectoVer/proyectoid={{proyectoid}}">
+         <button type="submit" class="waves-effect waves-teal btn-flat">
+                    Volver a Gestión de Proyecto
+                    <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
             <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-        </form>
-        <h4>Lista de Roles del Proyecto</h4>
+    </form>
+	<div class="container">
+    <section>
+        <h3 style="text-align: center">Roles</h3>
+        <h5 style="text-align: center" class="grey-text">Panel de Configuración de Roles</h5>
+        <h5 style="text-align: left">Roles dentro del Proyecto</h5><br>
         {%for r in roles%}
             <br>{{r.nombre}}
         {%endfor%}
            <p>
                 <form id="bot" action="/proyecto/proyectoRol/create/">
-                    <br><input  type="submit" name="removeperm" value="Crear Rol">
+            <br><button  type="submit" name="removeperm" class="btn blue darken-3 left">
+                Crear Rol
+                <i class="material-icons white-text left">add_circle</i>
+             </button>
                     <br><input type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-                </form><br>
+                </form>
            </p>
            <p>
                 <form id="bot" action="/proyecto/proyectoRol/modify/">
-                       <br> <input  type="submit" name="removeperm" value="Modificar Rol">
+        <br> <button type="submit" name="removeperm" class="btn blue darken-3 left" >
+                Modificar Rol
+                <i class="material-icons white-text left">edit</i>
+            </button>
                        <br> <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-                </form><br>
+                </form>
            </p>
             <p>
                 <form id="bot" action="/proyecto/proyectoRol/asignar/">
-                   <br> <input type="submit" name="removeperm" value="Asignar Roles a Usuarios">
-                   <br> <input type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+        <br> <button type="submit" name="removeperm" class="btn blue darken-3 left" >
+                Asignar Roles a Usuarios
+                <i class="material-icons white-text left">person_add</i>
+            </button>
+                   <input type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
                 </form><br>
             </p>
             <p>
                     <form id="bot" action="/proyecto/proyectoRol/remove/">
-                        <br><input type="submit" name="removeperm" value="Remover Roles de Usuarios">
+        <br><button type="submit" name="removeperm" class="btn blue darken-3 left">
+                Remover Roles de Usuarios
+                <i class="material-icons white-text left">person_outline</i>
+            </button>
                         <br><input type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-                    </form><br>
+                    </form>
             </p>
            <p>
                 <form id="bot" action="/proyecto/proyectoRol/delete/">
-                  <br><input type="submit" name="removeperm" value="Remover Rol del Proyecto">
+        <br><button type="submit" name="removeperm" class="btn blue darken-3 left">
+                Remover Rol del Proyecto
+                <i class="material-icons white-text left">remove_circle</i>
+            </button>
                   <br><input type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-                </form><br>
+                </form>
            </p>
     </section>
-</body>
-</html>
+	</div>
+{% endblock%}

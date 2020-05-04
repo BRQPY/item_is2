@@ -1,106 +1,127 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>ITEM</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/fase.css' %}">
-</head>
-<body>
-    <form action="/fase/faseVer/faseid={{faseid}}proyectoid={{proyectoid}}">
-            <input type="submit" value="Atras" />
+
+{% block content %}
+    <form action="/proyecto/proyectoVer/proyectoid={{proyectoid}}">
+            <button type="submit" class="waves-effect waves-teal btn-flat">
+                    Volver a Gestión de Proyecto
+                    <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
     </form>
     {{mensaje}}
-    <section>
-        <h3>{{item.nombre}}</h3>
-        {%if proyecto.estado != "cancelado"%}
-            <form action="/item/gestionItem/">
-                <h3>Gestion de Item<input type="submit" value="Ir" /> </h3>
-                <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-                <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
-                <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
-            </form>
-        {%endif%}
-        <p><div>
-            Fecha: {{item.fecha}}
-        </div></p>
-        {%if proyecto.estado != "cancelado"%}
-            {%if pendientePermiso or aprobadoPermiso%}
-        <form action="/item/itemCambiarEstado/">
-            <p><div>
-                <label for="estado">Estado:</label>
+	<div class="container">
+        <section>
+            <h3 style="text-align: center">Item: {{item.nombre}}</h3>
+            <h5 style="text-align: center" class="grey-text">Panel de Configuración del ítem {{item.nombre}}</h5>
 
-                <select id="estado" name="estado">
-                    {%if item.estado == "en desarrollo"%}
-                        {%for c in choices%}
-                            {%if c != "aprobado"%}
-                                {%if c == "en desarrollo"%}
-                                    <option value="{{c}}" selected>{{c}}</option>
-                                {%endif%}
-                                {%if c == "pendiente de aprobacion"%}
-                                    {%if pendientePermiso%}
-                                        <option value="{{c}}">{{c}}</option>
+            <p><div>
+                <h5 style="text-align: left" class="grey-text">Fecha:</h5>
+                {{item.fecha}}
+            </div></p>
+            {%if proyecto.estado != "cancelado"%}
+                {%if pendientePermiso or aprobadoPermiso%}
+            <form action="/item/itemCambiarEstado/">
+                <p><div>
+                    <h5 style="text-align: left" class="grey-text">Estado:</h5>
+                    <select id="estado" name="estado" class="browser-default">
+                        {%if item.estado == "en desarrollo"%}
+                            {%for c in choices%}
+                                {%if c != "aprobado"%}
+                                    {%if c == "en desarrollo"%}
+                                        <option value="{{c}}" selected>{{c}}</option>
+                                    {%endif%}
+                                    {%if c == "pendiente de aprobacion"%}
+                                        {%if pendientePermiso%}
+                                            <option value="{{c}}">{{c}}</option>
+                                        {%endif%}
                                     {%endif%}
                                 {%endif%}
-                            {%endif%}
-                        {%endfor%}
-                    {%endif%}
-                    {%if item.estado == "pendiente de aprobacion"%}
-                        {%for c in choices%}
-                            {%if c == "pendiente de aprobacion"%}
-                                <option value="{{c}}" selected>{{c}}</option>
-                            {%endif%}
-                            {%if c == "aprobado"%}
-                                {%if aprobadoPermiso%}
-                                    <option value="{{c}}">{{c}}</option>
-                                {%endif%}
-                            {%endif%}
-                            {%if c == "en desarrollo"%}
-                                {%if pendientePermiso%}
-                                    <option value="{{c}}">{{c}}</option>
-                                {%endif%}
-                            {%endif%}
-                        {%endfor%}
-                    {%endif%}
-                    {%if item.estado == "aprobado"%}
-                        {%for c in choices%}
-                            {%if c != "pendiente de aprobacion"%}
-                                {%if c == "aprobado"%}
+                            {%endfor%}
+                        {%endif%}
+                        {%if item.estado == "pendiente de aprobacion"%}
+                            {%for c in choices%}
+                                {%if c == "pendiente de aprobacion"%}
                                     <option value="{{c}}" selected>{{c}}</option>
-                                {%else%}
+                                {%endif%}
+                                {%if c == "aprobado"%}
                                     {%if aprobadoPermiso%}
                                         <option value="{{c}}">{{c}}</option>
                                     {%endif%}
                                 {%endif%}
-                            {%endif%}
-                        {%endfor%}
-                    {%endif%}
-                </select>
-                <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-                <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
-                <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
-                <input type="submit" value="Cambiar Estado" />
-            </div></p>
-        </form>
+                                {%if c == "en desarrollo"%}
+                                    {%if pendientePermiso%}
+                                        <option value="{{c}}">{{c}}</option>
+                                    {%endif%}
+                                {%endif%}
+                            {%endfor%}
+                        {%endif%}
+                        {%if item.estado == "aprobado"%}
+                            {%for c in choices%}
+                                {%if c != "pendiente de aprobacion"%}
+                                    {%if c == "aprobado"%}
+                                        <option value="{{c}}" selected>{{c}}</option>
+                                    {%else%}
+                                        {%if aprobadoPermiso%}
+                                            <option value="{{c}}">{{c}}</option>
+                                        {%endif%}
+                                    {%endif%}
+                                {%endif%}
+                            {%endfor%}
+                        {%endif%}
+                    </select>
+                    <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                    <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+                    <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+                <button type="submit" class="btn-small blue darken-3 right" >
+                    Cambiar Estado
+                    <i class="material-icons left">edit</i><br>
+                </button>
+                </div></p>
+            </form>
+                {%else%}
+                    Estado: {{item.estado}}
+                {%endif%}
             {%else%}
                 Estado: {{item.estado}}
             {%endif%}
-        {%else%}
-            Estado: {{item.estado}}
-        {%endif%}
-        <p><div>
-            Observacion: {{item.observacion}}
-        </div></p>
-        <p><div>
-            Costo: {{item.costo}}
-        </div></p>
-        <p><div>
-            {%for c, c2 in campos%}
-                <p><div>
-                    {{c}}: {{c2}}
-                </div></p>
-            {%endfor%}
-        </p><div>
-    </section>
-</body>
-</html>
+            <p><div>
+                <h5 style="text-align: left" class="grey-text">Observación:</h5>
+                {{item.observacion}}
+            </div></p>
+            <p><div>
+                <h5 style="text-align: left" class="grey-text">Costo en horas:</h5> {{item.costo}} horas.
+            </div></p>
+            <p><div>
+
+                {%for c, c2 in campos%}
+                    <p><div>
+                        <h5 style="text-align: left" class="grey-text">{{c}}: </h5>
+                        {{c2}}
+                    </div></p>
+                {%endfor%}
+            </p><div>
+            {%if proyecto.estado != "cancelado"%}
+                <form action="/item/modify/">
+                    <button type="submit" class="btn blue darken-3 right">
+                        Modificar ítem
+                       <i class="material-icons white-text left">edit</i>
+                    </button>
+                    <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                    <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+                    <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+                </form>
+                <form action="/item/unable/">
+                    <button type="submit" class="btn red darken-5 left">
+                        Deshabilitar Item
+                       <i class="material-icons white-text left">delete</i>
+                    </button>
+                    <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                        <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+                        <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+                 </form>
+
+            {%endif%}
+        </section>
+	</div>
+
+{% endblock%}

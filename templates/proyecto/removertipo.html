@@ -1,28 +1,30 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/removertipo.css' %}">
-</head>
-<body>
+
+{% block content %}
     <form action="/proyecto/proyectoTipodeItem/">
-        <input type="submit" value="Atras" />
+        <button type="submit" class="waves-effect waves-teal btn-flat">
+                    Volver a Gestión de Tipos de Ítem
+                    <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
         <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
     </form>
-    {{mensaje}}
-    <style> body{background-color: lavender }</style>
+	<div class="container">
     <section>
-        <h5>Seleccione los tipos de Item que desea remover del Proyecto:</h5>
+        <h3 style="text-align: center">Remover Tipos de ítem</h3>
         <form action="." method="POST">{% csrf_token %}
         {% for tipo in tipos %}
-            <input type="checkbox" id="eliminados" name="eliminados" value={{tipo.id}}>
-            <label for="eliminados">{{tipo.nombreTipo}}</label>
-        {% endfor %}
-        <input id="botton" type='submit' name="seleccion" value="Remover Tipos de Item" />
+            <label>
+                <input  type="checkbox" class="filled-in" id="eliminados" name="eliminados" value={{tipo.id}}>
+                <span>{{tipo.nombreTipo}}</span>
+            </label>
+        {% endfor %}<br><br>
+            <button id="botton" type='submit' name="seleccion" class="btn-small blue darken-3 right" >
+                Remover Tipos de Item
+                <i class="material-icons white-text left">remove_circle</i>
+            </button>
             <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
         </form>
-    </section>
-</body>
-</html>
+      </section>
+ </div>
+{% endblock%}

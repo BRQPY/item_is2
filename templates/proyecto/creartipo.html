@@ -1,24 +1,25 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/creartipo.css' %}">
-</head>
-<body>
+
+{% block content %}
     <form action="/proyecto/proyectoTipodeItem/">
-        <input type="submit" value="Atras" />
+        <button type="submit" class="waves-effect waves-teal btn-flat">
+                    Volver a Gestión de Tipos de Ítem
+                    <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
         <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
     </form>
+	<div class="container">
+
+
+
     {{mensaje}}
-    <style> body{background-color: lavender }</style>
     <section>
         <form action="." method="POST" > {% csrf_token %}
             <p></p><label id="nombre" for="nombretipo">Nombre del Tipo de Item:</label><br>
-            <input id="nombre" type="text" id="nombretipo" name="nombretipo"><br></p>
+            <input id="nombre" type="text" id="nombretipo" name="nombretipo" required><br></p>
             <p><label for="descripciontipo">Descripción del Tipo de Item:</label><br>
-            <input type="text" id="descripciontipo" name="descripciontipo"></p>
+            <input type="text" id="descripciontipo" name="descripciontipo" required></p>
             <p>
                 <i>Cada Tipo de Item creado cuenta por defecto con los siguientes campos: <br>
                 Fecha, versión, estado, costo, relación con otros ítems, observaciones y la posibilidad de adjuntar archivos.<br>
@@ -28,18 +29,22 @@
             </p>
             <p>
                 <label for="camposextra">Campos extra:</label><br>
-                <input type="text" id="camposextra">
-                <input type="button" id="button1" value="Agregar" onclick="add_element_to_array();">
+                <input type="text" id="camposextra" >
+                <button id="button1" class="btn-small blue darken-3 left" onclick="add_element_to_array();">
+                    Agregar
+                </button>
                 <input type="hidden" id="Campos" name="Campos">
                 <div id="Result"></div>
             </p>
             <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-           <input id="button" type='submit' value="Crear Tipo de Item" />
+            <br><br><button type='submit' class="btn-small blue darken-3 right"  >
+                Crear Tipo de Item
+                <i class="material-icons white-text left">add_circle_outline</i>
+            </button>
 
         </form>
     </section>
 
-</body>
 <script>
     var x = 0;
     var array = Array();
@@ -61,4 +66,5 @@
     }
 
 </script>
-</html>
+    </div>
+{% endblock%}

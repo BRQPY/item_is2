@@ -102,9 +102,9 @@ WSGI_APPLICATION = 'prueba3.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'mydb3',
-        'USER': 'admin3',
-        'PASSWORD': 'admin3',
+        'NAME': 'mydb4',
+        'USER': 'admin4',
+        'PASSWORD': 'admin4',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -153,7 +153,7 @@ STATIC_URL = '/static/'
     )'''
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
-    '/home/pedrogenes/is2/prueba3/static/',
+    '/home/bruno/Escritorio/item_is2/static/',
 ]
 MEDIA_ROOT = ''
 MEDIA_URL = "/media/"

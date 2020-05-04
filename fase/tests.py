@@ -332,8 +332,8 @@ class TestViews(TestCase):
             cont = cont+1
         self.assertEquals(fase.items.all().filter(id=item.id).exists(), True, "El item no existe en la fase.")
 
-        self.assertEquals(response.status_code, 302, "No se ha redirigido a la vista.")
-        self.assertRedirects(response, '/fase/faseVer/faseid='+str(fase.id)+'proyectoid='+str(proyecto.id)+'/',
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido al url esperado.")
 
@@ -486,9 +486,10 @@ class TestViews(TestCase):
         self.client.login(username='user', password='user')
         response = self.client.get('/item/modify/', {'proyectoid': proyecto.id, 'faseid': fase.id, 'itemid': item.id, })
 
-        self.assertEquals(response.status_code, 200, "El usuario no cuenta con los permisos necesarios.")
-        self.assertTemplateUsed(response, 'item/gestionItem.html',
-                                "El template renderizado debe ser item/gestionItem.html.")
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido al url esperado.")
 
     def test_itemModificar_GET_FAIL3(self):
         user = User.objects.create(username="user", password="user")
@@ -512,7 +513,7 @@ class TestViews(TestCase):
         response = self.client.get('/item/modify/', {'proyectoid': proyecto.id, 'faseid': fase.id, 'itemid': item.id, })
 
         self.assertEquals(response.status_code, 302, "No se ha redirigido.")
-        self.assertRedirects(response, '/fase/faseVer/faseid=' + str(fase.id) + 'proyectoid=' + str(proyecto.id) + '/',
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido al url esperado.")
 
@@ -555,9 +556,10 @@ class TestViews(TestCase):
                               "El campo extra "+str(cont+2)+" del item es incorrecto.")
             cont = cont+1
         self.assertEquals(fase.items.all().filter(id=item.id).exists(), True, "El item no existe en la fase.")
-        self.assertEquals(response.status_code, 200, "EL template no ha sido renderizado.")
-        self.assertTemplateUsed(response, 'item/gestionItem.html',
-                                "El template renderizado debe ser item/gestionItem.html.")
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido al url esperado.")
 
     def test_itemModificar_POST_FAIL(self):
         user = User.objects.create(username="user", password="user")
@@ -601,9 +603,10 @@ class TestViews(TestCase):
                               "El campo extra "+str(cont+1)+" del item es incorrecto.")
             cont = cont+1
 
-        self.assertEquals(response.status_code, 200, "El usuario no cuenta con los permisos necesarios.")
-        self.assertTemplateUsed(response, 'item/itemModificar.html',
-                                "El template renderizado debe ser item/itemModificar.html.")
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido al url esperado.")
 
     def test_itemCambiarEstado_pendiente_OK(self):
         user = User.objects.create(username="user", password="user")
@@ -791,8 +794,8 @@ class TestViews(TestCase):
 
         item = Item.objects.get(id=item.id)
         self.assertEquals(item.estado, "deshabilitado", "El estado del item es incorrecto.")
-        self.assertEquals(response.status_code, 302, "No se ha redirigido a la vista.")
-        self.assertRedirects(response, '/fase/faseVer/faseid=' + str(fase.id) + 'proyectoid=' + str(proyecto.id) + '/',
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido al url esperado.")
 
@@ -886,8 +889,8 @@ class TestViews(TestCase):
 
         item = Item.objects.get(id=item.id)
         self.assertEquals(item.estado, "en desarrollo", "El estado del item es incorrecto.")
-        self.assertEquals(response.status_code, 302, "No se ha redirigido a la vista.")
-        self.assertRedirects(response, '/fase/faseVer/faseid=' + str(fase.id) + 'proyectoid=' + str(proyecto.id) + '/',
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido al url esperado.")
 

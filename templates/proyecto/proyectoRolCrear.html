@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/proyectoRolCrear.css' %}">
 </head>
 <body>
+{{ mensaje }}
     <style> body{background-color: lavender }</style>
     <section>
         <form action="/proyecto/proyectoRol/">
@@ -18,7 +19,7 @@
             <p>{{mensaje}}</p>
             <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
             <label for="Rolname">Nombre del Rol:</label><br>
-             <input type="text" id="Rolname" name="nombre"><br>
+             <input type="text" id="Rolname" name="nombre" required><br>
 
             {% csrf_token %}
             <h4>Selecciona los Permisos </h4>
@@ -99,11 +100,7 @@
         </form>
     </section>
 </body>
-<script>
-        function myFunction() {
-            alert("Rol creado correctamente.");
-        }
-</script>
+
 <script>
     function myFunction2(obj) {
         var verItem = document.getElementById('verItem')

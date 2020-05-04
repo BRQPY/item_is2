@@ -36,9 +36,10 @@
                         <div class="card-panel" style="background-color: #F5F5F5">
 
                            <h6><b> {{ p.nombre }}</b></h6>
-                           <b>Roles:</b>varios</p>
+                           <p><b>Estado:</b> {{ p.estado }}</p>
+                             <p style="font-size: 15px;"><b>Gerente:</b> {{ p.gerente }}<br>
                             <a href="{%url 'proyectoView' p.id%}" class="btn blue darken-6">
-                                Ver                           <p style="font-size: 15px;"><b>Gerente:</b> {{ p.gerente }}<br>
+                                Ver
 
                             </a>
                         </div>
