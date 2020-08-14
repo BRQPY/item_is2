@@ -24,7 +24,7 @@ SECRET_KEY = 'lr-*05lo3)c4s!7!ubt+68i(^bq0&q4l1@hr54$#-pkek4^ecw'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["itemis2.localhost","localhost"]
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = None
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -42,12 +42,14 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'mod_wsgi.server',
     'allauth.socialaccount.providers.google',
     'guardian',
     'gestionUser',
     'perms',
     'fase',
     'proyecto',
+    'item_is2',
 ]
 
 SITE_ID = 1
@@ -153,7 +155,7 @@ STATIC_URL = '/static/'
     )'''
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
-    '/home/bruno/Escritorio/item_is2/static/',
+    '/var/www/item/item_is2/static',
 ]
 MEDIA_ROOT = ''
 MEDIA_URL = "/media/"

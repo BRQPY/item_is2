@@ -1,4 +1,4 @@
-#!/home/bruno/Escritorio/item_is2/is2venv/bin/python3.7
+#!/var/www/item/item_is2/is2venv/bin/python3.7
 # EASY-INSTALL-ENTRY-SCRIPT: 'pystache==0.5.4','console_scripts','pystache-test'
 __requires__ = 'pystache==0.5.4'
 import re
