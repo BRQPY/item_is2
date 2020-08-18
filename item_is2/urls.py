@@ -86,7 +86,7 @@ urlpatterns = [
     path('proyecto/proyectoRol/asignar/', views.proyectoRolAsignar),
     path('proyecto/proyectoRol/remove/', views.proyectoRolRemover),
     path('proyecto/proyectoRol/delete/', views.proyectoRolEliminar),
-    path('fase/faseVer/faseid=<str:faseid>proyectoid=<str:proyectoid>/', views.faseView, name="faseView"),
+    path('fase/faseVer/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', views.faseView, name="faseView"),
     path('proyecto/proyectoTipodeItem/', views.gestionar_tipo_de_item),
     path('proyecto/creartipo/', views.crear_tipo_form, name="creartipo"),
     path('proyecto/modifdeItem/', views.modificar_tipo_de_item, name="modificartipo"),

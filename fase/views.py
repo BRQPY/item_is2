@@ -122,6 +122,7 @@ def faseModificar(request):
     if request.method == 'GET':
         """ID del proyecto"""
         proyectoid = request.GET.get('proyectoid')
+        print(proyectoid)
         """Proyecto en el cual se encuentra la fase."""
         proyecto = Proyecto.objects.get(id=proyectoid)
         """ID de la fase correspondiente"""
@@ -129,6 +130,8 @@ def faseModificar(request):
 
         """Fase a modificar"""
         fase = Fase.objects.get(id=faseid)
+        print(fase.nombre)
+        print(fase.id)
         """Verificar que el usuario cuente con los permisos necesarios."""
         if not (request.user.has_perm("change_fase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
@@ -146,7 +149,7 @@ def faseModificar(request):
                                                                         " no se encuentra en estado pendiente."})
 
         """Template a renderizar: faseModificar con parametro -> fase, proyectoid"""
-        return render(request, 'fase/faseModificar.html', {'fase': fase, 'proyectoid': proyectoid, })
+        return render(request, 'fase/faseModificar.html', {'fase': fase, 'proyecto': proyecto, })
 
     """POST request, captura la informacion para actualizar los datos de la fase."""
 
@@ -188,7 +191,7 @@ def faseModificar(request):
     fase.save()
 
     """Template a renderizar: gestionFase con parametro -> proyectoid, faseid"""
-    return render(request, 'fase/gestionFase.html', {'proyectoid': proyectoid, 'faseid': faseid, })
+    return render(request, 'fase/fase.html', {'proyecto': proyecto, 'fase': fase, })
 
 
 def faseDeshabilitar(request):

@@ -2,22 +2,21 @@
 {% load static %}
 
 {% block content %}
-    <form action="/proyecto/proyectoFase/proyectoid={{proyecto.id}}">
+    <form action="/fase/faseVer/faseid={{fase.id}}/proyectoid={{proyecto.id}}">
             <button type="submit" class="waves-effect waves-teal btn-flat">
                     Volver a Gestión de Fases del Proyecto
                     <i class="material-icons dark blue-text left">keyboard_return</i>
             </button>
     </form>
 	<div class="container">
-
-        <form action="/proyecto/proyectoFase/proyectoid={{proyecto.id}}" method="post">
+        <form action="/fase/modify/" method="post">
             {% csrf_token %}
             <p>{{mensaje}}</p>
             <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
             <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
             <p><div>
                 <h6 style="text-align: left" class="grey-text">Nombre de la Fase</h6>
-                <input type="text" id="nombre" name="nombre" value={{fase.nombre}} required>
+                <input type="text" id="nombre" name="nombre" value="{{ fase.nombre }}"  required>
             </div></p>
             <p><div>
                 <h6 style="text-align: left" class="grey-text">Descripcion</h6>
