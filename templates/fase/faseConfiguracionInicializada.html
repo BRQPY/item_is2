@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+    <h3>Configurar Fase: {{ fase.nombre }}</h3>
+    <h5>Tipo de Item</h5>
+    <h5>Roles</h5>
+    <h5 style="text-align: center"><b>Usuarios miembros y sus roles en la Fase</b></h5>
+    {% if userRol %}
+        <div class="col s12 md6 x8">
+            <ul class="z-depth-1">
+                {%for u, r in userRol %}
+                    <li>
+                        <div class="card-panel z-depth-4 expense">
+                            <div class="row">
+                                <div class="col 14 left">
+                                    <b>{{u}}</b>
+                                </div>
+                                <div class="col 11 left">
+                                    <b>Roles:</b>
+                                    {{ r.nombre }}
+                                </div>
+                                <div class="col 9 left">
+                                    <a href= "{% url 'rolAsignar' proyecto.id r.id %}">
+                                        <i class="material-icons dark blue-text left">add_circle_outline</i>
+                                        Agregar Rol
+                                    </a>
+                                </div>
+                                <div class="col 9 left">
+                                    <a href="{% url 'rolRemover' proyecto.id r.id %}">
+                                        <i class="material-icons darken-4 blue-text left">remove_circle_outline</i>
+                                        Remover Rol
+                                    </a>
+                                </div>
+                                <div class="col 9 left">
+                                    <a href="/">
+                                        <i class="material-icons darken-4 red-text left">close</i>
+                                        Remover Usuario FALTA LINKS
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        <h1>Aún no hay usuarios en esta fase :(</h1>
+    {% endif %}
+{% endblock%}

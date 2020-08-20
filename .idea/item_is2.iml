@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="PYTHON_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="django" name="Django">
+      <configuration>
+        <option name="rootFolder" value="" />
+        <option name="settingsModule" value="" />
+        <option name="manageScript" value="" />
+        <option name="environment" value="&lt;map/&gt;" />
+        <option name="doNotUseTestRunner" value="false" />
+        <option name="trackFilePattern" value="" />
+      </configuration>
+    </facet>
+  </component>
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/is2venv/lib/python3.7/site-packages/Babel-2.8.0.dist-info" />
@@ -163,7 +175,10 @@
       <excludeFolder url="file://$MODULE_DIR$/is2venv/lib/python3.7/site-packages/yaml" />
       <excludeFolder url="file://$MODULE_DIR$/is2venv/lib/python3.7/site-packages/zipp-3.1.0.dist-info" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="Python 3.7 (is2venv)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+  <component name="TemplatesService">
+    <option name="TEMPLATE_CONFIGURATION" value="Django" />
   </component>
 </module>

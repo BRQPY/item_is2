@@ -26,66 +26,19 @@
         </form>
         <h3 style="text-align: left">{{ proyecto.nombre }}</h3>
         <h5 style="text-align: left" class="bold grey-text">Fases del Proyecto</h5>
-        <form action="." method="POST">{% csrf_token %}
-                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                <div class="input-field col s12">
-                    <select  class="browser-default" id="fase" name="fase">
-                      <option value="" disabled selected>Seleccione una fase del proyecto para empezar a trabajar</option>
-                      {% for f in fasesUser %}
-                            <option value="{{f.id}}">Fase: {{ f.nombre }} </option>
-                       {% endfor %}
-                    </select>
-                    <button id="but" type='submit' name="seleccion" class="btn-small blue darken-3 right">Seleccionar Fase</button>
-                </div>
-        </form>
+        {%if fases%}
+            {%if fasesUser%}
+                {%for f in fasesUser%}
+                    <a href="{% url 'verFaseItems' f.id proyecto.id %}"><h4>{{f.nombre}}</h4></a><br>
+                {%endfor%}
 
-        {% if select is not None %}
-            {%if proyecto.estado == "inicializado"%}
-                    <form action="/item/itemCrear/">
-                        <h5 style="text-align: left" class="bold grey-text">Ítems de la fase: {{ select.nombre }}</h5>
-                        <button type="submit" class="btn-floating btn-small blue darken-3 right">
-                            <i class="material-icons white-text left">add</i>
-                        </button>
-                        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                        <input  type="hidden" value={{select.id}} id="faseid" name="faseid">
-                    </form><br>
-
+            {%else%}
+                Aun no puede visualizar ninguna fase.
             {%endif%}
+        {%else%}
+            El proyecto aun no cuenta con fases creadas.
+        {%endif%}
 
-            <section class="section section-expenses">
-                <ul class="z-depth-1">
-                  {% for i in items %}
-                      <li>
-                        <div class="card-panel z-depth-4 expense">
-                          <div class="row">
-                            <div class="col l4 left">
-                              <b>{{ i.nombre }}</b>
-                            </div>
-
-                            <div class="col l2">
-                              {{ i.costo }} horas.
-                            </div>
-
-                            <div class="col 3">
-                              <b>{{ i.tipoItem.nombreTipo}}</b>
-                            </div>
-                            <div class="col 1">
-                              <b>{{ i.estado}}</b>
-                            </div>
-                                <a href="{%url 'itemView' i.id select.id proyecto.id%}">
-                                  <i class="material-icons dark blue-text right">info_outline</i>
-                                </a>
-                            </div>
-                        </div>
-                      </li>
-                  {% endfor %}
-                </ul>
-             </section>
-
-                    {%for i in items %}
-
-                    {%endfor%}
-        {% endif %}
     </div>
 
 

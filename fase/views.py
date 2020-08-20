@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
-from proyecto.models import Proyecto, Fase, TipodeItem, Item
+from proyecto.models import Proyecto, Fase, TipodeItem, Item, FaseUser, User, Rol
+from guardian.shortcuts import assign_perm, remove_perm
 from proyecto.views import proyectoView, faseView
 
 
@@ -108,6 +109,15 @@ def faseCrear(request):
         """Template a renderizar: faseCrear.html con parametro -> proyectoid"""
         return render(request, 'fase/faseCrear.html', {'proyectoid': proyectoid, })
 
+def faseVerProyectoInicializado(request ,faseid, proyectoid):
+    if request.method == 'GET':
+        """Proyecto en el cual crear la fase."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        fase = Fase.objects.get(id=faseid)
+        items = fase.items.exclude(estado="deshabilitado").order_by('id')
+        return render(request, 'fase/FaseProyectoInicializado.html', {'proyecto': proyecto, 'fase': fase,
+                                                                  'items': items,
+                                                                  })
 
 def faseModificar(request):
     """
@@ -234,6 +244,90 @@ def faseDeshabilitar(request):
     fase.save()
     """Redirigir a la vista del proyecto correspondiente."""
     return redirect('proyectoView', id=proyectoid)
+
+def FaseConfigInicializada(request):
+    proyectoid = request.GET.get('proyectoid')
+    faseid = request.GET.get('faseid')
+    fase = Fase.objects.get(id=faseid)
+    """Proyecto en el cual se encuentra la fase."""
+    proyecto = Proyecto.objects.get(id=proyectoid)
+    """Verificar permiso necesario en el proyecto correspondiente"""
+    if not (request.user.has_perm("view_fase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+        """Al no contar con los permisos, niega el acceso, redirigiendo."""
+        return redirect('/permissionError/')
+    items = fase.items.exclude(estado="deshabilitado").order_by('id')
+    roles = proyecto.roles.all()
+    usuarios = []
+    rolesUser = []
+    for r in roles:
+        fasesUser = r.faseUser.all()
+        for f in fasesUser:
+            if f.fase == fase:
+                usuarios.append(f.user)
+                rolesUser.append(r)
+    return render(request,'fase/faseConfiguracionInicializada.html',{'fase': fase, 'proyecto': proyecto, 'items': items,
+                                                                       'userRol': zip(usuarios, rolesUser)})
+def FaseInicializadaAddUser(request):
+    if request.method == 'GET':
+        proyectoid = request.GET.get('proyectoid')
+        faseid = request.GET.get('faseid')
+        fase = Fase.objects.get(id=faseid)
+        """Proyecto en el cual se encuentra la fase."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        usuarios = proyecto.usuarios.all()
+        usuarios = list(usuarios)
+        fasesUsers = FaseUser.objects.all()
+
+        for fu in fasesUsers:
+            if fu.fase == fase:
+                if fu.user in usuarios:
+                    # Removemos los usuarios que ya forman parte de la fase
+                    usuarios.remove(fu.user)
+        roles = proyecto.roles.all()
+
+        return render(request,'fase/AddUsuarioFaseIniciada.html', {'usuarios':usuarios, 'roles':roles, 'fase': fase, 'proyecto':proyecto})
+    else:
+        proyectoid = request.POST.get('proyectoid')
+        faseid = request.POST.get('faseid')
+        fase = Fase.objects.get(id=faseid)
+        """Proyecto en el cual se encuentra la fase."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """POST request, captura el usuario, el rol y las fases para asignar el mismo"""
+        """ID User"""
+        userid = request.POST.get('users')
+        """ID rol"""
+        rolid = request.POST.get('roles')
+
+
+        """Usuario a ser asignado el rol"""
+        user = User.objects.get(id=userid)
+        """Rol a ser asignado"""
+        rol = Rol.objects.get(id=rolid)
+        """Permisos del rol"""
+        grupo = rol.perms
+        permisos = grupo.permissions.all()
+        codenames = []
+        for p in permisos:
+            codenames.append(p.codename)
+
+        """Crear asociacion entre fase y usuario"""
+        faseUser = FaseUser.objects.create(user=user, fase=fase)
+
+        print(grupo)
+        for c in codenames:
+            """Asignar los permisos del rol al grupo, en la fase correspondiente"""
+            assign_perm(c, grupo, fase)
+            """Asignar el grupo al usuario"""
+            user.groups.add(grupo)
+            user.save()
+        """Agregar asociacion al rol"""
+        rol.faseUser.add(faseUser)
+        rol.save()
+
+        """Template a renderizar: gestionProyecto.html con parametro -> proyectoid"""
+        return redirect('proyectoView', id=proyectoid)
+
+
 
 
 def itemCrear(request):
@@ -365,7 +459,6 @@ def itemCrear(request):
     return render(request, "item/itemCrear.html", {'proyectoid': proyectoid, 'faseid': faseid,
                                                    'tipos': tipos, 'select': seleccion})
 
-
 def itemView(request, itemid, faseid, proyectoid):
     """
        **itemView:**
@@ -402,8 +495,6 @@ def itemView(request, itemid, faseid, proyectoid):
                                     'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob",fase),
                                     'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
                                     'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ], })
-
-
 
 def gestionItem(request):
     """
@@ -443,7 +534,6 @@ def gestionItem(request):
     con parametro -> proyectoid, faseid, itemid
     """
     return render(request, 'item/gestionItem.html', {'proyectoid': proyectoid, 'faseid': faseid, 'itemid': itemid, })
-
 
 def itemModificar(request):
     """

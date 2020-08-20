@@ -403,14 +403,28 @@ def faseView(request, faseid, proyectoid):
     rolesUser = []
     for r in roles:
         fasesUser = r.faseUser.all()
+
         for f in fasesUser:
             if f.fase == fase:
                 usuarios.append(f.user)
                 rolesUser.append(r)
+    user_sin_repetidos = []
+    roles_por_user = []
+    for u,r in zip(usuarios, rolesUser):
+            if not u in user_sin_repetidos:
+                user_sin_repetidos.append(u)
+                cadena = ""
+                for uu,rr in zip(usuarios, rolesUser):
+                    if u == uu:
+                        cadena = cadena + rr.nombre
+                roles_por_user.append(cadena)
 
+    print(user_sin_repetidos)
+    print(roles_por_user)
     """Template a renderizar: fase.html con parametros -> fase, proyecto, items de fase."""
     return render(request, 'fase/fase.html', {'fase': fase, 'proyecto': proyecto, 'items': items,
-                                              'userRol': zip(usuarios, roles)})
+                                               'userRol': zip(user_sin_repetidos, roles_por_user),
+                                              })
 
 def proyectoUser(request):
     """
@@ -1152,7 +1166,7 @@ def proyectoRolEliminar(request):
     """Template a renderizar: gestionProyecto.html con parametro -> proyectoid"""
     return redirect('proyectoView', id=proyectoid)
 
-def proyectoRolAsignar(request):
+def proyectoRolAsignar(request, proyectoid,userid):
 
     """
        **proyectoRolAsignar:**
@@ -1164,7 +1178,8 @@ def proyectoRolAsignar(request):
     """GET request, muestra el template correspondiente para asignar roles del proyecto"""
     if request.method == 'GET':
         """Proyecto ID"""
-        proyectoid = request.GET.get('proyectoid')
+        print(proyectoid)
+        #proyectoid = request.GET.get('proyectoid')
         """Proyecto correspondiente"""
         proyecto = Proyecto.objects.get(id=proyectoid)
         """Verificar permiso necesario en el proyecto correspondiente"""
@@ -1253,7 +1268,7 @@ def proyectoRolAsignar(request):
     """Template a renderizar: gestionProyecto.html con parametro -> proyectoid"""
     return redirect('proyectoView', id=proyectoid)
 
-def proyectoRolRemover(request):
+def proyectoRolRemover(request, proyectoid, userid):
     """
        ** proyectoRolRemover:**
         Vista utilizada para remover roles del proyecto de usuarios.
@@ -1264,7 +1279,7 @@ def proyectoRolRemover(request):
     """GET request, muestra el template correspondiente para remover roles del proyecto"""
     if request.method == 'GET':
         """ID proyecto"""
-        proyectoid = request.GET.get('proyectoid')
+        #proyectoid = request.GET.get('proyectoid')
         """Proyecto correspondiente"""
         proyecto = Proyecto.objects.get(id=proyectoid)
         """Verificar permiso necesario en el proyecto correspondiente"""
