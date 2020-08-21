@@ -174,6 +174,7 @@ def proyectoFase(request, id):
                 fasesUser.append(f)
 
 
+
         """Se verifica el estado del proyecto, para destinarlo al html correcto"""
         if (proyecto.estado =='pendiente'):
             """Template a renderizar: proyecto.html con parametros -> proyectoid y fases del proyecto"""
@@ -403,14 +404,29 @@ def faseView(request, faseid, proyectoid):
     rolesUser = []
     for r in roles:
         fasesUser = r.faseUser.all()
+
         for f in fasesUser:
             if f.fase == fase:
                 usuarios.append(f.user)
                 rolesUser.append(r)
+    user_sin_repetidos = []
+    roles_por_user = []
+    for u,r in zip(usuarios, rolesUser):
+            if not u in user_sin_repetidos:
+                user_sin_repetidos.append(u)
+                cadena = ""
+                for uu,rr in zip(usuarios, rolesUser):
+                    if u == uu:
+                        cadena = cadena + rr.nombre + ', '
+                cadena = cadena[:-2]
+                roles_por_user.append(cadena)
 
+    cant_user = len(user_sin_repetidos)
     """Template a renderizar: fase.html con parametros -> fase, proyecto, items de fase."""
     return render(request, 'fase/fase.html', {'fase': fase, 'proyecto': proyecto, 'items': items,
-                                              'userRol': zip(usuarios, roles)})
+                                               'userRol': zip(user_sin_repetidos, roles_por_user),
+                                               'cant_user': cant_user,
+                                              })
 
 def proyectoUser(request):
     """
@@ -1152,208 +1168,6 @@ def proyectoRolEliminar(request):
     """Template a renderizar: gestionProyecto.html con parametro -> proyectoid"""
     return redirect('proyectoView', id=proyectoid)
 
-def proyectoRolAsignar(request):
-
-    """
-       **proyectoRolAsignar:**
-        Vista utilizada para asignar roles del proyecto a usuarios.
-        Solicita que el usuario que realiza el request
-        cuente con los permisos de gerente del proyecto
-        y que (indirectamente) haya iniciado sesion
-    """
-    """GET request, muestra el template correspondiente para asignar roles del proyecto"""
-    if request.method == 'GET':
-        """Proyecto ID"""
-        proyectoid = request.GET.get('proyectoid')
-        """Proyecto correspondiente"""
-        proyecto = Proyecto.objects.get(id=proyectoid)
-        """Verificar permiso necesario en el proyecto correspondiente"""
-        if not (request.user.has_perm("is_gerente", proyecto)):
-            return redirect('/permissionError/')
-
-        """Verifica que el proyecto no se encuentre cancelado"""
-        if proyecto.estado == "cancelado":
-            return redirect('proyectoView', id=proyectoid)
-
-        """Lista de usuarios del proyecto"""
-        users = proyecto.usuarios.all()
-        usuarios = []
-        for user in users:
-            """Filtrar que el usuario no este deshabilitado."""
-            if user.is_active and not proyecto.gerente==user:
-                usuarios.append(user)
-        """Lista de roles del proyecto"""
-        roles = proyecto.roles.all()
-        """Lista de fases del proyecto"""
-        fases = proyecto.fases.all()
-        fasesProyecto = []
-        for f in fases:
-            if f.estado != "deshabilitada":
-                fasesProyecto.append(f)
-        """
-        Template a renderizar: proyectoRolAsignar.html con parametros -> roles
-        ,usuarios y fases del proyecto,
-         ademas de proyectoid
-         """
-        return render(request, "proyecto/proyectoRolAsignar.html", {'fases': fasesProyecto, 'usuarios': usuarios, 'roles': roles, 'proyectoid': proyectoid, })
-
-    """POST request, captura el usuario, el rol y las fases para asignar el mismo"""
-    """ID User"""
-    userid = request.POST.get('users')
-    """ID rol"""
-    rolid = request.POST.get('roles')
-    """ID fase"""
-    fases = request.POST.getlist('fases')
-    """ID proyecto"""
-    proyectoid = request.POST.get('proyectoid')
-    """Usuario a ser asignado el rol"""
-    user = User.objects.get(id=userid)
-    """Rol a ser asignado"""
-    rol = Rol.objects.get(id=rolid)
-    """Permisos del rol"""
-    grupo = rol.perms
-    permisos = grupo.permissions.all()
-    codenames = []
-    for p in permisos:
-        codenames.append(p.codename)
-
-    for f in fases:
-        fase = Fase.objects.get(id=f)
-        """Verificar si el usuario ya cuenta con el rol"""
-        if rol.faseUser.filter(user=user, fase=fase).exists():
-            proyecto = Proyecto.objects.get(id=proyectoid)
-            usuarios = proyecto.usuarios.all()
-            roles = proyecto.roles.all()
-            fases = proyecto.fases.all()
-            """
-             Template a renderizar: proyectoRolAsignar.html con parametros -> roles,
-             usuario y fases del proyecto, ademas
-             de proyecto id y mensaje de error
-             """
-            return render(request, "proyecto/proyectoRolAsignar.html",
-                            {'fases': fases, 'usuarios': usuarios, 'roles': roles,
-                            'proyectoid': proyectoid,
-                            'mensaje': "El usuario ya cuenta con el rol en alguna de las fases seleccionadas.", })
-
-
-    for f in fases:
-        fase = Fase.objects.get(id=f)
-        """Crear asociacion entre fase y usuario"""
-        faseUser = FaseUser.objects.create(user=user, fase=fase)
-        for c in codenames:
-            """Agregar asociacion al rol"""
-            rol.faseUser.add(faseUser)
-            rol.save()
-            """Asignar los permisos del rol al grupo, en la fase correspondiente"""
-            assign_perm(c, grupo, fase)
-            """Asignar el grupo al usuario"""
-            user.groups.add(grupo)
-            user.save()
-
-    """Template a renderizar: gestionProyecto.html con parametro -> proyectoid"""
-    return redirect('proyectoView', id=proyectoid)
-
-def proyectoRolRemover(request):
-    """
-       ** proyectoRolRemover:**
-        Vista utilizada para remover roles del proyecto de usuarios.
-        Solicita que el usuario que realiza el request
-        cuente con los permisos de gerente del proyecto
-        y que (indirectamente) haya iniciado sesion
-    """
-    """GET request, muestra el template correspondiente para remover roles del proyecto"""
-    if request.method == 'GET':
-        """ID proyecto"""
-        proyectoid = request.GET.get('proyectoid')
-        """Proyecto correspondiente"""
-        proyecto = Proyecto.objects.get(id=proyectoid)
-        """Verificar permiso necesario en el proyecto correspondiente"""
-        if not (request.user.has_perm("is_gerente", proyecto)):
-            return redirect('/permissionError/')
-
-        """Verifica que el proyecto no se encuentre cancelado"""
-        if proyecto.estado == "cancelado":
-            return redirect('proyectoView', id=proyectoid)
-
-        """Usuarios del proyecto"""
-        users = proyecto.usuarios.all()
-        usuarios = []
-        for user in users:
-            """Filtrar que el usuario no este deshabilitado."""
-            if not proyecto.gerente == user:
-                usuarios.append(user)
-        """Roles del proyecto"""
-        roles = proyecto.roles.all()
-        """Fases del proyecto"""
-        fases = proyecto.fases.all()
-        fasesProyecto = []
-        for f in fases:
-            if f.estado != "deshabilitada":
-                fasesProyecto.append(f)
-        """
-        Template a renderizar: proyectoRolRemover.html con parametros roles,
-        fases y usuarios del proyecto, 
-        ademas de proyectoid
-        """
-        return render(request, "proyecto/proyectoRolRemover.html", {'fases': fasesProyecto, 'usuarios': usuarios, 'roles': roles, 'proyectoid': proyectoid, })
-
-    """POST request, captura el usuario, el rol y las fases para remover"""
-    """ID user"""
-    userid = request.POST.get('users')
-    """ID rol"""
-    rolid = request.POST.get('roles')
-    """ID fases"""
-    fases = request.POST.getlist('fases')
-    """ID proyecto"""
-    proyectoid = request.POST.get('proyectoid')
-    """Usuario al cual remover el rol"""
-    user = User.objects.get(id=userid)
-    """Rol a remover"""
-    rol = Rol.objects.get(id=rolid)
-    """Permisos del rol"""
-    grupo = rol.perms
-    permisos = grupo.permissions.all()
-    codenames = []
-    for p in permisos:
-        codenames.append(p.codename)
-
-    for f in fases:
-        fase = Fase.objects.get(id=f)
-        """Verificar si el rol ha sido asignado previamente"""
-        if not rol.faseUser.filter(user=user, fase=fase).exists():
-            proyecto = Proyecto.objects.get(id=proyectoid)
-            users = proyecto.usuarios.all()
-            usuarios = []
-            for user in users:
-                """Filtrar que el usuario no este deshabilitado."""
-                if not proyecto.gerente == user:
-                    usuarios.append(user)
-            roles = proyecto.roles.all()
-            fases = proyecto.fases.all()
-            """
-            Template a renderizar: proyectoRolRemover.html con parametros -> fases,
-            roles y usuarios del proyecto,
-            ademas de proyectoid y mensaje de error
-            """
-
-            return render(request, "proyecto/proyectoRolRemover.html",
-                          {'fases': fases, 'usuarios': usuarios, 'roles': roles,
-                           'proyectoid': proyectoid,
-                           'mensaje': "El usuario no cuenta con el rol en alguna de las fases seleccionadas.", })
-
-
-    for f in fases:
-        fase = Fase.objects.get(id=f)
-        """Eliminar asociacion entre fase y usuario"""
-        FaseUser.objects.filter(user=user, fase=fase).delete()
-        for c in codenames:
-            """Remover los permisos del rol, al grupo en la fase correspondiente"""
-            remove_perm(c, grupo, fase)
-            """Agregar el grupo al usuario"""
-            user.groups.add(grupo)
-
-    """Template a renderizar: gestionProyecto.html con parametro -> proyectoid"""
-    return redirect('proyectoView', id=proyectoid)
 
 def crear_tipo_form(request):
 

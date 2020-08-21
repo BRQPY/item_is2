@@ -11,29 +11,83 @@
     <div class="container">
         <h3 style="text-align: center">{{fase.nombre}}</h3>
         <h5 style="text-align: center" class="grey-text">Panel de Configuración de la fase {{fase.nombre}}</h5>
+        <form action="/fase/gestionTipoItem/">
+            <button type="submit" class="btn btn-small blue darken-1 left">
+                Gestionar Tipos de Item
+                <i class="material-icons white-text left">settings</i>
+            </button>
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+         </form>
         <div class="container">
-            <br>
             <h6 style="text-align: center"><b>Descripción</b></h6>
             <div class="col s12 md6 x8">
                 <div class="card-panel">
                     {{ fase.descripcion }}
                 </div>
             </div>
-            <h6 style="text-align: center"><b>Usuarios miembros de la Fase</b></h6>
-            <div class="col s12 md6 xl3">
-                <div class="card-panel">
-                     {%for u, r in userRol %}
-                        <b>{{u}}</b> Roles: {{ r.nombre }}<br>
-                     {% endfor %}
-                </div>
+            <div class="container">
+                <h5 style="text-align: center"><b>Usuarios miembros y sus roles en la Fase</b></h5>
+
             </div>
-        </div>
+            <form action="/fase/addUser/">
+                        <button type="submit" class="btn btn-small blue darken-1 right">
+                            Añadir Usuario
+                            <i class="material-icons white-text left">add_circle</i>
+                        </button>
+                        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                        <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                    </form><br>
+            {% if cant_user > 0 %}
+                <div class="col s12 md6 x8">
+                    <ul class="z-depth-1">
+                        {%for u, r in userRol %}
+                            <li>
+                                <div class="card-panel z-depth-4 expense">
+                                    <div class="row">
+                                        <div class="col 14 left">
+                                            <b>{{u}}</b>
+                                        </div>
+                                        <div class="col 11 left">
+                                            <b>Roles:</b>
+                                            {{ r }}
+                                        </div>
+                                        <div class="col 9 left">
+
+                                            <a href="{%url 'faseRolAsignar' proyecto.id fase.id u.id%}">
+                                                <i class="material-icons dark blue-text left">add_circle_outline</i>
+                                                Agregar Rol
+                                            </a>
+                                        </div>
+                                        <div class="col 9 left">
+                                            <a href="{%url 'faseRolRemover' proyecto.id fase.id u.id%}">
+                                                <i class="material-icons darken-4 blue-text left">remove_circle_outline</i>
+                                                Remover Rol
+                                            </a>
+                                        </div>
+                                        <div class="col 9 left">
+                                            <a href="{%url 'faseRemoverUser' proyecto.id fase.id u.id%}">
+                                                <i class="material-icons darken-4 red-text left">close</i>
+                                                Remover Usuario
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% else %}
+                <h5>Aún no hay usuarios en esta fase :(</h5>
+            {% endif %}
+            </div>
+
         {%if proyecto.estado != "cancelado"%}
             {%if fase.estado != "deshabilitada"%}
             <form action="/fase/modify/">
 
                 <button type="submit" class="btn blue darken-3 right">
-                    Modificar Fase
+                    Modificar datos de la Fase
                    <i class="material-icons white-text left">edit</i>
                 </button>
                 <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">

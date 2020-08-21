@@ -26,7 +26,7 @@ class Fase(models.Model):
     descripcion = models.CharField(max_length=40, default=None)
     estado = models.CharField(max_length=40, default=None)
     items = models.ManyToManyField(Item, default=None)
-
+    tipoItem = models.ManyToManyField(TipodeItem, default=None)
     class Meta:
         permissions = (
             ("create_item", "Can create item"),

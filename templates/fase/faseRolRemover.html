@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <section>
+         <form action="/fase/faseVer/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/">
+            <input type="submit" value="Atras" />
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+        </form>
+        {% if cant_roles == 1 %}
+            <h3>El usuario cuenta con un solo rol dentro de la fase.</h3>
+            <h5>No se podrá remover {{ r }}. Remueva el usuario como miembro de la fase</h5>
+            <h6> Aca tiene que ir link para remover a ese usuario (interesante mejora)</h6>
+        {% else %}
+            <form action="{%url 'faseRolRemover' proyecto.id fase.id usuario.id%}" method="post">
+                {% csrf_token %}
+                <h4>Selecciona un rol a remover del usuario: {{ usuario }}</h4>
+                <div class="form-check">
+                     {% for r in roles %}
+                        <label>
+                            <input  type="radio" class="filled-in"  value={{r.id}} id="rolname" name="rol"/>
+                             <span>{{r.nombre}}</span>
+                        </label>
+                     {% endfor %}
+                </div>
+                <button type="submit">Remover</button>
+            </form>
+
+        {%  endif %}
+    </section>
+
+{% endblock%}

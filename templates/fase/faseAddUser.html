@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <h2>Usuarios del Proyecto que no estan en la fase</h2>
+    <form action="/fase/addUser/" method="post">
+        {% csrf_token %}
+        <div class="form-check">
+                 {% for u in usuarios %}
+                    <label>
+                        <input  type="radio" class="filled-in"  value={{u.id}} id="username" name="users"/>
+                         <span>{{u}}</span>
+                    </label>
+                 {% endfor %}
+        </div>
+        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+        <h4>Elegi un rol</h4>
+        <div class="form-check">
+            {% for r in roles %}
+                <label>
+                    <input  type="radio" class="filled-in"  value={{r.id}} id="roles" name="roles"/>
+                    <span>{{r.nombre}}</span>
+                </label>
+            {% endfor %}
+        </div>
+        <button type="submit">Agregar</button>
+    </form>
+
+
+{% endblock%}

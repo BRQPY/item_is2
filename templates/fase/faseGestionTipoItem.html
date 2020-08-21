@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="container">
+    <h2>el boton de atras de aca, debe definir entre ir a un pendiente o iniciado, depende de la config</h2>
+    <form action="/fase/addTipoItem/">
+        <button type="submit" class="btn btn-small blue darken-1 right">
+            Añadir Tipo de Item a la Fase
+            <i class="material-icons white-text left">add_circle</i>
+        </button>
+        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+    </form>
+    {% if tiposItem %}
+        <div class="col s12 md6 x8">
+            <ul class="z-depth-1">
+                {%for t in tiposItem %}
+                    <li>
+                        <div class="card-panel z-depth-4 expense">
+                            <div class="row">
+                                        <div class="col 14 left">
+                                            <b>{{t.nombreTipo}}</b>
+                                        </div>
+                                        <div class="col 11 left">
+                                            <b>Campos:</b>
+                                            {{ t.id }}
+                                        </div>
+                                        <div class="col 9 left">
+                                            <a href="{%url 'faseRemoveTipo' proyecto.id fase.id t.id%}">
+                                                <i class="material-icons darken-4 red-text left">close</i>
+                                                Remover Tipo de Item de Item
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% else %}
+                <h5>Aún no hay Tipos de Item en esta fase :(</h5>
+            {% endif %}
+
+    </div>
+{% endblock%}
