@@ -677,7 +677,7 @@ class TestViews(TestCase):
         self.assertEquals(rol.faseUser.filter(user=prueba, fase=fase).exists(), False)
         self.assertEquals(rol.faseUser.filter(user=prueba, fase=fase2).exists(), True)
         self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/proyectoRolAsignar.html')
+        self.assertTemplateUsed(response, 'proyecto/faseRolAsignar.html')
 
     def test_proyectoRolAsinar_GET_OK(self):
         user = User.objects.create(username="user", password="user")
@@ -691,7 +691,7 @@ class TestViews(TestCase):
         response = self.client.get('/proyecto/proyectoRol/asignar/', {'proyectoid': proyecto.id, })
 
         self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/proyectoRolAsignar.html')
+        self.assertTemplateUsed(response, 'proyecto/faseRolAsignar.html')
 
     def test_proyectoRolAsignar_GET_FAIL(self):
         user = User.objects.create(username="user", password="user")
@@ -773,7 +773,7 @@ class TestViews(TestCase):
         self.assertEquals(prueba.has_perm("view_fase", fase), True)
         self.assertEquals(rol.faseUser.filter(user=prueba, fase=fase).exists(), True)
         self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/proyectoRolRemover.html')
+        self.assertTemplateUsed(response, 'proyecto/faseRolRemover.html')
 
     def test_proyectoRolRemover_GET_OK(self):
         user = User.objects.create(username="user", password="user")
@@ -787,7 +787,7 @@ class TestViews(TestCase):
         response = self.client.get('/proyecto/proyectoRol/remove/', {'proyectoid': proyecto.id, })
 
         self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/proyectoRolRemover.html')
+        self.assertTemplateUsed(response, 'proyecto/faseRolRemover.html')
 
     def test_proyectoRolRemover_GET_FAIL(self):
         user = User.objects.create(username="user", password="user")

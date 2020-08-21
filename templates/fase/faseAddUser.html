@@ -3,14 +3,14 @@
 
 {% block content %}
     <h2>Usuarios del Proyecto que no estan en la fase</h2>
-    <form action="/fase/FaseIniciada/addUser/" method="post">
+    <form action="/fase/addUser/" method="post">
         {% csrf_token %}
         <div class="form-check">
                  {% for u in usuarios %}
                     <label>
                         <input  type="radio" class="filled-in"  value={{u.id}} id="username" name="users"/>
                          <span>{{u}}</span>
-                       </label>
+                    </label>
                  {% endfor %}
         </div>
         <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">

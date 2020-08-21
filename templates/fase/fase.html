@@ -11,6 +11,14 @@
     <div class="container">
         <h3 style="text-align: center">{{fase.nombre}}</h3>
         <h5 style="text-align: center" class="grey-text">Panel de Configuración de la fase {{fase.nombre}}</h5>
+        <form action="/fase/gestionTipoItem/">
+            <button type="submit" class="btn btn-small blue darken-1 left">
+                Gestionar Tipos de Item
+                <i class="material-icons white-text left">settings</i>
+            </button>
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+         </form>
         <div class="container">
             <h6 style="text-align: center"><b>Descripción</b></h6>
             <div class="col s12 md6 x8">
@@ -22,7 +30,7 @@
                 <h5 style="text-align: center"><b>Usuarios miembros y sus roles en la Fase</b></h5>
 
             </div>
-            <form action="/fase/FaseIniciada/addUser/">
+            <form action="/fase/addUser/">
                         <button type="submit" class="btn btn-small blue darken-1 right">
                             Añadir Usuario
                             <i class="material-icons white-text left">add_circle</i>
@@ -30,7 +38,7 @@
                         <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
                         <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
                     </form><br>
-            {% if userRol %}
+            {% if cant_user > 0 %}
                 <div class="col s12 md6 x8">
                     <ul class="z-depth-1">
                         {%for u, r in userRol %}
@@ -45,19 +53,20 @@
                                             {{ r }}
                                         </div>
                                         <div class="col 9 left">
-                                            <a href= "{/">
+
+                                            <a href="{%url 'faseRolAsignar' proyecto.id fase.id u.id%}">
                                                 <i class="material-icons dark blue-text left">add_circle_outline</i>
                                                 Agregar Rol
                                             </a>
                                         </div>
                                         <div class="col 9 left">
-                                            <a href="/">
+                                            <a href="{%url 'faseRolRemover' proyecto.id fase.id u.id%}">
                                                 <i class="material-icons darken-4 blue-text left">remove_circle_outline</i>
                                                 Remover Rol
                                             </a>
                                         </div>
                                         <div class="col 9 left">
-                                            <a href="/">
+                                            <a href="{%url 'faseRemoverUser' proyecto.id fase.id u.id%}">
                                                 <i class="material-icons darken-4 red-text left">close</i>
                                                 Remover Usuario
                                             </a>

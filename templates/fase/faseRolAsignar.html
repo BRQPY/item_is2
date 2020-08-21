@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <section>
+        <form action="/fase/faseVer/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/">
+            <input type="submit" value="Atras" />
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+        </form>
+        <form action="{%url 'faseRolAsignar' proyecto.id fase.id usuario.id%}" method="post">
+            {% csrf_token %}
+            <h4>Selecciona un Rol para asignar al usuario: {{ usuario }}</h4>
+            <div class="form-check">
+                 {% for r in roles %}
+                    <label>
+                        <input  type="radio" class="filled-in"  value={{r.id}} id="rolname" name="rol"/>
+                         <span>{{r.nombre}}</span>
+                    </label>
+                 {% endfor %}
+            </div>
+
+            <button type="submit">Agregar</button>
+        </form>
+    </section>
+{% endblock%}

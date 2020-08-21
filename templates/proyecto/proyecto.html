@@ -18,7 +18,7 @@
                 <h6 style="text-align: left" class="grey-text"><i>Seleccione una fase para gestionarla:</i></h6>
                 <p style="text-align: left; font-size: 18px;">
                     {%if fases%}
-                        {%if fasesUser%}
+                        {%if fasesUser %}
                             {%for f in fasesUser%}
                                 <a href="{%url 'faseView' f.id proyecto.id%}">{{f.nombre}} ({{f.estado}})</a><br>
                             {%endfor%}
@@ -27,7 +27,7 @@
                         {%endif%}
                     {%else%}
                         El proyecto aun no cuenta con fases creadas.
-                {%endif%}
+                    {%endif%}
                 </p>
                 <form action="/fase/faseCrear/" >
                     <button type="submit" class="btn blue darken-3 left">

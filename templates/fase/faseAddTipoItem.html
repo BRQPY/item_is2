@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="container">
+        <h4>Tipos de item para agregar</h4>
+        {% if tiposItem %}
+            <form action="/fase/addTipoItem/" method="post">
+                {% csrf_token %}
+                <div class="form-check">
+                    {% for t in tiposItem %}
+                        <label>
+                            <input  type="radio" class="filled-in"  value={{t.id}} id="tipoItem" name="tipoItem"/>
+                            <span>{{t.nombreTipo}}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                <button type="submit">Agregar Tipo de Item</button>
+            </form>
+        {% else %}
+            <h2>No hay items en el proyecto pa o ya cargaste todo</h2>
+        {% endif %}
+
+    </div>
+
+
+{% endblock%}

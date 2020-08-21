@@ -29,7 +29,7 @@
         {%if fases%}
             {%if fasesUser%}
                 {%for f in fasesUser%}
-                    <a href="{% url 'verFaseItems' f.id proyecto.id %}"><h4>{{f.nombre}}</h4></a><br>
+                    <a href="{% url 'faseViewInicializado' f.id proyecto.id %}"><h4>{{f.nombre}}</h4></a><br>
                 {%endfor%}
 
             {%else%}

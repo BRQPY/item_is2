@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <section>
+        {{ mensaje }}
+         <form action="/fase/faseVer/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/">
+            <input type="submit" value="Atras" />
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+        </form>
+        <h3>Remover? {{ tipos.nombreTipo }}</h3>
+        <form action="{%url 'faseRemoveTipo' proyecto.id fase.id tipos.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit">Remover</button>
+        </form>
+    </section>
+
+{% endblock %}
