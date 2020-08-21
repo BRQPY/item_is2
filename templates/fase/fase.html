@@ -29,6 +29,7 @@
             </div>
         </div>
         {%if proyecto.estado != "cancelado"%}
+            {%if fase.estado != "deshabilitada"%}
             <form action="/fase/modify/">
 
                 <button type="submit" class="btn blue darken-3 right">
@@ -48,6 +49,7 @@
                 <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
                 <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
             </form>
+            {%endif%}
         {%endif%}
     </div>
 {% endblock%}

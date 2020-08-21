@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FASES DESHABILITADAS</title>
+</head>
+<body>
+    <form action="/proyecto/proyectoFase/proyectoid={{proyecto.id}}">
+        <input type="submit" value="Atras" />
+    </form>
+    Fases Deshabilitadas del proyecto.<p>
+    {%if fasesDes%}
+        {%for f in fasesDes%}
+            <a href="{%url 'faseView' f.id proyecto.id%}">{{f.nombre}} ({{f.estado}})</a>
+        {%endfor%}
+    {%else%}
+        El proyecto no cuenta con fases deshabilitadas.
+    {%endif%}
+</body>
+</html>

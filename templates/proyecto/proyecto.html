@@ -16,11 +16,19 @@
             <br>
             <div class="container">
                 <h6 style="text-align: left" class="grey-text"><i>Seleccione una fase para gestionarla:</i></h6>
+                <form action="/fase/fasesDeshabilitadas/">
+                <button type="submit">
+                    Fases Deshabilitadas
+                </button>
+                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                </form>
                 <p style="text-align: left; font-size: 18px;">
                     {%if fases%}
                         {%if fasesUser%}
                             {%for f in fasesUser%}
-                                <a href="{%url 'faseView' f.id proyecto.id%}">{{f.nombre}} ({{f.estado}})</a><br>
+                                {%if f.estado != "deshabilitada"%}
+                                    <a href="{%url 'faseView' f.id proyecto.id%}">{{f.nombre}} ({{f.estado}})</a><br>
+                                {%endif%}
                             {%endfor%}
                         {%else%}
                             Aun no puede visualizar ninguna fase.

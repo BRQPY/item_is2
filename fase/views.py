@@ -130,8 +130,6 @@ def faseModificar(request):
 
         """Fase a modificar"""
         fase = Fase.objects.get(id=faseid)
-        print(fase.nombre)
-        print(fase.id)
         """Verificar que el usuario cuente con los permisos necesarios."""
         if not (request.user.has_perm("change_fase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
@@ -147,7 +145,9 @@ def faseModificar(request):
             return render(request, 'fase/gestionFase.html', {'proyectoid': proyectoid, 'faseid': faseid,
                                                              'mensaje': "No se puede modificar la fase, el proyecto"
                                                                         " no se encuentra en estado pendiente."})
-
+        print(fase.estado)
+        if fase.estado == "deshabilitada":
+            return redirect('proyectoFase', id=proyectoid)
         """Template a renderizar: faseModificar con parametro -> fase, proyectoid"""
         return render(request, 'fase/faseModificar.html', {'fase': fase, 'proyecto': proyecto, })
 
@@ -165,6 +165,7 @@ def faseModificar(request):
     faseid = request.POST.get('faseid')
     """Fase a modificar"""
     fase = Fase.objects.get(id=faseid)
+
     """
     Verificar que no exista otra fase en el proyecto 
     con el mismo nombre, excluyendo a
@@ -235,6 +236,19 @@ def faseDeshabilitar(request):
     """Redirigir a la vista del proyecto correspondiente."""
     return redirect('proyectoView', id=proyectoid)
 
+
+def fasesDeshabilitadas(request):
+    proyectoid = request.GET.get('proyectoid')
+    """Proyecto en el cual se encuentra la fase."""
+    proyecto = Proyecto.objects.get(id=proyectoid)
+    """Fases del proyecto para enviar al template que muestra la informacion"""
+    fases = proyecto.fases.all()
+    fasesDes = []
+    for f in fases:
+        if (request.user.has_perm("view_fase", f) or request.user.has_perm("is_gerente", proyecto)) and f.estado == "deshabilitada":
+            fasesDes.append(f)
+
+    return render(request, 'fase/fasesDeshabilitadas.html', {'proyecto': proyecto, 'fasesDes': fasesDes, })
 
 def itemCrear(request):
     """

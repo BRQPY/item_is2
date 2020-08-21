@@ -170,7 +170,7 @@ def proyectoFase(request, id):
         fases = proyecto.fases.all()
         fasesUser = []
         for f in fases:
-            if (request.user.has_perm("view_fase", f) or request.user.has_perm("is_gerente", proyecto)) and f.estado != "deshabilitada":
+            if (request.user.has_perm("view_fase", f) or request.user.has_perm("is_gerente", proyecto)):
                 fasesUser.append(f)
 
 

@@ -209,8 +209,8 @@
                 <div class="col s12 md6 xl3">
                     <div class="card-panel">
                        {% if fases %}
-                            {% for f in fases %}
-                                <b>{{ f.nombre}}<i> ({{ f.estado }})</i>&emsp;</b>
+                            {% for f in fasesUser %}
+                                    <b>{{ f.nombre}}<i> ({{ f.estado }})</i>&emsp;</b>
                             {% endfor %}
                         {%else%}
                             El Proyecto aún no cuenta con fases.

@@ -96,6 +96,7 @@ urlpatterns = [
     path('fase/gestionFase/', viewsFase.gestionFase),
     path('fase/modify/', viewsFase.faseModificar),
     path('fase/unable/', viewsFase.faseDeshabilitar),
+    path('fase/fasesDeshabilitadas/', viewsFase.fasesDeshabilitadas),
     path('item/gestionItem/', viewsFase.gestionItem),
     path('item/itemVer/itemid=<int:itemid>faseid=<int:faseid>proyectoid=<int:proyectoid>/', viewsFase.itemView, name="itemView"),
     path('item/itemCrear/', viewsFase.itemCrear),
