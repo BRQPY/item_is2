@@ -1,35 +1,47 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Agregar Miembros</title>
-     <link rel="stylesheet" type="text/css" href="{% static 'css/proyectoUserAdd.css' %}">
-</head>
-<body>
-    <style> body{background-color: lavender }</style>
-    <section>
-        <form action="/proyecto/proyectoUser/">
-        <input type="submit" value="Atras" />
-        <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-        </form>
+
+{% block content %}
+    <form action="/proyecto/proyectoUser/">
+        <button type="submit" class="waves-effect waves-teal btn-flat">
+            Volver a Lista de Miembros del Proyecto
+            <i class="material-icons dark blue-text left">keyboard_return</i>
+        </button>
+        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+    </form>
+    <div class="container">
+
+        <h4 style="text-align: center">Añadir Usuarios al Proyecto: {{ proyecto.nombre }} </h4>
+        <h6 class="grey-text">Selecciona usuarios</h6>
         <form action="/proyecto/proyectoUser/add/" method="post">
             {% csrf_token %}
-            <h5>Selecciona Usuarios</h5>
-             <div class="form-check">
-                 {% for u in usuarios %}
-                    <input class="form-check-input" type="checkbox" value={{u.id}} id="username" name="users">
-                    <label class="form-check-label" for="username">{{u.username}}</label>
-                 {% endfor %}
-                 <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+            <div class="form-check">
+                {% for u in usuarios %}
+                    <label>
+                        <input  type="checkbox"
+                                class="filled-in"
+                                value={{u.id}} id="username"
+                                name="users"/>
+                        <span>{{u}}</span>
+                    </label>
+                {% endfor %}
             </div>
-            <button type="submit" onclick="myFunction()">Agregar Miembro</button>
+            <button type="submit"
+                    class="btn btn-small blue darken-1 right"
+                    onclick="myFunction()"
+            >
+                Añadir Miembros al proyecto
+                <i class="material-icons white-text left">check</i>
+            </button>
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
         </form>
-    </section>
-</body>
-<script>
+   </div>
+    <script>
         function myFunction() {
             alert("Miembro agregado correctamente.");
         }
-</script>
-</html>
+    </script>
+{% endblock%}
+
+
+

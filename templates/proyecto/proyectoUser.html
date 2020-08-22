@@ -1,36 +1,67 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>MIEMBROS DE PROYECTO</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/proyectoUser.css' %}">
-</head>
-<body>
-    <form action="/proyecto/gestionProyecto/">
-            <input type="submit" value="Atras" />
-            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+
+{% block content %}
+    <form action="/proyecto/proyectoVer/proyectoid={{proyecto.id}}/">
+        <button type="submit" class="waves-effect waves-teal btn-flat">
+            Volver al Panel de Configuración de Proyecto
+            <i class="material-icons dark blue-text left">keyboard_return</i>
+        </button>
+        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
     </form>
-    <style> body{background-color: lavender }</style>
-    <section>
-        <h3>Lista de Miembros</h3>
-             <div>
-                 {% for u in usuarios %}
-                    {%if u.is_active%}
-                        <p>{{u.username}}</p>
-                    {%else%}
-                        <p>{{u.username}}(deshabilitado)</p>
-                    {%endif%}
-                 {% endfor %}
-            </div>
-        <p><form action="/proyecto/proyectoUser/add/">
-            <input type="submit" value="Agregar Miembros" />
-            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-        </form></p>
-        <form action="/proyecto/proyectoUser/remove/">
-            <input type="submit" value="Remover Miembros" />
-            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-        </form>
-    </section>
-</body>
-</html>
+    <div class="container">
+        <h3 style="text-align: center">
+            Lista de Miembros del Proyecto
+        </h3>
+        <form action="/proyecto/proyectoUser/add/">
+            <button type="submit" class="btn btn-small blue darken-1 right">
+                Añadir Miembro al proyecto
+                <i class="material-icons white-text left">person_add</i>
+            </button>
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        </form><br>
+            {% if cant_user > 0 %}
+                <div class="col s12 md6 x8">
+                    <ul class="z-depth-1">
+                        {%for u in usuarios %}
+                            <li>
+                                <div class="card-panel z-depth-2 expense">
+                                    <div class="row">
+                                        <div class="col 11 left">
+                                            <b>Username:</b>
+                                            {{ u.username }}
+                                        </div>
+                                        {% if u.is_staff or proyecto.gerente == u or user.username == u.username %}
+
+                                        {% else %}
+                                            <div class="col 11 right">
+                                                <a href="{%url 'ProyectoUserRemove' proyecto.id u.id %}"
+                                                   onclick="return confirm('Está seguro de remover a {{ u.username }} como miembro del proyecto?');"
+                                                >
+                                                    <i class="material-icons darken-4 red-text left">delete</i>
+                                                    Remover Usuario
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="row">
+                                        <div class="col 14 left">
+                                            <b>Nombre y Apellido:</b>
+                                            {{u.first_name}}
+                                            {{u.last_name }}
+                                        </div>
+                                        <div class="col 14 left">
+                                            <b>Email:</b>
+                                            {{u.email}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% else %}
+                <h5>Aún no hay usuarios en este proyecto :(</h5>
+            {% endif %}
+    </div>
+{% endblock%}

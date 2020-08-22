@@ -451,9 +451,10 @@ def proyectoUser(request):
 
     """Lista de miembros del proyecto para mostrar en el template."""
     usuarios = proyecto.usuarios.all()
-
+    cant_user = len (usuarios)
     """Template a renderizar; proyectoUser.html con parametros -> proyectoid y usuarios del proyecto"""
-    return render(request, 'proyecto/proyectoUser.html', {'proyectoid': proyectoid, 'usuarios': usuarios, })
+    return render(request, 'proyecto/proyectoUser.html', {'proyecto': proyecto, 'usuarios': usuarios,
+                                                          'cant_user':cant_user, })
 
 def proyectoUserAdd(request):
     """
@@ -497,7 +498,7 @@ def proyectoUserAdd(request):
         Template a renderizar: proyectoUserAdd.html con parametros
          -> usuarios posibles para agregar y proyectoid
         """
-        return render(request, "proyecto/proyectoUserAdd.html", {'usuarios': usuarios, 'proyectoid': proyectoid, })
+        return render(request, "proyecto/proyectoUserAdd.html", {'usuarios': usuarios, 'proyecto': proyecto, })
 
     """POST request, captura una lista de usuarios a agregar al proyecto"""
     """Lista de usuarios a agregar"""
@@ -514,12 +515,12 @@ def proyectoUserAdd(request):
         """Agregar permiso para Verl el Proyecto al usuario"""
         assign_perm("view_proyecto", user, proyecto)
 
-    """
-    Template a renderizar: gestionProyecto.html con parametro -> proyectoid
-    """
-    return redirect('proyectoView',id=proyectoid)
+    usuarios = proyecto.usuarios.all()
+    cant_user = len (usuarios)
+    return render(request, 'proyecto/proyectoUser.html', {'proyecto': proyecto, 'usuarios': usuarios,
+                                                          'cant_user': cant_user, })
 
-def proyectoUserRemove(request):
+def proyectoUserRemove(request,proyectoid,userid):
     """
        **proyectoUserRemove:**
         Vista utilizada para remover miembros del proyecto.
@@ -527,11 +528,10 @@ def proyectoUserRemove(request):
         cuente con los permisos de gerente del proyecto
         y que (indirectamente) haya iniciado sesion
     """
-
+    '''
     """GET request, muestra el template correspondiente para remover miembros del proyecto"""
     if request.method == 'GET':
         """ID del proyecto"""
-        proyectoid = request.GET.get('proyectoid')
         """Proyecto al cual remover miembros"""
         proyecto = Proyecto.objects.get(id=proyectoid)
         """Verificar permiso necesario en el proyecto correspondiente"""
@@ -545,46 +545,43 @@ def proyectoUserRemove(request):
         proyecto = Proyecto.objects.get(id=proyectoid)
         """Gerente del proyecto"""
         gerente = Proyecto.objects.get(id=proyectoid).gerente
-        usuarios = []
-        """Lista de miembros del proyecto"""
-        u = proyecto.usuarios.all()
-        for user in u:
-            """
-            Filtrar que no se pueda remover un usuario staff,
-            gerente. Tampoco puede ser el usuario que realiza
-            el request.
-            """
-            if user.is_staff == False and user != request.user and user != gerente:
-                usuarios.append(user)
 
+        """Lista de miembros del proyecto"""
+        user = User.objects.get(id=userid)
+        """ Para saber si hay algun user removible del proyecto"""
+        eliminable = True
+        if user.is_staff == True or user == request.user or user == gerente:
+                """Si no puede ser removido del proyecto, establece eliminable a false"""
+                eliminable = False
         """
          Template a renderizar: proyectoUserRemove.html con parametro->
          usuarios posibles para remover y proyectoid
         """
-        return render(request, "proyecto/proyectoUserRemove.html", {'usuarios': usuarios, 'proyectoid': proyectoid, })
-
+        return render(request, "proyecto/proyectoUserRemove.html", {'usuarios': user, 'proyectoid': proyectoid,
+                                                                    'eliminar':eliminable})
+    '''
     """POST request, captura la lista de usuarios para remover del proyecto"""
     """Lista de usuarios a remover"""
-    users = request.POST.getlist('users')
+    #users = request.POST.getlist('users')
     """ID del proyecto"""
-    proyectoid = request.POST.get('proyectoid')
+    #proyectoid = request.POST.get('proyectoid')
     """Proyecto del cual remover"""
     proyecto = Proyecto.objects.get(id=proyectoid)
-    for u in users:
-        """Usuario a remover"""
-        user = User.objects.get(id=u)
-        """Remover usuario"""
-        proyecto.usuarios.remove(user)
-        """Remover permiso para ver el proyecto"""
-        remove_perm("view_proyecto", user, proyecto)
-        if user in proyecto.comite.all():
-            """Si el usuario era miembro del Comite de Control de Cambio. removerlo."""
-            proyecto.comite.remove(user)
-            """Remover permiso para aprobar la rotura de linea base."""
-            remove_perm("aprobar_rotura_lineaBase", user, proyecto)
-
-    """Template a renderizar: gestionProyecto.html con parametro -> proyectoid"""
-    return redirect('proyectoView',id=proyectoid)
+    """Usuario a remover"""
+    user = User.objects.get(id=userid)
+    """Remover usuario"""
+    proyecto.usuarios.remove(user)
+    """Remover permiso para ver el proyecto"""
+    remove_perm("view_proyecto", user, proyecto)
+    if user in proyecto.comite.all():
+        """Si el usuario era miembro del Comite de Control de Cambio. removerlo."""
+        proyecto.comite.remove(user)
+        """Remover permiso para aprobar la rotura de linea base."""
+        remove_perm("aprobar_rotura_lineaBase", user, proyecto)
+    usuarios = proyecto.usuarios.all()
+    cant_user = len (usuarios)
+    return render(request, 'proyecto/proyectoUser.html', {'proyecto': proyecto, 'usuarios': usuarios,
+                                                          'cant_user': cant_user, })
 
 
 def proyectoComite(request):

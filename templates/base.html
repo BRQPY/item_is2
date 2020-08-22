@@ -75,15 +75,27 @@ body {
 <body>
 
 <div class="header">
-  <a href="#default" class="logo" >
-      <img src="{% static "img/fondotransparente.png" %}" alt="logo"
-           width=45" height="50">
-  </a>
-  <div class="header-right" >
-    <a> usuario: <b>{{ user.username }}</b> </a>
-    <a href="{% url 'home' %}" class="button hvr-float-shadow" >Home</a>
-    <a href="/accounts/logout/" class="button hvr-hang">cerrar sesión</a>
-</div>
+      <a href="/home/" class="logo" >
+          <img src="{% static "img/fondotransparente.png" %}" alt="logo"
+               width=30" height="40">
+      </a>
+      <div class="header-right" >
+
+            <a href="{% url 'home' %}" class="button hvr-float-shadow" >
+                <i class="material-icons left">home</i>
+                Home
+            </a>
+            <a href="/gestionUser/" class="button hvr-float-shadow">
+                <i class="material-icons left">people</i>
+                Gestionar Usuarios
+            </a>
+            <a> usuario:<b>{{ user.username}}</b> </a>
+          <a href="/accounts/logout/" class="button hvr-hang"
+            style="text-decoration: none; font-size: 1.1em;"
+          >
+              cerrar sesión
+          </a>
+      </div>
 </div>
 
 <div style="padding-left:0px">

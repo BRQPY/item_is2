@@ -76,7 +76,7 @@ urlpatterns = [
     path('proyecto/unable/', views.proyectoDeshabilitar),
     path('proyecto/proyectoUser/', views.proyectoUser),
     path('proyecto/proyectoUser/add/', views.proyectoUserAdd),
-    path('proyecto/proyectoUser/remove/', views.proyectoUserRemove),
+    path('proyecto/proyectoUser/remove/proyectoid=<str:proyectoid>/userid=<str:userid>', views.proyectoUserRemove, name="ProyectoUserRemove"),
     path('proyecto/proyectoComite/', views.proyectoComite),
     path('proyecto/proyectoComite/add/', views.proyectoComiteAdd),
     path('proyecto/proyectoComite/remove/', views.proyectoComiteRemove),
