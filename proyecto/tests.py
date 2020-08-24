@@ -103,7 +103,7 @@ class TestViews(TestCase):
         response = self.client.get('/proyecto/gestionProyecto/', {'proyectoid': proyecto.id})
 
         self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
+        self.assertTemplateUsed(response, 'proyecto/ProyectoInicializadoConfig.html')
 
 
     def test_gestionProyecto_GET_FAIL(self):
@@ -162,7 +162,7 @@ class TestViews(TestCase):
         self.assertEquals(proyecto.fecha_inicio, "10/10/2012")
         self.assertEquals(proyecto.fecha_fin, "10/12/2012")
         self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
+        self.assertTemplateUsed(response, 'proyecto/ProyectoInicializadoConfig.html')
 
     def test_proyectoDeshabilitar_POST_OK(self):
         user = User.objects.create(username="user", password="user")
@@ -194,7 +194,7 @@ class TestViews(TestCase):
         proyecto = Proyecto.objects.get(id=proyecto.id)
         self.assertEquals(proyecto.estado, "pendiente")
         self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'proyecto/gestionProyecto.html')
+        self.assertTemplateUsed(response, 'proyecto/ProyectoInicializadoConfig.html')
 
     def test_proyectoDeshabilitar_GET_OK(self):
         user = User.objects.create(username="user", password="user")

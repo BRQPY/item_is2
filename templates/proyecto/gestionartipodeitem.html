@@ -2,50 +2,137 @@
 {% load static %}
 
 {% block content %}
-    <form action="/proyecto/proyectoVer/proyectoid={{proyectoid}}">
-         <button type="submit" class="waves-effect waves-teal btn-flat">
-                    Volver a Gestión de Proyecto
-                    <i class="material-icons dark blue-text left">keyboard_return</i>
-            </button>
-            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-    </form>
+    {% if proyecto.estado == "pendiente" %}
+        <form action="/proyecto/proyectoVer/proyectoid={{proyecto.id}}">
+             <button type="submit" class="waves-effect waves-teal btn-flat">
+                        Volver a Gestión de Proyecto
+                        <i class="material-icons dark blue-text left">keyboard_return</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        </form>
+    {% else %}
+        <form action="/proyecto/gestionProyecto/">
+             <button type="submit" class="waves-effect waves-teal btn-flat">
+                        Volver a Gestión de Proyecto
+                        <i class="material-icons dark blue-text left">keyboard_return</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        </form>
+    {% endif %}
 	<div class="container">
-        <section>
-            <h3 style="text-align: center">Tipos de Item</h3>
-        <h5 style="text-align: center" class="grey-text">Panel de Configuración de Tipos de ítem</h5>
-        <h5 style="text-align: left">Tipos de ítem del Proyecto</h5><br>
-            {%for t in tipos%}
-                {{t.nombreTipo}}<br>
-            {%endfor%}
-            <br>
-            <form action="/proyecto/creartipo/">
-                <button  type="submit" class="btn blue darken-3 left" >
-                    Crear Tipo de Item
-                    <i class="material-icons white-text left">add_circle</i>
-                </button>
-                <input class="cla"  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-            </form><br><br><br>
-            <form action="/proyecto/modifdeItem/">
-                <button  type="submit" class="btn blue darken-3 left" >
-                    Modificar Tipo de Item
-                    <i class="material-icons white-text left">edit</i>
-                </button>
-                <input class="cla"  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-            </form><br><br><br>
-            <form action="/proyecto/importTdeItem/">
-                <button  type="submit" class="btn blue darken-3 left" >
-                    Importar Tipo de Item
-                    <i class="material-icons white-text left">import_export</i>
-                </button>
-                <input class="cla"  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-            </form><br><br><br>
-            <form action="/proyecto/removerTdeItem/">
-                <button  type="submit" class="btn blue darken-3 left" >
-                    Remover Tipo de Item
-                    <i class="material-icons white-text left">remove_circle</i>
-                </button>
-                <input class="cla"  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-            </form><br>
-    </section>
+            <h3 style="text-align: center">Tipos de Ítem del Proyecto</h3>
+        <h5 style="text-align: center" class="grey-text">Panel de Configuración de Tipos de ítem</h5><br>
+        <form action="/proyecto/importTdeItem/">
+            <button  type="submit"
+                     class="btn-small blue darken-2 left"
+                     title="Permite importar tipos de item de otro proyecto creado en el sistema."
+            >
+                Importar Tipo de Item
+                <i class="material-icons white-text left">import_export</i>
+            </button>
+            <input class="cla"  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        </form>
+        <form action="/proyecto/creartipo/">
+            <button  type="submit" class="btn-small blue darken-2 right" >
+                Crear Tipo de Item
+                <i class="material-icons white-text left">add_circle</i>
+            </button>
+            <input class="cla"  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        </form>
+        <br>
+        {% if tipos_modificable or tipos_no_modificable %}
+            {% if tipos_modificable %}
+                <br>
+                <div class="col s12 md6 x8">
+                    <ul class="z-depth-1">
+                        {%for t in tipos_modificable%}
+                            <li>
+                                <div class="card-panel z-depth-2 expense">
+                                    <div class="row">
+                                        <div class="col 11 left">
+                                            <b>Nombre:</b>
+                                            {{ t.nombreTipo }}
+                                        </div>
+                                        <div class="col 11 right">
+                                                <a href="{%url 'removertipo' proyecto.id t.id%}"
+                                                   title="Eliminar Tipo de Item del Proyecto."
+                                                   onclick="return confirm('Está seguro de remover el rol {{ r.nombre }} del proyecto?');"
+                                                >
+                                                    <i class="material-icons darken-4 red-text left">delete</i>
+                                                    Remover Tipo de Item
+                                                </a>
+                                            </div>
+                                        <div class="col 11 right">
+                                            <a href="{%url 'modificartipo' proyecto.id t.id%}"
+                                               title="Modificar datos o campos extra de {{ t.nombreTipo }}"
+                                            >
+                                                <i class="material-icons darken-4 blue-text left">edit</i>
+                                                Modificar Tipo de Item
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col 11 left">
+                                            <b>Campo extra definido por usuarios: </b>
+                                            {% for c in t.campo_extra %}
+                                                {{ c }}&emsp;
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        {%endfor%}
+                    </ul>
+                </div>
+            {% endif %}
+            {% if tipos_no_modificable  %}
+                <br>
+                <div class="col s12 md6 x8">
+                    <ul class="z-depth-1">
+                        {%for t in tipos_no_modificable %}
+                            <li>
+                                <div class="card-panel z-depth-2 expense">
+                                    <div class="row">
+                                        <div class="col 11 left">
+                                            <b>Nombre:</b>
+                                            {{ t.nombreTipo }}
+                                        </div>
+                                        <div class="col 11 right">
+                                                <a href="/"
+                                                   title="Eliminar Tipo de Item del Proyecto."
+                                                   class="disabled"
+                                                   onclick="return confirm('Está seguro de remover el rol {{ r.nombre }} del proyecto?');"
+                                                >
+                                                    <i class="disabled material-icons darken-4 red-text left">delete</i>
+                                                    Remover Tipo de Item
+                                                </a>
+                                            </div>
+                                        <div class="col 11 right">
+                                            <a href="{%url 'modificartipo' proyecto.id t.id%}"
+                                               class="disabled"
+                                               title="Modificar datos o campos extra de {{ t.nombreTipo }}"
+                                            >
+                                                <i class="disable material-icons darken-4 blue-text left">edit</i>
+                                                Modificar Tipo de Item
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col 11 left">
+                                            <b>Campos extra definido por usuarios: </b>
+                                            {% for c in t.campo_extra %}
+                                                {{ c }}&emsp;
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        {%endfor%}
+                    </ul>
+                </div>
+            {% endif %}
+        {% else %}
+            <h5>Aún no hay Tipos de ítem en este proyecto :(</h5>
+        {% endif %}
 	</div>
 {% endblock%}

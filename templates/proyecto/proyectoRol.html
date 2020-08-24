@@ -2,66 +2,88 @@
 {% load static %}
 
 {% block content %}
-    <form action="/proyecto/proyectoVer/proyectoid={{proyectoid}}">
-         <button type="submit" class="waves-effect waves-teal btn-flat">
-                    Volver a Gestión de Proyecto
-                    <i class="material-icons dark blue-text left">keyboard_return</i>
-            </button>
-            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-    </form>
+    {% if proyecto.estado == "pendiente" %}
+        <form action="/proyecto/proyectoVer/proyectoid={{proyecto.id}}">
+             <button type="submit" class="waves-effect waves-teal btn-flat">
+                 Volver a Gestión de Proyecto
+                 <i class="material-icons dark blue-text left">keyboard_return</i>
+             </button>
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        </form>
+    {% else %}
+        <form action="/proyecto/gestionProyecto/">
+             <button type="submit" class="waves-effect waves-teal btn-flat">
+                        Volver a Gestión de Proyecto
+                        <i class="material-icons dark blue-text left">keyboard_return</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        </form>
+    {% endif %}
 	<div class="container">
-    <section>
-        <h3 style="text-align: center">Roles</h3>
+        <h3 style="text-align: center">Roles del Proyecto</h3>
         <h5 style="text-align: center" class="grey-text">Panel de Configuración de Roles</h5>
-        <h5 style="text-align: left">Roles dentro del Proyecto</h5><br>
-        {%for r in roles%}
-            <br>{{r.nombre}}
-        {%endfor%}
-           <p>
-                <form id="bot" action="/proyecto/proyectoRol/create/">
-            <br><button  type="submit" name="removeperm" class="btn blue darken-3 left">
+        <form action="/proyecto/proyectoRol/create/">
+            <button type="submit" class="btn btn-small blue darken-1 right">
                 Crear Rol
                 <i class="material-icons white-text left">add_circle</i>
-             </button>
-                    <br><input type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-                </form>
-           </p>
-           <p>
-                <form id="bot" action="/proyecto/proyectoRol/modify/">
-        <br> <button type="submit" name="removeperm" class="btn blue darken-3 left" >
-                Modificar Rol
-                <i class="material-icons white-text left">edit</i>
             </button>
-                       <br> <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-                </form>
-           </p>
-            <p>
-                <form id="bot" action="/proyecto/proyectoRol/asignar/">
-        <br> <button type="submit" name="removeperm" class="btn blue darken-3 left" >
-                Asignar Roles a Usuarios
-                <i class="material-icons white-text left">person_add</i>
-            </button>
-                   <input type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-                </form><br>
-            </p>
-            <p>
-                    <form id="bot" action="/proyecto/proyectoRol/remove/">
-        <br><button type="submit" name="removeperm" class="btn blue darken-3 left">
-                Remover Roles de Usuarios
-                <i class="material-icons white-text left">person_outline</i>
-            </button>
-                        <br><input type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-                    </form>
-            </p>
-           <p>
-                <form id="bot" action="/proyecto/proyectoRol/delete/">
-        <br><button type="submit" name="removeperm" class="btn blue darken-3 left">
-                Remover Rol del Proyecto
-                <i class="material-icons white-text left">remove_circle</i>
-            </button>
-                  <br><input type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-                </form>
-           </p>
-    </section>
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        </form><br>
+        {% if roles %}
+            <div class="col s12 md6 x8">
+                <ul class="z-depth-1">
+                    {% for r in roles %}
+                        <li>
+                            <div class="card-panel z-depth-2 expense">
+                                <div class="row">
+                                    <div class="col 11 left">
+                                        <b>Rol:</b>
+                                        {{ r.nombre }}
+                                    </div>
+                                    {% if not r.faseUser.values %}
+                                        <div class="col 11 right">
+                                            <a href="{%url 'ProyectoRolRemove' proyecto.id r.id%}"
+                                               title="Eliminar rol del Proyecto."
+                                               class="disabled"
+                                               onclick="return confirm('Está seguro de remover el rol {{ r.nombre }} del proyecto?');"
+                                            >
+                                                <i class=" disabled material-icons darken-4 red-text left">delete</i>
+                                                Remover Rol del Proyecto
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        <div class="col 11 right">
+                                            <a title="No se puede remover este rol porque está asignado a algún miembro del proyecto."
+                                               style="color:#C5C5C5"
+                                            >
+                                                Remover Rol
+                                                <i class=" disabled material-icons darken-4 grey-text left">delete</i>
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                    <div class="col 11 right">
+                                        <a href="{%url 'ProyectoRolModify' proyecto.id r.id%}"
+                                           title="Agregar o remover permisos de sistema del rol {{ r.nombre }}"
+                                        >
+                                            <i class="material-icons darken-4 blue-text left">edit</i>
+                                            Modificar Rol
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                        <div class="col 14 left">
+                                            <b>Permisos:</b>
+                                            listar permisos si es que se puede
+                                        </div>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% else %}
+            <h5>Aún no hay roles en este proyecto :(</h5>
+        {% endif %}
+
 	</div>
 {% endblock%}

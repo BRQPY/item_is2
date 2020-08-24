@@ -145,8 +145,8 @@ def proyectoView(request, id):
     for f in fases:
         if request.user.has_perm("view_fase", f) and f.estado != "deshabilitada":
             fasesUser.append(f)
-    """Template a renderizar: proyecto.html con parametros -> proyectoid y fases del proyecto"""
-    return render(request, 'proyecto/proyecto.html', {'proyecto': proyecto, 'fases':fases, 'fasesUser': sorted(fasesUser, key=lambda x: x.id, reverse=False)})
+    """Template a renderizar: proyectoListarFases.html con parametros -> proyectoid y fases del proyecto"""
+    return render(request, 'proyecto/proyectoListarFases.html', {'proyecto': proyecto, 'fases':fases, 'fasesUser': sorted(fasesUser, key=lambda x: x.id, reverse=False)})
 
 '''
 
@@ -177,8 +177,8 @@ def proyectoFase(request, id):
 
         """Se verifica el estado del proyecto, para destinarlo al html correcto"""
         if (proyecto.estado =='pendiente'):
-            """Template a renderizar: proyecto.html con parametros -> proyectoid y fases del proyecto"""
-            return render(request, 'proyecto/proyecto.html', {'proyecto': proyecto, 'fases': fases,
+            """Template a renderizar: proyectoListarFases.html con parametros -> proyectoid y fases del proyecto"""
+            return render(request, 'proyecto/proyectoListarFases.html', {'proyecto': proyecto, 'fases': fases,
                                                               'fasesUser': sorted(fasesUser, key=lambda x: x.id,
                                                                 reverse=False),})
 
@@ -213,7 +213,7 @@ def proyectoView(request, id):
         comite = proyecto.comite.all()
         """Se verifica el estado del proyecto, para destinarlo al html correcto"""
         if (proyecto.estado =='pendiente'):
-            """Template a renderizar: proyecto.html con parametros -> proyectoid y fases del proyecto"""
+            """Template a renderizar: proyectoListarFases.html con parametros -> proyectoid y fases del proyecto"""
             return render(request, 'proyecto/proyectoPendiente.html', {'proyecto': proyecto, 'fases': fases,
                                                               'fasesUser': sorted(fasesUser, key=lambda x: x.id,
                                                                 reverse=False),
@@ -279,8 +279,8 @@ def gestionProyecto(request):
     if not(request.user.has_perm("view_proyecto", proyecto)):
         return redirect('/permissionError/')
 
-    """Template a renderizar: gestionProyecto.html con parametro -> proyectoid"""
-    return render(request, 'proyecto/gestionProyecto.html', {'proyectoid': proyectoid, 'fases': proyecto.fases.all(),
+    """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
+    return render(request, 'proyecto/ProyectoInicializadoConfig.html', {'proyecto': proyecto, 'fases': proyecto.fases.all(),
                                                              'proyecto': proyecto, })
 
 def proyectoModificar(request):
@@ -333,7 +333,7 @@ def proyectoModificar(request):
     proyecto.save()
 
     """Template a renderizar: gestionProyecto con parametro -> proyectoid"""
-    return render(request, 'proyecto/gestionProyecto.html', {'proyectoid': proyectoid, })
+    return render(request, 'proyecto/ProyectoInicializadoConfig.html', {'proyectoid': proyectoid, })
 
 def proyectoDeshabilitar(request):
     """
@@ -372,8 +372,8 @@ def proyectoDeshabilitar(request):
         return redirect("/home/")
 
     """Confirmar accion -> no"""
-    """Template a renderizar: gestionProyecto.html con parametro -> proyectoid"""
-    return render(request, "proyecto/gestionProyecto.html", {'proyectoid': proyectoid, })
+    """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
+    return render(request, "proyecto/ProyectoInicializadoConfig.html", {'proyectoid': proyectoid, })
 
 def faseView(request, faseid, proyectoid):
     """
@@ -682,7 +682,7 @@ def proyectoComiteAdd(request):
         """Agregar el permiso para aprobar rotura de linea base"""
         assign_perm("aprobar_rotura_lineaBase", user, proyecto)
 
-    """Template a renderizar: gestionProyecto.html con parametro -> proyectoid"""
+    """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
     return redirect('proyectoView', id=proyectoid)
 
 def proyectoComiteRemove(request):
@@ -731,7 +731,7 @@ def proyectoComiteRemove(request):
         """Remover permisos para aprobar rotura de linea base"""
         remove_perm("aprobar_rotura_lineaBase", user, proyecto)
 
-    """Template a renderizar: gestionProyecto.html con parametro -> proyectoid"""
+    """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
     return redirect('proyectoView', id=proyectoid)
 
 def proyectoRol(request):
@@ -759,7 +759,7 @@ def proyectoRol(request):
     Template a renderizar: proyectoRol.html con parametros -> peroyectoid
     y roles del proyecto
     """
-    return render(request, 'proyecto/proyectoRol.html', {'proyectoid': proyectoid, 'roles': roles, })
+    return render(request, 'proyecto/proyectoRol.html', {'proyecto': proyecto, 'roles': roles, })
 
 def proyectoRolCrear(request):
     """
@@ -819,7 +819,7 @@ def proyectoRolCrear(request):
                 grupo.permissions.add(permiso)
             elif int(p) == 6:
                 """Permiso Proyecto ID=6 corresponde a Aprobar Item"""
-                permiso = Permission.objects.get(codename="aprobar_item")
+                permiso = Permission.objects.get(codename="aprove_item")
                 grupo.permissions.add(permiso)
             elif int(p) == 7:
                 """Permiso Proyecto ID=7 corresponde a Deshabilitar Item"""
@@ -835,7 +835,7 @@ def proyectoRolCrear(request):
                 grupo.permissions.add(permiso)
             elif int(p) == 10:
                 """Permiso Proyecto ID=10 corresponde a Modificar Item"""
-                permiso = Permission.objects.get(codename="change_item")
+                permiso = Permission.objects.get(codename="modify_item")
                 grupo.permissions.add(permiso)
             elif int(p) == 11:
                 """Permiso Proyecto ID=11 corresponde a Establecer Item Pendiente de Aprobacion"""
@@ -851,7 +851,7 @@ def proyectoRolCrear(request):
                 grupo.permissions.add(permiso)
             elif int(p) == 14:
                 """Permiso Proyecto ID=14 corresponde a Ver Item"""
-                permiso = Permission.objects.get(codename="view_item")
+                permiso = Permission.objects.get(codename="ver_item")
                 grupo.permissions.add(permiso)
             elif int(p) == 15:
                 """Permiso Proyecto ID=15 corresponde a Obtener Calculo de Impacto"""
@@ -863,7 +863,7 @@ def proyectoRolCrear(request):
                 grupo.permissions.add(permiso)
             elif int(p) == 17:
                 """Permiso Proyecto ID=17 corresponde a Romper Linea Base"""
-                permiso = Permission.objects.get(codename="romper_lineaBase")
+                permiso = Permission.objects.get(codename="break_lineaBase")
                 grupo.permissions.add(permiso)
             elif int(p) == 18:
                 """Permiso Proyecto ID=18 corresponde a Solicitar Rotura de Linea Base"""
@@ -872,7 +872,7 @@ def proyectoRolCrear(request):
 
             if 5 < int(p) < 16:
                 """Garantizar la presencia del permiso Ver Item"""
-                permiso = Permission.objects.get(codename="view_item")
+                permiso = Permission.objects.get(codename="ver_item")
                 if not grupo.permissions.filter(codename="view_fase").exists():
                     grupo.permissions.add(permiso)
 
@@ -886,9 +886,9 @@ def proyectoRolCrear(request):
         rol.save()
         """Agregar rol a proyecto"""
         proyecto.roles.add(rol)
-
+        roles = proyecto.roles.all()
         """Template a renderizar: gestion Proyecto.html con parametro -> proyectoid"""
-        return redirect('proyectoView', id=proyectoid)
+        return render(request, 'proyecto/proyectoRol.html', {'proyecto': proyecto, 'roles': roles, })
     else:
         """GET request, muestra el template correspondiente para la creacion del rol"""
         """ID Proyecto"""
@@ -906,7 +906,7 @@ def proyectoRolCrear(request):
         """Template a renderizar: proyectoRolCrear.html con parametro -> proyectoid"""
         return render(request, "proyecto/proyectoRolCrear.html", {'proyectoid': proyectoid, })
 
-def proyectoRolModificar(request):
+def proyectoRolModificar(request,proyectoid,rolid):
     """
        **proyectoRolModificar:**
         Vista utilizada para modificar roles del proyecto.
@@ -914,27 +914,51 @@ def proyectoRolModificar(request):
         cuente con los permisos de gerente del proyecto
         y que (indirectamente) haya iniciado sesion
     """
-    seleccion = None
-    permisos = None
-    """ID Proyecto"""
-    proyectoid = request.GET.get('proyectoid')
-    """POST request, captura la nueva informacion para el rol para actualizarlo"""
+    if request.method == "GET":
+        """GET request, muestra el template correspondiente a la modificacion de roles"""
+        """Proyecto correspondiente"""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """ID Proyecto"""
+        #proyectoid = request.GET.get('proyectoid')
+        """Verificar permiso necesario en el proyecto correspondiente"""
+        if not (request.user.has_perm("is_gerente", proyecto)):
+            return redirect('/permissionError/')
+
+        """Verifica que el proyecto no se encuentre cancelado"""
+        if proyecto.estado == "cancelado":
+            return redirect('proyectoView', id=proyectoid)
+        """Si el rol no ha sido asignado"""
+        """Actualizar los datos para visualizar en el template"""
+        rol = Rol.objects.get(id=rolid)
+        permisos = []
+        """Permisos del rol"""
+        perms = rol.perms.permissions.all()
+        print("Nombre antes de editar:", rol.perms)
+        for p in perms:
+            permisos.append(p.codename)
+        """Template a renderizar: proyectoRolModificar.html con parametros -> roles del proyecto, proyectoid"""
+        return render(request, "proyecto/proyectoRolModificar.html",
+                      {'rol': rol, 'proyecto': proyecto, 'permisos': permisos, })
+
+
+    """POST request, captura la nueva informacion del rol para actualizarlo"""
     if request.method == "POST":
         """Boton Modificar presionado en el template"""
-        if 'changerol' in request.POST:
-            """ID del rol"""
-            rolid = request.POST.get('rolid')
-            """Permisos nuevos para el rol"""
-            permisos = request.POST.getlist('perms')
-            """Nuevo nombre del rol"""
-            nombre = request.POST.get('nombre')
-            """ID del proyecto"""
-            proyectoid = request.POST.get('proyectoid')
-            """Proyecto en el que se encuentra el rol"""
-            proyecto = Proyecto.objects.get(id=proyectoid)
-
+        """ID del rol"""
+        #rolid = request.POST.get('rolid')
+        """Permisos nuevos para el rol"""
+        """Proyecto en el que se encuentra el rol"""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        rol = Rol.objects.get(id=rolid)
+        permisos = request.POST.getlist('perms')
+        vector = []
+        """Nuevo nombre del rol"""
+        nombreanterior = request.POST.get('nombreanterior')
+        nombrenuevo = request.POST.get('nombre')
+        """ Verificar si hubo un cambbio de nombre"""
+        if nombrenuevo != nombreanterior:
             """Verificar si el nombre asignado ya corresponde al nombre de otro rol"""
-            if proyecto.roles.filter(nombre=nombre).exclude(id=rolid).exists():
+            if proyecto.roles.filter(nombre=nombrenuevo).exclude(id=rolid).exists():
                 """Roles del Proyecto"""
                 roles = proyecto.roles.all()
                 """
@@ -944,171 +968,121 @@ def proyectoRolModificar(request):
                 return render(request, "proyecto/proyectoRolModificar.html",
                               {'roles': roles, 'select': None, 'proyectoid': proyectoid, 'permisos': None,
                                'mensaje': "Lo sentimos, el nombre del Rol ya ha sido asignado en el proyecto.", })
-
             """Rol a modificar"""
-            rol = Rol.objects.get(id=rolid)
-            vector = []
+
             """Grupo a poseer los nuevos permisos"""
-            grupo = Group.objects.get(name=rol.nombre)
+            grupo = Group.objects.get(name=rol.perms)
             cont = 1
             """Verificar si ya existe un grupo con ese nombre, para evitar romper la condicion de unicidad."""
-            nombreGrupo = nombre
+            nombreGrupo = nombrenuevo
             while Group.objects.filter(name=nombreGrupo).exists():
-                nombreGrupo = nombre + str(cont)
+                nombreGrupo = nombrenuevo + str(cont)
                 cont = cont + 1
 
             grupo.name = nombreGrupo
             """Asignar nuevo nombre al rol"""
-            rol.nombre = nombre
+            rol.nombre = nombrenuevo
 
-            for p in permisos:
-                """Permiso Proyecto ID=1 corresponde a Crear Fase"""
-                if int(p) == 1:
-                    permiso = Permission.objects.get(codename="add_fase")
-                    vector.append(permiso)
-                elif int(p) == 2:
-                    """Permiso Proyecto ID=2 corresponde a Modificar Fase"""
-                    permiso = Permission.objects.get(codename="change_fase")
-                    vector.append(permiso)
-                elif int(p) == 3:
-                    """Permiso Proyecto ID=3 corresponde a Remover Fase"""
-                    permiso = Permission.objects.get(codename="delete_fase")
-                    vector.append(permiso)
-                elif int(p) == 4:
-                    """Permiso Proyecto ID=4 corresponde a Ver Fase"""
-                    permiso = Permission.objects.get(codename="view_fase")
-                    vector.append(permiso)
-                elif int(p) == 5:
-                    """Permiso Proyecto ID=5 corresponde a Crear Item"""
-                    permiso = Permission.objects.get(codename="create_item")
-                    vector.append(permiso)
-                elif int(p) == 6:
-                    """Permiso Proyecto ID=6 corresponde a Aprobar Item"""
-                    permiso = Permission.objects.get(codename="aprobar_item")
-                    vector.append(permiso)
-                elif int(p) == 7:
-                    """Permiso Proyecto ID=7 corresponde a Deshabilitar Item"""
-                    permiso = Permission.objects.get(codename="deshabilitar_item")
-                    vector.append(permiso)
-                elif int(p) == 8:
-                    """Permiso Proyecto ID=8 corresponde a Reversionar Item"""
-                    permiso = Permission.objects.get(codename="reversionar_item")
-                    vector.append(permiso)
-                elif int(p) == 9:
-                    """Permiso Proyecto ID=9 corresponde a Relacionar Item"""
-                    permiso = Permission.objects.get(codename="relacionar_item")
-                    vector.append(permiso)
-                elif int(p) == 10:
-                    """Permiso Proyecto ID=10 corresponde a Modificar Item"""
-                    permiso = Permission.objects.get(codename="change_item")
-                    vector.append(permiso)
-                elif int(p) == 11:
-                    """Permiso Proyecto ID=11 corresponde a Establecer Item Pendiente de Aprobacion"""
-                    permiso = Permission.objects.get(codename="establecer_itemPendienteAprob")
-                    vector.append(permiso)
-                elif int(p) == 12:
-                    """Permiso Proyecto ID=12 corresponde a Establecer Item Desarrollo"""
-                    permiso = Permission.objects.get(codename="establecer_itemDesarrollo")
-                    vector.append(permiso)
-                elif int(p) == 13:
-                    """Permiso Proyecto ID=13 corresponde a Obtener Trazabilidad de Item"""
-                    permiso = Permission.objects.get(codename="obtener_trazabilidadItem")
-                    vector.append(permiso)
-                elif int(p) == 14:
-                    """Permiso Proyecto ID=14 corresponde a Ver Item"""
-                    permiso = Permission.objects.get(codename="view_item")
-                    vector.append(permiso)
-                elif int(p) == 15:
-                    """Permiso Proyecto ID=15 corresponde a Obtener Calculo de Impacto"""
-                    permiso = Permission.objects.get(codename="obtener_calculoImpacto")
-                    vector.append(permiso)
-                elif int(p) == 16:
-                    """Permiso Proyecto ID=16 corresponde a Crear Linea Base"""
-                    permiso = Permission.objects.get(codename="create_lineaBase")
-                    vector.append(permiso)
-                elif int(p) == 17:
-                    """Permiso Proyecto ID=17 corresponde a Romper Linea Base"""
-                    permiso = Permission.objects.get(codename="romper_lineaBase")
-                    vector.append(permiso)
-                elif int(p) == 18:
-                    """Permiso Proyecto ID=18 corresponde a Solicitar Rotura de Linea Base"""
-                    permiso = Permission.objects.get(codename="solicitar_roturaLineaBase")
-                    vector.append(permiso)
-
-                if 5 < int(p) < 16:
-                    """Garantizar la presencia del permiso Ver Item"""
-                    permiso = Permission.objects.get(codename="view_item")
-                    if not grupo.permissions.filter(codename="view_fase").exists():
-                        grupo.permissions.add(permiso)
-
-            """Garantizar la presencia del permiso Ver Fase"""
-            permiso = Permission.objects.get(codename="view_fase")
-            if permiso not in vector:
+        grupo = Group.objects.get(name=rol.perms)
+        for p in permisos:
+            """Permiso Proyecto ID=1 corresponde a Crear Fase"""
+            if int(p) == 1:
+                permiso = Permission.objects.get(codename="add_fase")
                 vector.append(permiso)
-            """Agregar permisos al grupo"""
-            grupo.permissions.set(vector)
-            """Guardar grupo"""
-            grupo.save()
-            """Agregar grupo de permisos al rol"""
-            rol.perms = grupo
-            """Guardar Rol"""
-            rol.save()
+            elif int(p) == 2:
+                """Permiso Proyecto ID=2 corresponde a Modificar Fase"""
+                permiso = Permission.objects.get(codename="change_fase")
+                vector.append(permiso)
+            elif int(p) == 3:
+                """Permiso Proyecto ID=3 corresponde a Remover Fase"""
+                permiso = Permission.objects.get(codename="delete_fase")
+                vector.append(permiso)
+            elif int(p) == 4:
+                """Permiso Proyecto ID=4 corresponde a Ver Fase"""
+                permiso = Permission.objects.get(codename="view_fase")
+                vector.append(permiso)
+            elif int(p) == 5:
+                """Permiso Proyecto ID=5 corresponde a Crear Item"""
+                permiso = Permission.objects.get(codename="create_item")
+                vector.append(permiso)
+            elif int(p) == 6:
+                """Permiso Proyecto ID=6 corresponde a Aprobar Item"""
+                permiso = Permission.objects.get(codename="aprove_item")
+                vector.append(permiso)
+            elif int(p) == 7:
+                """Permiso Proyecto ID=7 corresponde a Deshabilitar Item"""
+                permiso = Permission.objects.get(codename="deshabilitar_item")
+                vector.append(permiso)
+            elif int(p) == 8:
+                """Permiso Proyecto ID=8 corresponde a Reversionar Item"""
+                permiso = Permission.objects.get(codename="reversionar_item")
+                vector.append(permiso)
+            elif int(p) == 9:
+                """Permiso Proyecto ID=9 corresponde a Relacionar Item"""
+                permiso = Permission.objects.get(codename="relacionar_item")
+                vector.append(permiso)
+            elif int(p) == 10:
+                """Permiso Proyecto ID=10 corresponde a Modificar Item"""
+                permiso = Permission.objects.get(codename="modify_item")
+                vector.append(permiso)
+            elif int(p) == 11:
+                """Permiso Proyecto ID=11 corresponde a Establecer Item Pendiente de Aprobacion"""
+                permiso = Permission.objects.get(codename="establecer_itemPendienteAprob")
+                vector.append(permiso)
+            elif int(p) == 12:
+                """Permiso Proyecto ID=12 corresponde a Establecer Item Desarrollo"""
+                permiso = Permission.objects.get(codename="establecer_itemDesarrollo")
+                vector.append(permiso)
+            elif int(p) == 13:
+                """Permiso Proyecto ID=13 corresponde a Obtener Trazabilidad de Item"""
+                permiso = Permission.objects.get(codename="obtener_trazabilidadItem")
+                vector.append(permiso)
+            elif int(p) == 14:
+                """Permiso Proyecto ID=14 corresponde a Ver Item"""
+                permiso = Permission.objects.get(codename="ver_item")
+                vector.append(permiso)
+            elif int(p) == 15:
+                """Permiso Proyecto ID=15 corresponde a Obtener Calculo de Impacto"""
+                permiso = Permission.objects.get(codename="obtener_calculoImpacto")
+                vector.append(permiso)
+            elif int(p) == 16:
+                """Permiso Proyecto ID=16 corresponde a Crear Linea Base"""
+                permiso = Permission.objects.get(codename="create_lineaBase")
+                vector.append(permiso)
+            elif int(p) == 17:
+                """Permiso Proyecto ID=17 corresponde a Romper Linea Base"""
+                permiso = Permission.objects.get(codename="break_lineaBase")
+                vector.append(permiso)
+            elif int(p) == 18:
+                """Permiso Proyecto ID=18 corresponde a Solicitar Rotura de Linea Base"""
+                permiso = Permission.objects.get(codename="solicitar_roturaLineaBase")
+                vector.append(permiso)
 
-            """Template a renderizar: gestionProyecto.html con parametro -> proyectoid"""
-            return redirect('proyectoView', id=proyectoid)
+            if 5 < int(p) < 16:
+                """Garantizar la presencia del permiso Ver Item"""
+                permiso = Permission.objects.get(codename="ver_item")
+                if not grupo.permissions.filter(codename="view_fase").exists():
+                    grupo.permissions.add(permiso)
+
+        """Garantizar la presencia del permiso Ver Fase"""
+        permiso = Permission.objects.get(codename="view_fase")
+        if permiso not in vector:
+            vector.append(permiso)
+        """Agregar permisos al grupo"""
+        grupo.permissions.set(vector)
+        """Guardar grupo"""
+        grupo.save()
+        """Agregar grupo de permisos al rol"""
+        rol.perms = grupo
+        """Guardar Rol"""
+        rol.save()
+        roles = proyecto.roles.all()
+        """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
+        return render(request, 'proyecto/proyectoRol.html', {'proyecto': proyecto, 'roles': roles, })
 
 
-        else:
-            """Boton MOdificar no ha sido presionado en el template"""
-            """ID Proyecto"""
-            proyectoid = request.POST.get('proyectoid')
-            """ID del Rol"""
-            rolid = request.POST.get('roles')
-            """Rol a MOdificar"""
-            rol = Rol.objects.get(id=rolid)
-            """Verificar si el rol ha sido asignado previamente"""
-            if rol.faseUser.filter().exists():
-                """Proyecto correspondiente"""
-                proyecto = Proyecto.objects.get(id=proyectoid)
-                """Lista de roles del proyecto"""
-                roles = proyecto.roles.all()
 
-                """
-                Template a renderizar: proyectoRolModificar.html con parametro -> 
-                roles del proyecto, proyectoid y 
-                mensaje de error
-                """
-                return render(request, "proyecto/proyectoRolModificar.html",
-                              {'roles': roles, 'select': None, 'proyectoid': proyectoid, 'permisos': None,
-                               'mensaje': "Lo sentimos, no es posible modificar un rol previamente asignado.", })
-
-            """Si el rol no ha sido asignado"""
-            """Actualizar los datos para visualizar en el template"""
-            seleccion = rol
-            permisos = []
-            """Permisos del rol"""
-            perms = rol.perms.permissions.all()
-            for p in perms:
-                permisos.append(p.codename)
-
-    """GET request, muestra el template correspondiente a la modificacion de roles"""
-    """Proyecto correspondiente"""
-    proyecto = Proyecto.objects.get(id=proyectoid)
-    """Verificar permiso necesario en el proyecto correspondiente"""
-    if not (request.user.has_perm("is_gerente", proyecto)):
-        return redirect('/permissionError/')
-
-    """Verifica que el proyecto no se encuentre cancelado"""
-    if proyecto.estado == "cancelado":
-        return redirect('proyectoView', id=proyectoid)
-
-    """Roles del proyecto"""
-    roles = proyecto.roles.all()
-
-    """Template a renderizar: proyectoRolModificar.html con parametros -> roles del proyecto, proyectoid"""
-    return render(request, "proyecto/proyectoRolModificar.html", {'roles': roles, 'select': seleccion, 'proyectoid': proyectoid, 'permisos': permisos, })
-
-def proyectoRolEliminar(request):
+def proyectoRolEliminar(request,proyectoid,rolid):
     """
        **proyectoRolEliminar:**
         Vista utilizada para remover roles del proyecto.
@@ -1117,9 +1091,10 @@ def proyectoRolEliminar(request):
         y que (indirectamente) haya iniciado sesion
     """
     """GET request, muestra el template correspondiente para remover roles del proeycto"""
+    '''
     if request.method == 'GET':
         """ID del proyecto"""
-        proyectoid = request.GET.get('proyectoid')
+        #proyectoid = request.GET.get('proyectoid')
         """Proyecto correspondiente"""
         proyecto = Proyecto.objects.get(id=proyectoid)
         """Verificar permiso necesario en el proyecto correspondiente"""
@@ -1131,24 +1106,22 @@ def proyectoRolEliminar(request):
             return redirect('proyectoView', id=proyectoid)
 
         """Lista de roles del proyecto"""
-        roles = proyecto.roles.all()
+        rol = Rol.objects.get(id=rolid)
         """
         Template a renderizar: proyectoRolEliminar.html con parametros -> roles
         del proyecto y proyectoid
          """
-        return render(request, "proyecto/proyectoRolEliminar.html", {'roles': roles, 'proyectoid': proyectoid, })
-
+        return render(request, "proyecto/proyectoRolEliminar.html", {'rol': rol, 'proyecto': proyecto, })
+    '''
     """POST request, captura el rol para remover del proyecto"""
     """ID del proyecto"""
-    proyectoid = request.POST.get('proyectoid')
+    #proyectoid = request.POST.get('proyectoid')
     """Proyecto correspondiente"""
     proyecto = Proyecto.objects.get(id=proyectoid)
     """Lista de roles del proyecto"""
     roles = proyecto.roles.all()
-    """ID del rol a remover"""
-    rolid = request.POST.get('roles')
-    """Rol a remover"""
     rol = Rol.objects.get(id=rolid)
+    '''
     """Verificar si el rol ha sido asignado previamente"""
     if rol.faseUser.filter().exists():
         """
@@ -1158,12 +1131,12 @@ def proyectoRolEliminar(request):
         """
         return render(request, "proyecto/proyectoRolEliminar.html", {'roles': roles, 'proyectoid': proyectoid,
                                         'mensaje': "Lo sentimos, no puede remover un rol previamente asignado."})
-
+    '''
     """Si el rol no ha sido asignado previamente"""
     proyecto.roles.remove(rol)
 
-    """Template a renderizar: gestionProyecto.html con parametro -> proyectoid"""
-    return redirect('proyectoView', id=proyectoid)
+    """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
+    return render(request, 'proyecto/proyectoRol.html', {'proyecto': proyecto, 'roles': roles, })
 
 
 def crear_tipo_form(request):
@@ -1225,9 +1198,20 @@ def gestionar_tipo_de_item(request):
     """Verifica que el proyecto no se encuentre cancelado"""
     if proyecto.estado == "cancelado":
         return redirect('proyectoView', id=proyectoid)
-    return render(request, "proyecto/gestionartipodeitem.html", {'proyectoid': proyectoid, 'tipos': tipos})
 
-def modificar_tipo_de_item(request):
+    tipos_modificable = list(tipos)
+    tipos_no_modificable = []
+    fasesProyecto = proyecto.fases.all()
+    for f in fasesProyecto:
+        itemsFase = f.items.all()
+        for i in itemsFase:
+            if i.tipoItem == tipos and i.estado != "deshabilitado":
+                tipos_modificable.remove(tipos)
+                tipos_no_modificable.append(tipos)
+    return render(request, "proyecto/gestionartipodeitem.html", {'proyecto': proyecto, 'tipos_modificable': tipos_modificable,
+                                                                 'tipos_no_modificable': tipos_no_modificable,})
+
+def modificar_tipo_de_item(request,proyectoid,tipoid):
     """
        **modificar_tipo_de_item:**
         View para modificar los datos de un tipo
@@ -1239,7 +1223,26 @@ def modificar_tipo_de_item(request):
     se encuentra en el metodo GET, el usuario aún no
     selecciono un tipo de Item para modificar.
     """
-    seleccion= None
+    if request.method == "GET":
+        """Se recibe el ID del proyecto en el cual se encuentra actualmente el Usuario"""
+        """Recupera de la BD el proyecto en el que se encuentra el usuario."""
+        # proyectoid = request.GET.get('proyectoid')
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Verificar permiso necesario en el proyecto correspondiente"""
+        if not (request.user.has_perm("is_gerente", proyecto)):
+            return redirect('/permissionError/')
+
+        """Verifica que el proyecto no se encuentre cancelado"""
+        if proyecto.estado == "cancelado":
+            return redirect('proyectoView', id=proyectoid)
+        """
+        Se asigna a la variable "tipos" todos los Tipos de Item
+        con los que cuenta el proyecto en el cual se encuentra el usuario
+        """
+        tipo = TipodeItem.objects.get(id=tipoid)
+
+        return render(request, "proyecto/modifTipodeItem.html", {'proyectoid': proyectoid,
+                                                                 'tipo': tipo})
     if request.method=="POST":
         """
         Consulta si el post recibido es el de la selección de 
@@ -1252,7 +1255,7 @@ def modificar_tipo_de_item(request):
             dato = request.POST
             """Creación de un objeto Tipo de Item con los valores recibidos en el post"""
             obj = proyecto.tipoItem.get(id=dato['tipodeitem_id'])
-            """Se verifica que el nombre nuevo no este asoiado a otro tipo de item en el proyecto."""
+            """Se verifica que el nombre nuevo no este asociado a otro tipo de item en el proyecto."""
             if proyecto.tipoItem.filter(nombreTipo=dato['nombretipo']).exclude(id=dato['tipodeitem_id']).exists():
                 """
                 Se asigna a la variable "tipos" todos los Tipos de Item 
@@ -1283,48 +1286,19 @@ def modificar_tipo_de_item(request):
             obj.campo_extra=cambios_campos
             """Guarda las modificaciones en la BD"""
             obj.save()
-            return redirect('proyectoView', id=proyectoid)
-        else:
-            proyectoid = request.POST.get('proyectoid')
-            proyecto = Proyecto.objects.get(id=proyectoid)
-            """
-            Se asigna a la variable "tipos" todos los Tipos de Item 
-            con los que cuenta el proyecto en el cual se encuentra el usuario
-            """
             tipos = proyecto.tipoItem.all()
-            """POST para la seleccion de un Tipo de Item"""
-            """Guarda en la variable seleccion el tipo de Item seleccionado por el usuario."""
-            seleccion = TipodeItem.objects.get(id=request.POST['tipo'])
+            tipos_modificable = list(tipos)
+            tipos_no_modificable = []
             fasesProyecto = proyecto.fases.all()
             for f in fasesProyecto:
                 itemsFase = f.items.all()
                 for i in itemsFase:
-                    if i.tipoItem == seleccion and i.estado != "deshabilitado":
-                        return render(request, "proyecto/modifTipodeItem.html",
-                                      {'proyectoid': proyectoid, 'tipos': tipos, 'select': None,
-                                       'mensaje': "El tipo de item ya ha sido utilizado. No es posible modificarlo.", })
-
-            return render(request, "proyecto/modifTipodeItem.html",
-                          {'proyectoid': proyectoid, 'tipos': tipos, 'select': seleccion})
-
-    """Se recibe el ID del proyecto en el cual se encuentra actualmente el Usuario"""
-    """Recupera de la BD el proyecto en el que se encuentra el usuario."""
-    proyectoid = request.GET.get('proyectoid')
-    proyecto = Proyecto.objects.get(id=proyectoid)
-    """Verificar permiso necesario en el proyecto correspondiente"""
-    if not (request.user.has_perm("is_gerente", proyecto)):
-        return redirect('/permissionError/')
-
-    """Verifica que el proyecto no se encuentre cancelado"""
-    if proyecto.estado == "cancelado":
-        return redirect('proyectoView', id=proyectoid)
-    """
-    Se asigna a la variable "tipos" todos los Tipos de Item
-    con los que cuenta el proyecto en el cual se encuentra el usuario
-    """
-
-    tipos = proyecto.tipoItem.all()
-    return render(request, "proyecto/modifTipodeItem.html", {'proyectoid': proyectoid, 'tipos':tipos, 'select':seleccion})
+                    if i.tipoItem == tipos and i.estado != "deshabilitado":
+                        tipos_modificable.remove(tipos)
+                        tipos_no_modificable.append(tipos)
+            return render(request, "proyecto/gestionartipodeitem.html",
+                          {'proyectoid': proyectoid, 'tipos_modificable': tipos_modificable,
+                           'tipos_no_modificable': tipos_no_modificable, })
 
 def importar_tipo_de_item(request):
 
@@ -1359,7 +1333,19 @@ def importar_tipo_de_item(request):
 
             """Agrega al proyecto actual los tipos de Item seleccionados."""
             proyecto.tipoItem.add(tipo)
-        return redirect('proyectoView',id=proyectoid)
+        tipos = proyecto.tipoItem.all()
+        tipos_modificable = list(tipos)
+        tipos_no_modificable = []
+        fasesProyecto = proyecto.fases.all()
+        for f in fasesProyecto:
+            itemsFase = f.items.all()
+            for i in itemsFase:
+                if i.tipoItem == tipos and i.estado != "deshabilitado":
+                    tipos_modificable.remove(tipos)
+                    tipos_no_modificable.append(tipos)
+        return render(request, "proyecto/gestionartipodeitem.html",
+                      {'proyectoid': proyectoid, 'tipos_modificable': tipos_modificable,
+                       'tipos_no_modificable': tipos_no_modificable, })
 
     """Se recibe el ID del proyecto en el cual se encuentra actualmente el Usuario"""
     """Recupera de la BD el proyecto en el que se encuentra el usuario."""
@@ -1393,61 +1379,32 @@ def importar_tipo_de_item(request):
     proyectoid = request.GET.get('proyectoid')
     return render(request,"proyecto/importartipo.html",{'tipos':tipos_de_item, 'proyectoid': proyectoid})
 
-def remover_tipo_de_item(request):
+def remover_tipo_de_item(request,proyectoid,tipoid):
     """
        **remover_tipo_de_item:**
         View para remover un tipo de Item
     """
-    if request.method == "POST":
+    if request.method == "GET":
         """
         Se recibe el ID del proyecto en el cual se encuentra actualmente el Usuario
         Recupera de la BD el proyecto en el que se encuentra el usuario.
         """
-        proyectoid = request.POST.get('proyectoid')
+        #proyectoid = request.POST.get('proyectoid')
         proyecto = Proyecto.objects.get(id=proyectoid)
-        """
-        Recupera de la BD todos los Tipos de Item con los que 
-        cuenta el proyecto en el cual se encuentra el usuario.
-        """
+        tipo = TipodeItem.objects.get(id=tipoid)
 
-        tipos_enel_proyecto = proyecto.tipoItem.all()
-        """Recibe los tipos de Item que el usuario desea remover del proyecto actual."""
-        eliminados= request.POST.getlist('eliminados')
-        """Ciclo para recorrer los tipos de Item seleccionados por el usuario."""
-        for e in eliminados:
-            tipo = tipos_enel_proyecto.get(id=e)
-            fasesProyecto = proyecto.fases.all()
-            for f in fasesProyecto:
-                itemsFase = f.items.all()
-                for i in itemsFase:
-                    if i.tipoItem == tipo and i.estado != "deshabilitado":
-                        return render(request, "proyecto/removertipo.html",
-                                      {'tipos': tipos_enel_proyecto, 'proyectoid': proyectoid,
-                                       'mensaje': "El tipo de item "+tipo.nombreTipo+" ya ha sido utilizado."
-                                                  " No es posible removerlo.", })
-
-            """Remueve del proyecto actual los tipos de Item seleccionados."""
-            proyecto.tipoItem.remove(tipo)
-        return redirect('proyectoView', id=proyectoid)
-
-    """
-    Se recibe el ID del proyecto en el cual se encuentra actualmente el Usuario
-    Recupera de la BD el proyecto en el que se encuentra el usuario.
-    """
-    proyectoid = request.GET.get('proyectoid')
-    proyecto = Proyecto.objects.get(id=proyectoid)
-    """Verificar permiso necesario en el proyecto correspondiente"""
-    if not (request.user.has_perm("is_gerente", proyecto)):
-        return redirect('/permissionError/')
-
-    """Verifica que el proyecto no se encuentre cancelado"""
-    if proyecto.estado == "cancelado":
-        return redirect('proyectoView', id=proyectoid)
-    """
-    Recupera de la BD todos los Tipos de Item con los
-    que cuenta el proyecto en el cual se encuentra el usuario.
-    """
-    tipos_enel_proyecto = proyecto.tipoItem.all()
-    """Renderiza la página cargandola con todos los tipos de Item en el proyecto."""
-    proyectoid = request.GET.get('proyectoid')
-    return render(request, "proyecto/removertipo.html",{'tipos':tipos_enel_proyecto, 'proyectoid': proyectoid})
+        """Remueve del proyecto actual los tipos de Item seleccionados."""
+        proyecto.tipoItem.remove(tipo)
+        tipos = proyecto.tipoItem.all()
+        tipos_modificable = list(tipos)
+        tipos_no_modificable = []
+        fasesProyecto = proyecto.fases.all()
+        for f in fasesProyecto:
+            itemsFase = f.items.all()
+            for i in itemsFase:
+                if i.tipoItem == tipos and i.estado != "deshabilitado":
+                    tipos_modificable.remove(tipos)
+                    tipos_no_modificable.append(tipos)
+        return render(request, "proyecto/gestionartipodeitem.html",
+                      {'proyectoid': proyectoid, 'tipos_modificable': tipos_modificable,
+                       'tipos_no_modificable': tipos_no_modificable, })

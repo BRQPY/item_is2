@@ -2,45 +2,106 @@
 {% load static %}
 
 {% block content %}
+    {% if proyecto.estado == 'pendiente' %}
+        <form action="/fase/faseVer/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/">
+            <button type="submit" class="waves-effect waves-teal btn-flat">
+                Volver a la configuración de la fase {{ fase.nombre }}
+                <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
+        </form>
+    {% endif %}
     <div class="container">
-    <h2>el boton de atras de aca, debe definir entre ir a un pendiente o iniciado, depende de la config</h2>
-    <form action="/fase/addTipoItem/">
-        <button type="submit" class="btn btn-small blue darken-1 right">
+    <h4 style="text-align: center"> Tipos de Ítems de la fase {{ fase.nombre }}</h4><br>
+    {% if add_tipo %}
+        <form action="/fase/addTipoItem/">
+            <button type="submit" class="btn btn-small blue darken-1 right">
+                Añadir Tipo de Item a la Fase
+                <i class="material-icons white-text left">add_circle</i>
+            </button>
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+        </form><br>
+    {% else %}
+        <button
+                title="La fase ya cuenta con todos los tipos de item del proyecto"
+                style="cursor: default"
+                class="btn btn-small #eeeeee grey lighten-3 black-text right"
+        >
             Añadir Tipo de Item a la Fase
             <i class="material-icons white-text left">add_circle</i>
-        </button>
-        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-        <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-    </form>
-    {% if tiposItem %}
-        <div class="col s12 md6 x8">
-            <ul class="z-depth-1">
-                {%for t in tiposItem %}
-                    <li>
-                        <div class="card-panel z-depth-4 expense">
-                            <div class="row">
-                                        <div class="col 14 left">
-                                            <b>{{t.nombreTipo}}</b>
-                                        </div>
-                                        <div class="col 11 left">
-                                            <b>Campos:</b>
-                                            {{ t.id }}
-                                        </div>
-                                        <div class="col 9 left">
-                                            <a href="{%url 'faseRemoveTipo' proyecto.id fase.id t.id%}">
-                                                <i class="material-icons darken-4 red-text left">close</i>
-                                                Remover Tipo de Item de Item
-                                            </a>
-                                        </div>
+        </button><br>
+    {% endif %}
+    {% if tipos_removible or tipos_no_removible %}
+        {% if tipos_removible %}
+            <div class="col s12 md6 x8">
+                <ul class="z-depth-1">
+                    {%for t in tipos_removible %}
+                        <li>
+                            <div class="card-panel z-depth-4 expense">
+                                <div class="row">
+                                    <div class="col 14 left">
+                                        <b>{{t.nombreTipo}}</b>
+                                    </div>
+                                    <div class="col 9 right">
+                                        <a href="{%url 'faseRemoveTipo' proyecto.id fase.id t.id%}"
+                                            onclick="return confirm('Está seguro de remover el tipo de ítem {{ t.nombreTipo }} de la fase?');"
+                                        >
+                                            <i class="material-icons darken-4 red-text left">delete</i>
+                                            Remover Tipo de Item de la fase
+                                        </a>
                                     </div>
                                 </div>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% else %}
-                <h5>Aún no hay Tipos de Item en esta fase :(</h5>
-            {% endif %}
+                                <div class="row">
+                                    <div class="col 11 left">
+                                        <b>Campos extra definido por usuarios: </b>
+                                        {% for c in t.campo_extra %}
+                                            {{ c }}&emsp;
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        {% if tipos_no_removible  %}
+            <div class="col s12 md6 x8">
+                <ul class="z-depth-1">
+                    {%for t in tipos_no_removible %}
+                        <li>
+                            <div class="card-panel z-depth-4 expense">
+                                <div class="row">
+                                    <div class="col 14 left">
+                                        <b>{{t.nombreTipo}}</b>
+                                    </div>
+                                    <div class="col 9 right">
+                                        <a href="{%url 'faseRemoveTipo' proyecto.id fase.id t.id%}"
+                                            onclick="return confirm('Está seguro de remover el tipo de ítem {{ t.nombreTipo }} de la fase?');"
+                                        >
+                                            <i class="material-icons darken-4 red-text left">delete</i>
+                                            Remover Tipo de Item de la fase
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col 11 left">
+                                        <b>Campos extra definido por usuarios: </b>
+                                        {% for c in t.campo_extra %}
+                                            {{ c }}&emsp;
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    {% else %}
+        <h5>Aún no hay Tipos de ítem en este proyecto :(</h5>
+    {% endif %}
+
 
     </div>
 {% endblock%}

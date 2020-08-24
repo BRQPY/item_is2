@@ -2,30 +2,43 @@
 {% load static %}
 
 {% block content %}
-    <h2>Usuarios del Proyecto que no estan en la fase</h2>
-    <form action="/fase/addUser/" method="post">
-        {% csrf_token %}
-        <div class="form-check">
-                 {% for u in usuarios %}
+    {% if proyecto.estado == 'pendiente' %}
+        <form action="/fase/faseUsers/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/">
+            <button type="submit" class="waves-effect waves-teal btn-flat">
+                Volver a la configuración de miembros y roles de la fase {{ fase.nombre }}
+                <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
+        </form>
+    {% endif %}
+    <div class="container">
+        <h4 style="text-align: center">Añadir miembros del Proyecto a la Fase</h4>
+        <h5 style="text-align: left">Seleccione un usuario</h5>
+        <form action="/fase/addUser/" method="post">
+            {% csrf_token %}
+            <div class="form-check">
+                     {% for u in usuarios %}
+                        <label>
+                            <input  type="radio" class="filled-in"  value={{u.id}} id="username" name="users"/>
+                             <span style="color:black">{{u}}</span>
+                        </label>
+                     {% endfor %}
+            </div>
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+            <h5>Seleccione un rol para asignar al usuario dentro de la fase:</h5>
+            <div class="form-check">
+                {% for r in roles %}
                     <label>
-                        <input  type="radio" class="filled-in"  value={{u.id}} id="username" name="users"/>
-                         <span>{{u}}</span>
+                        <input  type="radio" class="filled-in"  value={{r.id}} id="roles" name="roles"/>
+                        <span style="color:black">{{r.nombre}}</span>
                     </label>
-                 {% endfor %}
-        </div>
-        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-        <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-        <h4>Elegi un rol</h4>
-        <div class="form-check">
-            {% for r in roles %}
-                <label>
-                    <input  type="radio" class="filled-in"  value={{r.id}} id="roles" name="roles"/>
-                    <span>{{r.nombre}}</span>
-                </label>
-            {% endfor %}
-        </div>
-        <button type="submit">Agregar</button>
-    </form>
-
+                {% endfor %}
+            </div>
+            <button type="submit" class="btn-small blue darken-2 right">
+                Añadir usuario
+                <i class="material-icons white-text left">person_add</i>
+            </button>
+        </form>
+    </div>
 
 {% endblock%}

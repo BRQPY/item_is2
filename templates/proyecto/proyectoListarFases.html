@@ -12,16 +12,20 @@
         <section>
 
             <h2 style="text-align: center">{{ proyecto.nombre}}</h2>
-            <h5 style="text-align: center" class="grey-text">Panel de Configuración de Fases del Proyecto {{ proyecto.nombre}}</h5>
+            <h5 style="text-align: center" class="grey-text">Lista de Fases del Proyecto: {{ proyecto.nombre}}</h5>
             <br>
             <div class="container">
+                {% if proyecto.estado == 'pendiente' %}
+                    <form action="/fase/faseCrear/" >
+                        <button type="submit" class="btn blue darken-3 right">
+                            Crear Fase
+                            <i class="material-icons white-text left">playlist_add</i>
+                        </button>
+                        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                    </form> <br>
+                {% endif %}
                 <h6 style="text-align: left" class="grey-text"><i>Seleccione una fase para gestionarla:</i></h6>
-                <form action="/fase/fasesDeshabilitadas/">
-                <button type="submit">
-                    Fases Deshabilitadas
-                </button>
-                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                </form>
+
                 <p style="text-align: left; font-size: 18px;">
                     {%if fases%}
                         {%if fasesUser %}
@@ -37,12 +41,11 @@
                         El proyecto aun no cuenta con fases creadas.
                     {%endif%}
                 </p>
-                <form action="/fase/faseCrear/" >
-                    <button type="submit" class="btn blue darken-3 left">
-                        Crear Fase
-                        <i class="material-icons white-text left">playlist_add</i>
+                <form action="/fase/fasesDeshabilitadas/">
+                    <button type="submit">
+                        Fases Deshabilitadas
                     </button>
-                        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
                 </form>
             </div>
 

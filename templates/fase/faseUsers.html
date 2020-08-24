@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    {% if proyecto.estado == 'pendiente' %}
+        <form action="/fase/faseVer/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/">
+            <button type="submit" class="waves-effect waves-teal btn-flat">
+                Volver a la configuración de la fase {{ fase.nombre }}
+                <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
+        </form>
+    {% endif %}
+    <div class="container">
+        <h5 style="text-align: center"><b>Usuarios miembros de la Fase y sus roles</b></h5>
+        {% if agregar_mas_users %}
+            <form action="/fase/addUser/">
+                <button type="submit" class="btn btn-small blue darken-1 right">
+                    Añadir Usuario a la fase
+                    <i class="material-icons white-text left">add_circle</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+            </form><br>
+        {% else %}
+            <button
+                    title="Todos los miembros del proyecto ya forman parte de la fase."
+                    style="cursor: default"
+                    class="btn btn-small #eeeeee grey lighten-3 black-text right"
+            >
+                Añadir Usuario a la fase
+                <i class="material-icons white-text left">add_circle</i>
+            </button><br>
+        {% endif %}
+
+        {% for r in cant_roles_por_user %}
+            {{ r }}
+
+        {% endfor %}
+        {% if cant_user > 0 %}
+            <div class="col s12 md6 x8">
+                <ul class="z-depth-1">
+                    {%for u, r, cant in userRol%}
+                        <li>
+                            <div class="card-panel z-depth-4 expense">
+                                <div class="row">
+                                    <div class="col 14 left">
+                                        <b>{{u}}</b>
+                                    </div>
+                                    <div class="col 9 right">
+                                        <a href="{%url 'faseRemoverUser' proyecto.id fase.id u.id%}"
+                                           onclick="return confirm('Está seguro de remover a {{ u }} de la fase?');"
+                                        >
+                                            <i class="material-icons darken-4 red-text left">delete</i>
+                                            Remover Usuario
+                                        </a>
+                                    </div>
+                                    {% if cant == 1 %}
+                                        <div class="col 9 right">
+                                            <a
+                                               style="color:#C5C5C5"
+                                               title="El usuario cuenta con un solo rol en la fase.&#xA Click en 'Remover Usuario' si desea eliminarlo."
+                                            >
+                                                <i class="disable material-icons darken-4 grey-text left">remove_circle_outline</i>
+                                                Remover Rol
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        <div class="col 9 right">
+                                            <a href="{%url 'faseRolRemover' proyecto.id fase.id u.id%}">
+                                                <i class="material-icons darken-4 blue-text left">remove_circle_outline</i>
+                                                Remover Rol
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                    {% if cant == cant_roles_proyecto %}
+                                        <div class="col 9 right">
+                                            <a
+                                               style="color:#C5C5C5"
+                                               title="Éste usuario ya cuenta con todos los roles disponibles en el proyecto."
+                                            >
+                                                <i class="disabled material-icons darken-4 grey-text left">add_circle_outline</i>
+                                                Agregar Rol
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        <div class="col 9 right">
+                                            <a href="{%url 'faseRolAsignar' proyecto.id fase.id u.id%}"
+                                               title="Asignar rol a {{ u }} en esta fase."
+                                            >
+                                                <i class="material-icons dark blue-text left">add_circle_outline</i>
+                                                Agregar Rol
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="row">
+                                    <div class="col 11 left">
+                                        <b>Roles:</b>
+                                        {{ r }}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% else %}
+            <h5>Aún no hay usuarios en esta fase :(</h5>
+        {% endif %}
+    </div>
+
+{% endblock%}

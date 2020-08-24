@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <form action="/proyecto/proyectoVer/proyectoid={{ proyecto.id }}/">
+            <button type="submit" class="waves-effect waves-teal btn-flat">
+                    Volver al listado de fases del proyecto
+                    <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
+    </form>
+    <div class="container">
+        <h3 style="text-align: center">{{ proyecto.nombre }}</h3>
+        <h5 style="text-align: center" class="grey-text">Panel de Configuración del Proyecto</h5><br>
+        {%if proyecto.estado != "cancelado"%}
+            <form action="/proyecto/modify/">
+                <button type="submit" class="btn-small blue darken-2 left" >
+                    Modificar datos del Proyecto
+                    <i class="material-icons white-text left">edit</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            </form><br><br>
+            <form action="/proyecto/proyectoUser/">
+                <button type="submit" class="btn-small blue darken-2 left" >
+                    Gestionar miembros del Proyecto
+                    <i class="material-icons white-text left">people</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            </form><br><br>
+            <form action="/proyecto/proyectoRol/">
+                <button type="submit" class="btn-small blue darken-2 left" >
+                    Roles en el Proyecto
+                    <i class="material-icons white-text left">assignment_ind</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            </form><br><br>
+            <form action="/proyecto/proyectoTipodeItem/">
+                <button type="submit" class="btn-small blue darken-2 left" >
+                    Tipos de Ítem
+                    <i class="material-icons white-text left">web</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            </form><br><br>
+            <form action="/proyecto/proyectoComite/">
+                <button type="submit" class="btn-small blue darken-2 left" >
+                    Comité de Control de Cambios
+                    <i class="material-icons white-text left">next_week</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            </form><br><br>
+        {%endif%}
+        <form action="/proyecto/unable/">
+            <button type="submit" class="btn red darken-3 left" >
+                <b>Deshabilitar Proyecto</b>
+                <i class="material-icons white-text left">block</i>
+            </button>
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        </form>
+    </div>
+{% endblock%}

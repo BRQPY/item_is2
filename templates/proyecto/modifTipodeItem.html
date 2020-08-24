@@ -14,30 +14,15 @@
 {{ mensaje }}
     <section>
         <h3 style="text-align: center">Modificar Tipo de ítem</h3>
-        <form action="." method="POST">{% csrf_token %}
-            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-            <select id="tipo" name="tipo" class="browser-default">
-                <option value="" disabled selected>Seleccione un Tipo de ítem</option>
-                {% for tipo in tipos %}
-                     <option value="{{tipo.id}}">{{tipo.nombreTipo}}</option>
-                {% endfor %}
-
-            </select><br>
-            <button id="but" type='submit' name="seleccion" class="btn-small blue darken-3 right">
-                Seleccionar
-            </button>
-        <p>
-        <br>
-        </form>
-        {% if select is not None %}
+        
             <form action="." method="POST">{% csrf_token %}
-                <p></p><label id="lab" for="nombretipo">Nombre del Tipo de Item:</label><br>
-                <input class="cla"  type="text" id="nombretipo" name="nombretipo" value="{{ select.nombreTipo }}" required><br></p>
+                <label id="lab" for="nombretipo">Nombre del Tipo de Item:</label><br>
+                <input class="cla"  type="text" id="nombretipo" name="nombretipo" value="{{ tipo.nombreTipo }}" required><br></p>
                 <p><label class="cla"  for="descripciontipo">Descripción del Tipo de Item:</label><br>
-                <input class="cla"  type="text" id="descripciontipo" name="descripciontipo" value="{{ select.descripcion }}" required></p>
-                <input class="cla"  type="hidden" id="tipodeitem_id" name="tipodeitem_id" value="{{ select.id }}">
+                <input class="cla"  type="text" id="descripciontipo" name="descripciontipo" value="{{ tipo.descripcion }}" required></p>
+                <input class="cla"  type="hidden" id="tipodeitem_id" name="tipodeitem_id" value="{{ tipo.id }}">
                 <h5>Campos agregados por los Usuarios:</h5>
-                {% for c in select.campo_extra %}
+                {% for c in tipo.campo_extra %}
                         <input class="cla" type="text" id="{{ c }}" name="campos" value="{{ c }}">
                     <input class="cla"  type="button"  onclick="document.getElementById('{{ c }}').value=''" value="Eliminar"/>
 
@@ -54,8 +39,6 @@
                 <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
 
         </form>
-
-        {% endif %}
         </p>
     </section>
 <script>

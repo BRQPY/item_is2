@@ -36,10 +36,15 @@ h1, h6, h5 {
 }
 
 .section-expenses .expense {
-  font-size: 16px;
+  font-size: 8px;
   border-radius: 0;
   margin: 0;
 }
 .section-expenses li:nth-child(even) .expense {
   background-color: #E5E5E5;!important;
+}
+a.disabled {
+  pointer-events: none !important;
+  cursor: default !important;
+  opacity: 0.6;
 }

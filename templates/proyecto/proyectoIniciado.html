@@ -9,16 +9,9 @@
             </button>
     </form>
     <div class="container">
-        {%if proyecto.estado != "cancelado"%}
-            <form action="/proyecto/proyectoCancelar/">
-                <br><button type="submit" class="btn-small yellow darken-3 left">
-                        Cancelar Proyecto
-                    </button>
-                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            </form><br><br>
-            {%endif%}
+
         <form action="/proyecto/gestionProyecto/">
-           <button type="submit" class="btn blue darken-3 right" >
+           <button type="submit" class="btn blue darken-2 right" >
                Configurar
                <i class="material-icons white-text left">settings</i>
             </button>
@@ -38,9 +31,15 @@
         {%else%}
             El proyecto aun no cuenta con fases creadas.
         {%endif%}
-
+        <br><br><br><br>
+        {%if proyecto.estado != "cancelado"%}
+            <form action="/proyecto/proyectoCancelar/">
+                <button type="submit" class="btn-small yellow darken-3 right">
+                    Cancelar Proyecto
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            </form><br><br>
+        {%endif%}
     </div>
-
-
 
 {% endblock%}

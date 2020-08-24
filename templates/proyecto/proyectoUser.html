@@ -2,13 +2,23 @@
 {% load static %}
 
 {% block content %}
-    <form action="/proyecto/proyectoVer/proyectoid={{proyecto.id}}/">
-        <button type="submit" class="waves-effect waves-teal btn-flat">
-            Volver al Panel de Configuración de Proyecto
-            <i class="material-icons dark blue-text left">keyboard_return</i>
-        </button>
-        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-    </form>
+    {% if proyecto.estado == "pendiente" %}
+        <form action="/proyecto/proyectoVer/proyectoid={{proyecto.id}}/">
+            <button type="submit" class="waves-effect waves-teal btn-flat">
+                Volver al Panel de Configuración de Proyecto
+                <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        </form>
+    {% else %}
+        <form action="/proyecto/gestionProyecto/">
+             <button type="submit" class="waves-effect waves-teal btn-flat">
+                        Volver a Gestión de Proyecto
+                        <i class="material-icons dark blue-text left">keyboard_return</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        </form>
+    {% endif %}
     <div class="container">
         <h3 style="text-align: center">
             Lista de Miembros del Proyecto

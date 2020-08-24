@@ -18,8 +18,12 @@
             {% for tipo in tipos %}
                 <label>
                     <input  type="checkbox" class="filled-in"  id="importados" name="importados" value={{tipo.id}}>
-                    <span>{{tipo.nombreTipo}}</span>
-                </label>
+                    <span style="color:black">{{tipo.nombreTipo}} - Campos extra:
+                        {% for c in tipo.campo_extra %}
+                            {{ c }}
+                        {% endfor %}
+                    </span>
+                </label><br>
             {% endfor %}
         </div>
         <button id="button" type='submit' name="seleccion" class="btn-small blue darken-3 right" >

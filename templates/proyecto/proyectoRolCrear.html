@@ -1,105 +1,129 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>CREAR ROL</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/proyectoRolCrear.css' %}">
-</head>
-<body>
-{{ mensaje }}
-    <style> body{background-color: lavender }</style>
-    <section>
-        <form action="/proyecto/proyectoRol/">
-            <input type="submit" value="Atras" />
-            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-        </form>
-        <form action="/proyecto/proyectoRol/create/" method="post">
 
-            <p>{{mensaje}}</p>
+{% block content %}
+    <form action="/proyecto/proyectoRol/">
+         <button type="submit" class="waves-effect waves-teal btn-flat">
+             Volver a Gestión de Roles de Proyecto
+             <i class="material-icons dark blue-text left">keyboard_return</i>
+         </button>
+        <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+    </form>
+	<div class="container">
+        <form action="/proyecto/proyectoRol/create/" method="post">
+            <div style="position: relative;">
+                <div style="position: absolute; left: 0; top: 0; text-align: left">
+                    <h5>Nombre del Rol:</h5>
+                </div>
+                <div style="position: absolute; right: 0; top: 0; text-align: left">
+                    <button type="submit"
+                            class="btn-small blue darken-2 left"
+                            onclick="myFunction()"
+                    >
+                        Crear Rol
+                        <i class="material-icons white-text left">add_circle</i>
+                    </button>
+                </div>
+            </div>
+            <br><br>
             <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-            <label for="Rolname">Nombre del Rol:</label><br>
-             <input type="text" id="Rolname" name="nombre" required><br>
+            <input type="text" id="Rolname" name="nombre" required><br>
 
             {% csrf_token %}
-            <h4>Selecciona los Permisos </h4>
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="1" id="perms" name="perms">
-                    <label class="form-check-label" for="username">Crear Fase.</label>
+            <h5>Selecciona los Permisos para asignar al rol </h5>
+            <div style="position: relative;">
+                <div style="position: absolute; left: 0; top: 0; text-align: left">
+                    <h7>Permisos respecto a Fases de Proyecto:</h7>
+                    <div class="form-check">
+                            <label><input class="filled-in" type="checkbox" value="4" id="perms" name="perms" readonly checked onclick="return false;">
+                            <span style="color:black">Ver Fase.</span></label>
+                    </div>
+                    <div class="form-check">
+                            <label><input class="filled-in" type="checkbox" value="1" id="perms" name="perms">
+                            <span style="color:black">Crear Fase.</span></label>
+                    </div>
+                    <div class="form-check">
+                            <label><input class="filled-in" type="checkbox" value="2" id="perms" name="perms">
+                            <span style="color:black">Modificar Fase.</span></label>
+                    </div>
+                    <div class="form-check">
+                        <label><input class="filled-in" type="checkbox" value="3" id="perms" name="perms">
+                        <span style="color:black">Eliminar Fase.</span></label>
+                    </div>
+                </div>
+                <div style="position: absolute; right: 0; top: 0; text-align: left">
+                    <h7>Permisos respecto a Ítems de Proyecto:</h7>
+                    <div class="form-check">
+                        <label><input class="filled-in" type="checkbox" value="14" id="verItem" name="perms"
+                               onclick="return myFunction3();">
+                        <span style="color:black">Visualizar ítem.</span></label>
+                    </div>
+                    <div class="form-check">
+                        <label><input class="filled-in" type="checkbox" value="5" id="permiso" name="perms">
+                        <span style="color:black">Crear ítem.</span></label>
+                    </div>
+                    <div class="form-check">
+                        <label><input class="filled-in" type="checkbox" value="10" id="permiso" name="perms" onclick="myFunction2(this);">
+                        <span style="color:black">Modificar ítem.</span></label>
+                    </div>
+                    <div class="form-check">
+                        <label><input class="filled-in" type="checkbox" value="7" id="permiso" name="perms" onclick="myFunction2(this);">
+                        <span style="color:black">Deshabilitar ítem.</span></label>
+                    </div>
+                    <div class="form-check">
+                        <label><input class="filled-in" type="checkbox" value="8" id="permiso" name="perms" onclick="myFunction2(this);">
+                        <span style="color:black">Reversionar ítem.</span></label>
+                    </div>
+                    <div class="form-check">
+                        <label><input class="filled-in" type="checkbox" value="9" id="permiso" name="perms" onclick="myFunction2(this);">
+                        <span style="color:black">Relacionar ítem.</span></label>
+                    </div>
+                    <div class="form-check">
+                        <label><input class="filled-in" type="checkbox" value="6" id="permiso" name="perms" onclick="myFunction2(this);">
+                        <span style="color:black">Aprobar ítem.</span></label>
+                    </div>
+                    <div class="form-check">
+                        <label><input class="filled-in" type="checkbox" value="13" id="permiso" name="perms" onclick="myFunction2(this);">
+                        <span style="color:black">Obtener trazabilidad de ítem.</span></label>
+                    </div>
+                    <div class="form-check">
+                        <label><input class="filled-in" type="checkbox" value="15" id="permiso" name="perms" onclick="myFunction2(this)">
+                        <span style="color:black">Obtener cálculo de impacto de ítem.</span></label>
+                    </div>
+                    <div class="form-check">
+                        <label><input class="filled-in" type="checkbox" value="12" id="permiso" name="perms" onclick="myFunction2(this);">
+                        <span style="color:black">Establecer ítem como en desarrollo.</span></label>
+                    </div>
+                    <div class="form-check">
+                        <label><input class="filled-in" type="checkbox" value="11" id="permiso" name="perms" onclick="myFunction2(this);">
+                        <span style="color:black">Establecer ítem como pendiente de aprobación.</span></label>
+                    </div>
+                </div>
+            </div><br><br><br><br><br><br><br>
+            <div style="position: relative;">
+                <div style="position: absolute; left: 0; top: 0; text-align: left">
+                    <h7>Permisos respecto a Línea Base:</h7>
+                    <div class="form-check">
+                        <label><input class="filled-in" type="checkbox" value="16" id="permiso" name="perms">
+                        <span style="color:black">Crear Línea Base.</span></label>
+                    </div>
+                    <div class="form-check">
+                        <label><input class="filled-in" type="checkbox" value="17" id="permiso" name="perms">
+                        <span style="color:black">Romper Línea Base.</span></label>
+                    </div>
+                    <div class="form-check">
+                        <label>
+                            <label><input class="filled-in" type="checkbox" value="18" id="permiso" name="perms">
+                            <span style="color:black">Solicitar rotura de línea base.</span></label>
+                        </label>
+                    </div>
+                </div>
             </div>
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="2" id="perms" name="perms">
-                    <label class="form-check-label" for="username">Modificar Fase.</label>
-            </div>
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="3" id="perms" name="perms">
-                    <label class="form-check-label" for="username">Eliminar Fase.</label>
-            </div>
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="4" id="perms" name="perms" readonly checked onclick="return false;">
-                    <label class="form-check-label" for="username">Ver Fase.</label>
-            </div>
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="5" id="permiso" name="perms">
-                    <label class="form-check-label" for="username">Crear ítem.</label>
-            </div>
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="6" id="permiso" name="perms" onclick="myFunction2(this);">
-                    <label class="form-check-label" for="username">Aprobar ítem.</label>
-            </div>
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="7" id="permiso" name="perms" onclick="myFunction2(this);">
-                    <label class="form-check-label" for="username">Deshabilitar ítem.</label>
-            </div>
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="8" id="permiso" name="perms" onclick="myFunction2(this);">
-                    <label class="form-check-label" for="username">Reversionar ítem.</label>
-            </div>
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="9" id="permiso" name="perms" onclick="myFunction2(this);">
-                    <label class="form-check-label" for="username">Relacionar ítem.</label>
-            </div>
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="10" id="permiso" name="perms" onclick="myFunction2(this);">
-                    <label class="form-check-label" for="username">Modificar ítem.</label>
-            </div>
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="11" id="permiso" name="perms" onclick="myFunction2(this);">
-                    <label class="form-check-label" for="username">Establecer ítem como pendiente de aprobación.</label>
-            </div>
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="12" id="permiso" name="perms" onclick="myFunction2(this);">
-                    <label class="form-check-label" for="username">Establecer ítem como en desarrollo.</label>
-            </div>
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="13" id="permiso" name="perms" onclick="myFunction2(this);">
-                    <label class="form-check-label" for="username">Obtener trazabilidad de ítem.</label>
-            </div>
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="14" id="verItem" name="perms"
-                           onclick="return myFunction3();">
-                    <label class="form-check-label" for="username">Visualizar ítem.</label>
-            </div>
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="15" id="permiso" name="perms" onclick="myFunction2(this)">
-                    <label class="form-check-label" for="username">Obtener cálculo de impacto de ítem.</label>
-            </div>
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="16" id="permiso" name="perms">
-                    <label class="form-check-label" for="username">Crear Línea Base.</label>
-            </div>
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="17" id="permiso" name="perms">
-                    <label class="form-check-label" for="username">Romper Línea Base.</label>
-            </div>
-            <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="18" id="permiso" name="perms">
-                    <label class="form-check-label" for="username">Solicitar rotura de línea base.</label>
-            </div>
-            <button type="submit" onclick="myFunction()">Crear Rol</button>
+            <br><br><br><br><br><br>
+
         </form>
-    </section>
-</body>
+   </div>
+{% endblock%}
 
 <script>
     function myFunction2(obj) {
