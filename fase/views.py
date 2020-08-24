@@ -360,7 +360,6 @@ def FaseAddUser(request):
         usuarios = proyecto.usuarios.all()
         usuarios = list(usuarios)
         fasesUsers = FaseUser.objects.all()
-
         for fu in fasesUsers:
             if fu.fase == fase:
                 if fu.user in usuarios:
@@ -446,7 +445,7 @@ def FaseRemoveUser(request,proyectoid,faseid,userid):
             """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
             return redirect('faseUsers', faseid=faseid, proyectoid=proyectoid)
         elif proyecto.estado == "inicializado":
-            return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
+            return redirect('faseUsers', faseid=faseid, proyectoid=proyectoid)
 def faseRolAsignar(request,proyectoid,faseid,userid):
 
     """

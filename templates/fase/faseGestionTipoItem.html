@@ -9,6 +9,15 @@
                 <i class="material-icons dark blue-text left">keyboard_return</i>
             </button>
         </form>
+    {% else %}
+        <form action="/fase/FaseIniciada/config/">
+            <button type="submit" class="waves-effect waves-teal btn-flat">
+                Volver a la configuración de la fase {{ fase.nombre }}
+                <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+        </form>
     {% endif %}
     <div class="container">
     <h4 style="text-align: center"> Tipos de Ítems de la fase {{ fase.nombre }}</h4><br>
@@ -76,12 +85,13 @@
                                         <b>{{t.nombreTipo}}</b>
                                     </div>
                                     <div class="col 9 right">
-                                        <a href="{%url 'faseRemoveTipo' proyecto.id fase.id t.id%}"
-                                            onclick="return confirm('Está seguro de remover el tipo de ítem {{ t.nombreTipo }} de la fase?');"
+                                        <a
+                                           title="El Tipo de Item no puede ser removido porque está siendo utilizado por un ítem de esta fase."
+                                           style="color:#C5C5C5"
                                         >
-                                            <i class="material-icons darken-4 red-text left">delete</i>
-                                            Remover Tipo de Item de la fase
-                                        </a>
+                                                Remover Tipo de Item de la fase
+                                                <i class=" disabled material-icons darken-4 grey-text left">delete</i>
+                                            </a>
                                     </div>
                                 </div>
                                 <div class="row">
