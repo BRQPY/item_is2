@@ -19,7 +19,12 @@ class Item(models.Model):
     observacion = models.CharField(max_length=50, blank=True, default= None)
     #relaciones_items = ArrayField(models.CharField(max_length=200), default=list, blank=True)
     costo= models.IntegerField(default=0, blank=True)
+    relaciones = models.ManyToManyField('self', default=None, through='Relacion', symmetrical=False)
 
+class Relacion(models.Model):
+    tipo = models.CharField(max_length=40, default=None)
+    item_from = models.ForeignKey(Item, default=None, on_delete=models.CASCADE, related_name='item_from')
+    item_to = models.ForeignKey(Item, default=None, on_delete=models.CASCADE, related_name='item_to')
 
 class Fase(models.Model):
     nombre = models.CharField(max_length=40)
