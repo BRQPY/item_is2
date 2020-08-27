@@ -21,10 +21,12 @@ class Item(models.Model):
     costo= models.IntegerField(default=0, blank=True)
     relaciones = models.ManyToManyField('self', default=None, through='Relacion', symmetrical=False)
 
-class Relacion(models.Model):
-    tipo = models.CharField(max_length=40, default=None)
-    item_from = models.ForeignKey(Item, default=None, on_delete=models.CASCADE, related_name='item_from')
-    item_to = models.ForeignKey(Item, default=None, on_delete=models.CASCADE, related_name='item_to')
+
+class LineaBase(models.Model):
+    nombre = models.CharField(max_length=40, null=False, default=None)
+    items = models.ManyToManyField(Item, default=None)
+    estado = models.CharField(max_length=40, default=None)
+    creador = models.ForeignKey(User, on_delete=models.CASCADE, default=None, null=True)
 
 class Fase(models.Model):
     nombre = models.CharField(max_length=40)
@@ -32,6 +34,7 @@ class Fase(models.Model):
     estado = models.CharField(max_length=40, default=None)
     items = models.ManyToManyField(Item, default=None)
     tipoItem = models.ManyToManyField(TipodeItem, default=None)
+    lineasBase = models.ManyToManyField(LineaBase, default=None)
     class Meta:
         permissions = (
             ("create_item", "Can create item"),
@@ -48,6 +51,8 @@ class Fase(models.Model):
             ("deshabilitar_item", "Deshabilitar Item"),
             ("obtener_calculoImpacto", "Obtener cálculo de impacto de ítem."),
             ("create_lineaBase", "Crear Línea Base."),
+            ("modify_lineaBase", "Modificar Linea Base."),
+            ("ver_lineaBase", "Ver Línea Base."),
             ("break_lineaBase", "Romper Línea Base."),
             ("solicitar_roturaLineaBase", "Solicitar rotura de línea base."),
         )
@@ -57,6 +62,11 @@ class FaseUser(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     fase = models.ForeignKey(Fase, on_delete=models.CASCADE, default=None)
 
+class Relacion(models.Model):
+    tipo = models.CharField(max_length=40, default=None)
+    fase_item_to = models.ForeignKey(Fase, default=None, on_delete=models.CASCADE)
+    item_from = models.ForeignKey(Item, default=None, on_delete=models.CASCADE, related_name='item_from')
+    item_to = models.ForeignKey(Item, default=None, on_delete=models.CASCADE, related_name='item_to')
 
 class Rol(models.Model):
     nombre = models.CharField(max_length=40, default=None)
