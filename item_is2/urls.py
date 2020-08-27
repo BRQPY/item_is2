@@ -111,4 +111,6 @@ urlpatterns = [
     path('item/modify/', viewsFase.itemModificar),
     path('item/itemCambiarEstado/', viewsFase.itemCambiarEstado),
     path('item/unable/', viewsFase.itemDeshabilitar),
+    path('item/history/', viewsFase.itemHistorial),
+    path('item/history/reversionar/proyecto<int:proyectoid>/faseid<int:faseid>/itemid<int:itemid>/history_data<str:history_date>/', viewsFase.itemReversionar, name ="itemRev"),
 ]

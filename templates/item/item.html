@@ -72,6 +72,7 @@
                     <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
                     <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
                     <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+
                 <button type="submit" class="btn-small blue darken-3 right" >
                     Cambiar Estado
                     <i class="material-icons left">edit</i><br>
@@ -109,6 +110,17 @@
                     <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
                     <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
                     <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+
+                </form>
+                <form action="/item/history/">
+                    <button type="submit" class="btn pink">
+                        Historial del ítem
+                       <i class="material-icons white-text left">edit</i>
+                    </button>
+                    <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                    <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+                    <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+
                 </form>
                 <form action="/item/unable/">
                     <button type="submit" class="btn red darken-5 left">
@@ -118,6 +130,7 @@
                     <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
                         <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
                         <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+
                  </form>
 
             {%endif%}

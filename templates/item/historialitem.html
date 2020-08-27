@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+.accordion {
+  background-color: #F2F2F2;
+  color: 	#000000;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 18px;
+  transition: 0.1s;
+}
+.accordion:focus{
+    outline: none;
+    background-color: #F2F2F2;
+}
+.accordion:hover {
+  background-color: #E5E5E5;
+}
+
+.accordion:after {
+  content: '\002B';
+  color: #5AB9EA;
+  font-weight: bold;
+  float: right;
+  margin-left: 5px;
+}
+
+.active:after {
+  content: "\2212";
+}
+
+.panel {
+  padding: 0 18px;
+  background-color: white;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
+}
+
+</style>
+    <form action="/proyecto/proyectoVer/proyectoid={{ proyecto.id }}/">
+        <button type="submit" class="waves-effect waves-teal btn-flat">
+            Volver a la vista general del proyecto
+            <i class="material-icons dark blue-text left">keyboard_return</i>
+        </button>
+    </form>
+
+   <div class="container">
+        <h3 style="text-align: center">{{ item.nombre }}</h3>
+        <h5 style="text-align: center" class="grey-text">Historial del item</h5>
+        <h8 style="text-align: left" class="grey-text">Haga click en el ícono + para desplegar la informacion sobre la version del item .</h8>
+        {% for i in item.history.all %}
+            <button class="accordion" >
+                {{ i.history_date }}
+                <i class="material-icons blue-text left">info_outline</i>
+            </button>
+            <div class="panel">
+                <section class="DescripcionProyecto">
+
+               <p style="font-size:18px; padding-left: 50px">
+                  <div class="col s12 md6 xl3">
+                    <div class="card-panel">
+                        <b>Nombre:</b>  {{ i.nombre }}<br>
+                        <b>Descripción:</b>   {{ i.descripcion }}<br>
+                        <b>Fecha de inicio:</b>   {{ i.costo }}<br>
+                        <b>Fecha de finalización:</b>   {{i.estado}}<br>
+                    </div>
+                    <a href="{%url 'itemRev'  proyectoid faseid i.id i.history_date %}">
+                        <i class="material-icons dark blue-text right">autorenew</i>
+                    </a>
+                   </div>
+               </p>
+
+            <br><br>
+           </section>
+       </div>
+       {% endfor %}
+   </div>
+
+
+<script>
+var acc = document.getElementsByClassName("accordion");
+var i;
+
+for (i = 0; i < acc.length; i++) {
+  acc[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var panel = this.nextElementSibling;
+    if (panel.style.maxHeight) {
+      panel.style.maxHeight = null;
+    } else {
+      panel.style.maxHeight = panel.scrollHeight + "px";
+    }
+  });
+}
+</script>
+
+{% endblock%}

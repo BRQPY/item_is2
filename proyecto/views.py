@@ -4,6 +4,7 @@ from django.contrib.auth.models import User, Group, Permission
 from guardian.shortcuts import assign_perm, remove_perm
 from django.contrib.auth.decorators import permission_required
 from django.contrib.postgres.fields import ArrayField
+from datetime import datetime
 
 @permission_required('proyecto.add_proyecto', login_url='/permissionError/')
 def proyectoCrear(request):
@@ -119,6 +120,7 @@ def proyectoCancelar(request):
 
     """Establecer estado del poryecto como cancelado."""
     proyecto.estado = "cancelado"
+    proyecto._history_date=datetime.now()
     """Guardar."""
     proyecto.save()
     """Redirigir al menu principal del sistema."""
@@ -251,6 +253,7 @@ def proyectoView(request, id):
         roles = proyecto.roles.all()
         tipoItem = proyecto.tipoItem.all()
         comite = proyecto.comite.all()
+
         return render(request, 'proyecto/proyectoIniciado.html', {'proyecto': proyecto, 'fases': fases,
                                                                   'fasesUser': sorted(fasesUser,
                                                                                       key=lambda x: x.id,
@@ -259,8 +262,9 @@ def proyectoView(request, id):
                                                                   'roles': roles,
                                                                   'tipoItem': tipoItem,
                                                                   'comite': comite,
-                                                                  'select':seleccion,
+                                                                  'select': seleccion,
                                                                   'items': items,
+                                                                  'historial': historial,
                                                                   })
 def gestionProyecto(request):
     """

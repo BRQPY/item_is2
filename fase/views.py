@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from proyecto.models import Proyecto, Fase, TipodeItem, Item, FaseUser, User, Rol
 from guardian.shortcuts import assign_perm, remove_perm
 from proyecto.views import proyectoView, faseView
+from datetime import datetime
 
 
 def gestionFase(request):
@@ -37,6 +38,7 @@ def gestionFase(request):
 
     """Template a renderizar: gestionFase.html con parametro -> proyectoid, faseid"""
     return render(request, 'fase/gestionFase.html', {'proyectoid': proyectoid, 'faseid': faseid, })
+
 
 def faseCrear(request):
     """
@@ -115,16 +117,19 @@ def faseCrear(request):
         """Template a renderizar: faseCrear.html con parametro -> proyectoid"""
         return render(request, 'fase/faseCrear.html', {'proyectoid': proyectoid, })
 
-def faseVerProyectoInicializado(request ,faseid, proyectoid):
+
+def faseVerProyectoInicializado(request, faseid, proyectoid):
     if request.method == 'GET':
         """Proyecto en el cual crear la fase."""
         proyecto = Proyecto.objects.get(id=proyectoid)
         fase = Fase.objects.get(id=faseid)
         items = fase.items.exclude(estado="deshabilitado").order_by('id')
         return render(request, 'fase/FaseProyectoInicializado.html', {'proyecto': proyecto, 'fase': fase,
-                                                                  'items': items,
-                                                                  })
-def faseUsers(request,faseid,proyectoid):
+                                                                      'items': items,
+                                                                      })
+
+
+def faseUsers(request, faseid, proyectoid):
     if request.method == 'GET':
         fase = Fase.objects.get(id=faseid)
         """Proyecto en el cual se encuentra la fase."""
@@ -160,7 +165,7 @@ def faseUsers(request,faseid,proyectoid):
                 cadena = cadena[:-2]
                 roles_por_user.append(cadena)
                 cant_roles_por_user.append(contador_roles_por_user)
-                contador_roles_por_user=0
+                contador_roles_por_user = 0
         cant_user = len(user_sin_repetidos)
         cant_usuarios_proyecto = len(proyecto.usuarios.all())
         """Verificar si se puede ser agregando usuarios a la fase. Debe tomar en cuenta la cantidad de usuarios en el proyecto"""
@@ -170,10 +175,14 @@ def faseUsers(request,faseid,proyectoid):
             agregar_mas_users = True
         """Template a renderizar: fase.html con parametros -> fase, proyecto, items de fase."""
         return render(request, 'fase/faseUsers.html', {'fase': fase, 'proyecto': proyecto,
-                                                        'userRol': zip(user_sin_repetidos, roles_por_user, cant_roles_por_user),
-                                                        'cant_user': cant_user, 'cant_roles_proyecto':cant_roles_proyecto,
-                                                        'agregar_mas_users': agregar_mas_users })
+                                                       'userRol': zip(user_sin_repetidos, roles_por_user,
+                                                                      cant_roles_por_user),
+                                                       'cant_user': cant_user,
+                                                       'cant_roles_proyecto': cant_roles_proyecto,
+                                                       'agregar_mas_users': agregar_mas_users})
     return render(request, "fase/faseUsers.html")
+
+
 def faseModificar(request):
     """
        **faseModificar:**
@@ -258,6 +267,8 @@ def faseModificar(request):
 
     """Template a renderizar: gestionFase con parametro -> proyectoid, faseid"""
     return render(request, 'fase/fase.html', {'proyecto': proyecto, 'fase': fase, })
+
+
 def faseDeshabilitar(request):
     """
            **faseDeshabilitar:**
@@ -306,6 +317,7 @@ def faseDeshabilitar(request):
                                                                  'fasesUser': sorted(fasesUser, key=lambda x: x.id,
                                                                                      reverse=False), })
 
+
 def FaseConfigInicializada(request):
     """Fase a visualizar."""
     faseid = request.GET.get('faseid')
@@ -344,10 +356,13 @@ def FaseConfigInicializada(request):
             roles_por_user.append(cadena)
     cant_user = len(user_sin_repetidos)
     """Template a renderizar: fase.html con parametros -> fase, proyecto, items de fase."""
-    return render(request, 'fase/faseConfiguracionInicializada.html', {'fase': fase, 'proyecto': proyecto, 'items': items,
-                                                                        'userRol': zip(user_sin_repetidos, roles_por_user),
-                                                                        'cant_user':cant_user,
-                                                                         })
+    return render(request, 'fase/faseConfiguracionInicializada.html',
+                  {'fase': fase, 'proyecto': proyecto, 'items': items,
+                   'userRol': zip(user_sin_repetidos, roles_por_user),
+                   'cant_user': cant_user,
+                   })
+
+
 def FaseAddUser(request):
     if request.method == 'GET':
         proyectoid = request.GET.get('proyectoid')
@@ -367,7 +382,8 @@ def FaseAddUser(request):
                     usuarios.remove(fu.user)
         roles = proyecto.roles.all()
 
-        return render(request,'fase/faseAddUser.html', {'usuarios':usuarios, 'roles':roles, 'fase': fase, 'proyecto':proyecto})
+        return render(request, 'fase/faseAddUser.html',
+                      {'usuarios': usuarios, 'roles': roles, 'fase': fase, 'proyecto': proyecto})
     else:
         proyectoid = request.POST.get('proyectoid')
         faseid = request.POST.get('faseid')
@@ -379,7 +395,6 @@ def FaseAddUser(request):
         userid = request.POST.get('users')
         """ID rol"""
         rolid = request.POST.get('roles')
-
 
         """Usuario a ser asignado el rol"""
         user = User.objects.get(id=userid)
@@ -406,10 +421,12 @@ def FaseAddUser(request):
         rol.save()
         if proyecto.estado == "pendiente":
             """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
-            return redirect('faseUsers', faseid= faseid, proyectoid=proyectoid)
+            return redirect('faseUsers', faseid=faseid, proyectoid=proyectoid)
         elif proyecto.estado == "inicializado":
-            return redirect('faseUsers', faseid= faseid, proyectoid=proyectoid)
-def FaseRemoveUser(request,proyectoid,faseid,userid):
+            return redirect('faseUsers', faseid=faseid, proyectoid=proyectoid)
+
+
+def FaseRemoveUser(request, proyectoid, faseid, userid):
     if request.method == 'GET':
 
         fase = Fase.objects.get(id=faseid)
@@ -446,8 +463,9 @@ def FaseRemoveUser(request,proyectoid,faseid,userid):
             return redirect('faseUsers', faseid=faseid, proyectoid=proyectoid)
         elif proyecto.estado == "inicializado":
             return redirect('faseUsers', faseid=faseid, proyectoid=proyectoid)
-def faseRolAsignar(request,proyectoid,faseid,userid):
 
+
+def faseRolAsignar(request, proyectoid, faseid, userid):
     """
        **faseRolAsignar:**
         Vista utilizada para asignar roles del proyecto a usuarios.
@@ -458,7 +476,7 @@ def faseRolAsignar(request,proyectoid,faseid,userid):
     """GET request, muestra el template correspondiente para asignar roles del proyecto dento de la fase"""
     if request.method == 'GET':
         """Proyecto ID"""
-        #proyectoid = request.GET.get('proyectoid')
+        # proyectoid = request.GET.get('proyectoid')
         """Proyecto correspondiente"""
         proyecto = Proyecto.objects.get(id=proyectoid)
         fase = Fase.objects.get(id=faseid)
@@ -481,8 +499,8 @@ def faseRolAsignar(request,proyectoid,faseid,userid):
         ,usuarios y fases del proyecto,
          ademas de proyectoid
          """
-        return render(request, "fase/faseRolAsignar.html", {'fase': fase, 'usuario': usuario, 'roles': roles_disponibles, 'proyecto': proyecto, })
-
+        return render(request, "fase/faseRolAsignar.html",
+                      {'fase': fase, 'usuario': usuario, 'roles': roles_disponibles, 'proyecto': proyecto, })
 
     fase = Fase.objects.get(id=faseid)
     """Proyecto en el cual se encuentra la fase."""
@@ -520,7 +538,8 @@ def faseRolAsignar(request,proyectoid,faseid,userid):
     elif proyecto.estado == "inicializado":
         return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
 
-def faseRolRemover(request,proyectoid,faseid,userid):
+
+def faseRolRemover(request, proyectoid, faseid, userid):
     """
        ** proyectoRolRemover:**
         Vista utilizada para remover roles del proyecto de usuarios.
@@ -531,7 +550,7 @@ def faseRolRemover(request,proyectoid,faseid,userid):
     """GET request, muestra el template correspondiente para remover roles del proyecto"""
     if request.method == 'GET':
         """Proyecto ID"""
-        #proyectoid = request.GET.get('proyectoid')
+        # proyectoid = request.GET.get('proyectoid')
         """Proyecto correspondiente"""
         proyecto = Proyecto.objects.get(id=proyectoid)
         fase = Fase.objects.get(id=faseid)
@@ -556,7 +575,7 @@ def faseRolRemover(request,proyectoid,faseid,userid):
          """
         cantidad_roles = len(roles_del_user)
         return render(request, "fase/faseRolRemover.html", {'fase': fase, 'usuario': usuario, 'roles': roles_del_user,
-                                                            'proyecto': proyecto, 'cant_roles':cantidad_roles })
+                                                            'proyecto': proyecto, 'cant_roles': cantidad_roles})
 
     """POST request, captura el usuario, el rol y las fases para remover"""
 
@@ -583,17 +602,19 @@ def faseRolRemover(request,proyectoid,faseid,userid):
     """ Se le asigna el permiso para ver la fase ya que el usuario posee otro rol
         Porque no deja remover el ultimo rol --> se debe eliminar al usuario de la fase
     """
-    assign_perm("view_fase",usuario,fase)
+    assign_perm("view_fase", usuario, fase)
 
     if proyecto.estado == "pendiente":
         """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
         return redirect('faseTipoItem')
     elif proyecto.estado == "inicializado":
         return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
-def FaseGestionTipoItem(request,faseid,proyectoid):
+
+
+def FaseGestionTipoItem(request, faseid, proyectoid):
     if request.method == 'GET':
-        #proyectoid = request.GET.get('proyectoid')
-        #faseid = request.GET.get('faseid')
+        # proyectoid = request.GET.get('proyectoid')
+        # faseid = request.GET.get('faseid')
         fase = Fase.objects.get(id=faseid)
         proyecto = Proyecto.objects.get(id=proyectoid)
         if not (request.user.has_perm("is_gerente", proyecto)):
@@ -615,7 +636,8 @@ def FaseGestionTipoItem(request,faseid,proyectoid):
                     tipos_no_removible.append(t)
         return render(request, "fase/faseGestionTipoItem.html",
                       {'fase': fase, 'proyecto': proyecto, 'tipos_removible': tipos_removible,
-                       'tipos_no_removible': tipos_no_removible,'add_tipo':add_tipo })
+                       'tipos_no_removible': tipos_no_removible, 'add_tipo': add_tipo})
+
 
 def FaseAddTipoItem(request):
     if request.method == 'GET':
@@ -634,7 +656,8 @@ def FaseAddTipoItem(request):
             if not ti in tipositem_fase:
                 tipos_agregables.append(ti)
 
-        return render(request, 'fase/faseAddTipoItem.html', { 'tiposItem': tipos_agregables, 'fase': fase, 'proyecto': proyecto})
+        return render(request, 'fase/faseAddTipoItem.html',
+                      {'tiposItem': tipos_agregables, 'fase': fase, 'proyecto': proyecto})
     else:
         proyectoid = request.POST.get('proyectoid')
         faseid = request.POST.get('faseid')
@@ -648,7 +671,8 @@ def FaseAddTipoItem(request):
             """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
             return redirect('faseTipoItem', faseid=faseid, proyectoid=proyectoid)
 
-def FaseRemoveTipoItem(request,proyectoid,faseid,tipoid):
+
+def FaseRemoveTipoItem(request, proyectoid, faseid, tipoid):
     if request.method == 'GET':
 
         proyecto = Proyecto.objects.get(id=proyectoid)
@@ -661,8 +685,8 @@ def FaseRemoveTipoItem(request,proyectoid,faseid,tipoid):
         for i in itemsFase:
             if i.tipoItem == tipo_remover and i.estado != "deshabilitado":
                 return render(request, "fase/faseRemoveTipoItem.html",
-                                  {'tipos': tipo_remover, 'proyecto': proyecto, 'fase': fase,
-                                   'mensaje': "El tipo de item ya ha sido utilizado.No es posible removerlo.", })
+                              {'tipos': tipo_remover, 'proyecto': proyecto, 'fase': fase,
+                               'mensaje': "El tipo de item ya ha sido utilizado.No es posible removerlo.", })
 
             """Remueve del proyecto actual los tipos de Item seleccionados."""
         fase.tipoItem.remove(tipo_remover)
@@ -670,6 +694,7 @@ def FaseRemoveTipoItem(request,proyectoid,faseid,tipoid):
         if proyecto.estado == "pendiente":
             """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
             return redirect('faseTipoItem', faseid=faseid, proyectoid=proyectoid)
+
 
 def fasesDeshabilitadas(request):
     proyectoid = request.GET.get('proyectoid')
@@ -679,10 +704,12 @@ def fasesDeshabilitadas(request):
     fases = proyecto.fases.all()
     fasesDes = []
     for f in fases:
-        if (request.user.has_perm("view_fase", f) or request.user.has_perm("is_gerente", proyecto)) and f.estado == "deshabilitada":
+        if (request.user.has_perm("view_fase", f) or request.user.has_perm("is_gerente",
+                                                                           proyecto)) and f.estado == "deshabilitada":
             fasesDes.append(f)
 
     return render(request, 'fase/fasesDeshabilitadas.html', {'proyecto': proyecto, 'fasesDes': fasesDes, })
+
 
 def itemCrear(request):
     """
@@ -693,9 +720,9 @@ def itemCrear(request):
                  de gerente del proyecto y que
                  (indirectamente) haya iniciado sesion.
     """
-    seleccion= None
+    seleccion = None
     """POST request, recibe los datos ingresados por el usuario para la creacion del item."""
-    if request.method=="POST":
+    if request.method == "POST":
         """
         Consulta si el post recibido es el de la selección de 
         un Tipo de Item o el post para crear el item correspondiente.
@@ -710,7 +737,7 @@ def itemCrear(request):
             """Fase en la cual crear el item."""
             fase = Fase.objects.get(id=faseid)
             """Recibe el POST con los datos del formulario para la creacion del Item."""
-            dato= request.POST
+            dato = request.POST
             """Tipo de item establecido para el item."""
             obj = proyecto.tipoItem.get(id=dato['tipodeitem_id'])
             """
@@ -737,20 +764,20 @@ def itemCrear(request):
 
             """Creacion del item con los datos proveidos por el usuario."""
             item = Item.objects.create(tipoItem=obj, nombre=dato['nombre'], fecha=dato['fecha'],
-                                       observacion=dato['observacion'], costo=dato['costo'])
+                                       observacion=dato['observacion'], costo=dato['costo'],
+                                       _history_date=datetime.now(), dateCreacion=datetime.now())
 
             """Estado del item predefinido en la creacion igual a en desarrollo."""
             item.estado = "en desarrollo"
             """Almacenar la informacion de cada campo extra proveido por el usuario."""
             for c in obj.campo_extra:
                 item.campo_extra_valores.append(dato[c])
-
             """Guardar."""
             item.save()
             """Agregar item a fase."""
             fase.items.add(item)
             """Redirigir a la vista de la fase correspondiente."""
-            return redirect('proyectoView',id=proyectoid)
+            return redirect('proyectoView', id=proyectoid)
         else:
             """POST para seleccionar tipo de item"""
             """ID del proyecto correspondiente."""
@@ -813,6 +840,7 @@ def itemCrear(request):
     return render(request, "item/itemCrear.html", {'proyectoid': proyectoid, 'faseid': faseid,
                                                    'tipos': tipos, 'select': seleccion})
 
+
 def itemView(request, itemid, faseid, proyectoid):
     """
        **itemView:**
@@ -831,8 +859,9 @@ def itemView(request, itemid, faseid, proyectoid):
     proyecto = Proyecto.objects.get(id=proyectoid)
     """Item a visualizar."""
     item = Item.objects.get(id=itemid)
+
     """Verificar que el usuario cuente con los permisos necesarios."""
-    if not (request.user.has_perm("ver_item", fase)) and not(request.user.has_perm("is_gerente", proyecto)):
+    if not (request.user.has_perm("ver_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
         """Al no contar con los permisos, niega el acceso, redirigiendo."""
         return redirect('/permissionError/')
 
@@ -843,12 +872,14 @@ def itemView(request, itemid, faseid, proyectoid):
     permiso para establecer item como parobado y choices
     con los distintos estados del item.
     """
+
     return render(request, 'item/item.html',
-                        {'faseid': faseid, 'proyectoid': proyectoid, 'item': item, 'proyecto': proyecto,
-                                    'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
-                                    'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob",fase),
-                                    'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
-                                    'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ], })
+                  {'faseid': faseid, 'proyectoid': proyectoid, 'item': item, 'proyecto': proyecto,
+                   'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
+                   'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
+                   'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
+                   'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ], })
+
 
 def gestionItem(request):
     """
@@ -882,12 +913,13 @@ def gestionItem(request):
         return redirect('faseView', faseid=faseid, proyectoid=proyectoid)
 
     """ID de item correspondiente."""
-    itemid=request.GET.get('itemid')
+    itemid = request.GET.get('itemid')
     """
     Template a renderizar: gestionItem.html 
     con parametro -> proyectoid, faseid, itemid
     """
     return render(request, 'item/gestionItem.html', {'proyectoid': proyectoid, 'faseid': faseid, 'itemid': itemid, })
+
 
 def itemModificar(request):
     """
@@ -934,8 +966,7 @@ def itemModificar(request):
             Template a renderizar: gestionItem.html con 
             parametros -> proyectoid, faseid, itemid y mensaje de error.
             """
-            return redirect('proyectoView',id=proyectoid)
-
+            return redirect('proyectoView', id=proyectoid)
 
         """
         Template a renderizar: itemModificar 
@@ -983,9 +1014,9 @@ def itemModificar(request):
     cont = 0
     """Actualizar campos extra del item."""
     for c in item.tipoItem.campo_extra:
-        item.campo_extra_valores[cont]=dato[c]
-        cont = cont+1
-
+        item.campo_extra_valores[cont] = dato[c]
+        cont = cont + 1
+    item._history_date = datetime.now()
     """Guardar"""
     item.save()
 
@@ -993,7 +1024,7 @@ def itemModificar(request):
     Template a renderizar: gestionItem con 
     parametro -> proyectoid, faseid, itemid
     """
-    return redirect('proyectoView',id=dato['proyectoid'])
+    return redirect('proyectoView', id=dato['proyectoid'])
 
 
 def itemCambiarEstado(request):
@@ -1040,9 +1071,9 @@ def itemCambiarEstado(request):
         mensaje = "Estado actualizado correctamente."
         """Acgtualiza estado del item."""
         item.estado = dato['estado']
+        item._history_date = datetime.now()
         """Guardar."""
         item.save()
-
 
     """
     Template a renderizar: item.html 
@@ -1089,7 +1120,7 @@ def itemDeshabilitar(request):
     """Verificar que el estado del proyecto sea inicializado."""
     if proyecto.estado != "inicializado":
         """En caso contrario, no permite deshabilitar el item y redirige a la vista de fase."""
-        return redirect('proyectoView',id=proyectoid)
+        return redirect('proyectoView', id=proyectoid)
 
     """Verificar que el estado del item sea en desarrollo."""
     if item.estado == "pendiente de aprobacion" or item.estado == "aprobado":
@@ -1104,17 +1135,54 @@ def itemDeshabilitar(request):
 
     """Establece estado de item como deshabilitado."""
     item.estado = "deshabilitado"
+    item._history_date = datetime.now()
     """Guardar."""
     item.save()
     """Redirige a la vista de la fase correspondiente."""
     return redirect('proyectoView', id=proyectoid)
 
 
+def itemHistorial(request):
+    if request.method == 'GET':
+        proyectoid = request.GET.get('proyectoid')
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        faseid = request.GET.get('faseid')
+        itemid = request.GET.get('itemid')
+        item = Item.objects.get(id=itemid)
+        fase = Fase.objects.get(id=faseid)
+
+        return render(request, 'item/historialitem.html',
+                      {'faseid': faseid, 'proyectoid': proyectoid, 'item': item})
 
 
+def itemReversionar(request, proyectoid, faseid, itemid, history_date):
 
 
+    fase = Fase.objects.get(id=faseid)
+    proyecto = Proyecto.objects.get(id=proyectoid)
+    item = Item.objects.get(id=itemid)
+
+    if item.estado == "en desarrollo":
+
+        a = history_date[0] + history_date[1] + history_date[2] + history_date[3]
+        m = history_date[5] + history_date[6]
+        d = history_date[8] + history_date[9]
+        h = history_date[11] + history_date[12]
+        min = history_date[14] + history_date[15]
+        s = history_date[17] + history_date[18]
+
+        a1= int(a)
+        m1=int (m)
+        d1=int (d)
+        h1=int(h)
+        min1=int(min)
+        s1=int(s)
+        reversionar = item.history.as_of(datetime(a1, m1, d1, h1, min1, s1))
+        item = reversionar
+        item._history_date = datetime.now()
+        item.save()
 
 
-
-
+        return redirect('itemView', faseid=faseid, proyectoid=proyectoid, itemid=itemid)
+    else:
+        return redirect('itemView', faseid=faseid, proyectoid=proyectoid, itemid=itemid)
