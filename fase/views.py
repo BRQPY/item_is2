@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from proyecto.models import Proyecto, Fase, TipodeItem, Item, FaseUser, User, Rol
+from proyecto.models import Proyecto, Fase, TipodeItem, Item, FaseUser, User, Rol, Relacion
 from guardian.shortcuts import assign_perm, remove_perm
 from proyecto.views import proyectoView, faseView
 
@@ -889,6 +889,23 @@ def gestionItem(request):
     """
     return render(request, 'item/gestionItem.html', {'proyectoid': proyectoid, 'faseid': faseid, 'itemid': itemid, })
 
+def itemConfigurar(request, itemid, faseid, proyectoid):
+
+    if request.method == "GET":
+        """Fase en el cual se encuentra el item."""
+        fase = Fase.objects.get(id=faseid)
+        """Proyecto en el cual se encuentra el item."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Item a visualizar."""
+        item = Item.objects.get(id=itemid)
+        """Verificar que el usuario cuente con los permisos necesarios."""
+        if not (request.user.has_perm("ver_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+
+        return render(request, "item/itemConfiguracion.html", {'fase': fase, 'item': item, 'proyecto': proyecto,
+                                    'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),})
+
 def itemModificar(request):
     """
            **itemModificar:**
@@ -1109,12 +1126,62 @@ def itemDeshabilitar(request):
     """Redirige a la vista de la fase correspondiente."""
     return redirect('proyectoView', id=proyectoid)
 
+def itemVerRelaciones(request,itemid, faseid, proyectoid):
 
+    if request.method =='GET':
+        """ID del proyecto"""
+        #proyectoid = request.GET.get('proyectoid')
+        """Proyecto en el cual se encuentra el item."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """ID de fase."""
+        #faseid = request.GET.get('faseid')
+        """Fase en la cual se encuentra el item."""
+        fase = Fase.objects.get(id=faseid)
+        #itemid = request.GET.get('itemid')
+        item_recibido = Item.objects.get(id=itemid)
+        """ Recupera la lista de items antecesores a él de la tabla de relaciones"""
+        items_antecesores = list(Relacion.objects.filter(tipo="sucesor", item_from=item_recibido))
+        #if items_antecesores:
+        """ Se encuentra la fase en donde están sus ítems antecesores"""
+            #fase_antecesora = items_antecesores[0].fase
 
+        """ Recupera la lista de items sucesores a él de la tabla de relaciones"""
+        items_sucesores = list(Relacion.objects.filter(tipo="antecesor", item_from=item_recibido))
+        # if items_sucesores:
+        """ Se encuentra la fase en donde están sus ítems antecesores"""
+        # fase_sucesora = items_sucesores[0].fase
 
+        """ Recupera la lista de items padres de él de la tabla de relaciones"""
+        items_padres = list(Relacion.objects.filter(tipo="hijo", item_from=item_recibido))
+        """ Sus padres e hijos son de su misma fase"""
+        fase_padre_hijo = fase
 
+        """ Recupera la lista de items hijos de él de la tabla de relaciones"""
+        items_hijos = list(Relacion.objects.filter(tipo="padre", item_from=item_recibido))
 
+        return render(request, "item/ItemVerRelacion.html", {'proyecto': proyecto, 'fase': fase, 'item': item_recibido,
+                                                             'antecesores': items_antecesores, 'sucesores':items_sucesores,
+                                                             'padres': items_padres, 'hijos': items_hijos, })
 
+def itemRelacionesRemover(request,itemid,item_rm, faseid, proyectoid):
 
+    if request.method =='GET':
+        """ID del proyecto"""
+        #proyectoid = request.GET.get('proyectoid')
+        """Proyecto en el cual se encuentra el item."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """ID de fase."""
+        #faseid = request.GET.get('faseid')
+        """Fase en la cual se encuentra el item."""
+        fase = Fase.objects.get(id=faseid)
+        #itemid = request.GET.get('itemid')
+        #itemid_final = request.GET.get('itemid_final')
+        item_inicio = Item.objects.get(id=itemid)
+        item_final_remover = Item.objects.get(id=item_rm)
+        relaciones_uno = Relacion.objects.get(item_from=item_inicio, item_to=item_final_remover)
+        relaciones_uno.delete()
+        relaciones_dos = Relacion.objects.get(item_from=item_final_remover, item_to=item_inicio)
+        relaciones_dos.delete()
+        return redirect('itemVerRelaciones', itemid=item_inicio.id,faseid=faseid, proyectoid=proyectoid)
 
 

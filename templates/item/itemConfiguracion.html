@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <form action="/proyecto/proyectoVer/proyectoid={{proyecto.id}}">
+            <button type="submit" class="waves-effect waves-teal btn-flat">
+                    Volver a Gestión de Proyecto
+                    <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
+    </form>
+    {{mensaje}}
+	<div class="container">
+        <section>
+            <h3 style="text-align: center">Item: {{item.nombre}}</h3>
+            <h5 style="text-align: center" class="grey-text">Panel de Configuración del ítem {{item.nombre}}</h5>
+            <div style="position: relative;">
+                <div style="position: absolute; left: 0; top: 0; text-align: left">
+                    <b><h6 style="text-align: left">Datos del ítem</h6></b>
+                </div>
+                <div style="position: absolute; right: 0; top: 0; text-align: left">
+                    {% if proyecto.estado != "cancelado" %}
+                        <form action="/item/modify/">
+                            <button type="submit" class="btn-small blue darken-2 right">
+                                Modificar datos y estado del Ítem
+                               <i class="material-icons white-text left">edit</i>
+                            </button>
+                            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                            <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+                        </form>
+                    {% endif %}
+                </div>
+            </div><br>
+            <ul class="z-depth-1">
+                <li>
+                    <div class="card-panel z-depth-4 expense">
+                        <div class="row">
+                            <div class="col l4 left">
+                                <b>Observación:</b>
+                                {{item.observacion}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col l4 left">
+                                <b>Estado:</b>
+                                {{item.estado}}
+                            </div>
+                            <div class="col l4 left">
+                                <b>Fecha:</b>
+                                {{item.fecha}}
+                            </div>
+                            <div class="col l4 left">
+                                <b>Costo en horas:</b>
+                                {{item.costo}}h
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col l4 left">
+                                <b>Campos Extra definido por usuarios:</b>
+                            </div>
+                        </div>
+                        {%for c, c2 in campos%}
+                            <div class="row">
+                                <div class="col l4 left">
+                                    <b>{{ c }}:</b>
+                                    {{ c2 }}
+                                </div>
+                            </div>
+                        {%endfor%}
+                    </div>
+                </li>
+            </ul>
+        </section>
+        <div>
+            {%if proyecto.estado != "cancelado"%}
+                <form action="/item/unable/">
+                    <button type="submit" class="btn red darken-5 left">
+                        Deshabilitar Item
+                       <i class="material-icons white-text left">delete</i>
+                    </button>
+                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                        <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                        <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+                 </form>
+                <form action="/item/relaciones/ver/itemid={{ item.id }}/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/">
+                    <button type="submit" class="btn blue darken-5 right"
+                            title="Crear o remover relaciones del ítem {{ item.nombre }}"
+                    >
+                        Gestionar Relaciones del item
+                       <i class="material-icons white-text left">timeline</i>
+                    </button>
+                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                    <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                    <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+                 </form>
+            {%endif%}
+	    </div>
+
+{% endblock%}

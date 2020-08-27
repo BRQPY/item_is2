@@ -119,6 +119,15 @@
                         <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
                         <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
                  </form>
+                <form action="/item/relaciones/ver/itemid={{ item.id }}/faseid={{ faseid }}/proyectoid={{ proyectoid }}/">
+                    <button type="submit" class="btn blue darken-5 left">
+                        Relaciones del item
+                       <i class="material-icons white-text left">timeline</i>
+                    </button>
+                    <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                    <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+                    <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+                 </form>
 
             {%endif%}
         </section>

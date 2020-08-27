@@ -107,8 +107,11 @@ urlpatterns = [
     path('fase/fasesDeshabilitadas/', viewsFase.fasesDeshabilitadas),
     path('item/gestionItem/', viewsFase.gestionItem),
     path('item/itemVer/itemid=<int:itemid>faseid=<int:faseid>proyectoid=<int:proyectoid>/', viewsFase.itemView, name="itemView"),
+    path('item/configurar/itemid=<int:itemid>faseid=<int:faseid>proyectoid=<int:proyectoid>/', viewsFase.itemConfigurar, name="itemConfigurar"),
     path('item/itemCrear/', viewsFase.itemCrear),
     path('item/modify/', viewsFase.itemModificar),
     path('item/itemCambiarEstado/', viewsFase.itemCambiarEstado),
     path('item/unable/', viewsFase.itemDeshabilitar),
+    path('item/relaciones/ver/itemid=<str:itemid>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',viewsFase.itemVerRelaciones, name="itemVerRelaciones"),
+    path('item/relaciones/remover/itemid=<str:itemid>/item_rm=<str:item_rm>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',viewsFase.itemRelacionesRemover, name="itemRelacionesRemover"),
 ]
