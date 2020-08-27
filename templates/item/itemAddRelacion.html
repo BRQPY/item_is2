@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="container">
+        <h4 style="text-align: center">Establecer relaciones para el item {{ item.nombre }}</h4>
+        <h5 style="text-align: left">Seleccione los items a relacionar</h5>
+        <form action="/item/addRelacion/" method="post">
+            {% csrf_token %}
+            <div class="form-check">
+                {% if faseAnterior %}
+                    <h5>Items de la fase anterior: {{ faseAnterior.nombre }}</h5>
+                     {% if itemsFaseAnterior %}
+                        {% for i in itemsFaseAnterior %}
+                        <label>
+                            <input  type="radio" class="filled-in"  value={{i.id}} id="username" name="itemIdRelacion"/>
+                             <span style="color:#000000">{{i.nombre}}</span>
+                        </label>
+                        {% endfor %}
+                     {% else %}
+                        No existen items para relacionar en esta fase.
+                     {% endif %}
+                {% endif %}
+
+                <h5>Items de la fase actual: {{ fase.nombre }}</h5>
+                {% if itemsFaseActual %}
+                    {% for i in itemsFaseActual %}
+                        <label>
+                            <input  type="radio" class="filled-in"  value={{i.id}} id="username" name="itemIdRelacion"/>
+                             <span style="color:black">{{i.nombre}}</span>
+                        </label>
+                    {% endfor %}
+                {% else %}
+                    No existen items para relacionar en esta fase.
+                {% endif %}
+
+                {% if faseSiguiente %}
+                    <h5>Items de la fase siguiente: {{ faseSiguiente.nombre }}</h5>
+                     {% if itemsFaseSiguiente %}
+                        {% for i in itemsFaseSiguiente %}
+                            <label>
+                                <input  type="radio" class="filled-in"  value={{i.id}} id="username" name="itemIdRelacion"/>
+                                <span style="color:black">{{i.nombre}}</span>
+                            </label>
+                        {% endfor %}
+                     {% else %}
+                        No existen items para relacionar en esta fase.
+                     {% endif %}
+                {% endif %}
+            </div>
+
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+            <input  type="hidden" value={{item.id}} id="itemid" name="itemIdActual">
+            <input  type="hidden" value={{faseAnterior.id}} id="faseAnterior" name="anterior">
+            <input  type="hidden" value={{faseSiguiente.id}} id="faseAnterior" name="siguiente">
+
+
+            <button type="submit" class="btn-small blue darken-2 right">
+                Añadir relacion
+                <i class="material-icons white-text left">person_add</i>
+            </button>
+        </form>
+    </div>
+
+{% endblock%}
