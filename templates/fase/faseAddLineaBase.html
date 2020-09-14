@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CREAR LINEA BASE</title>
+</head>
+<body>
+    <section>
+        <form action="/fase/faseGestionLineaBase/">
+        <input type="submit" value="Atras" />
+        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+        </form>
+        <form action="/fase/addLineaBase/" method="post">
+            {% csrf_token %}
+            <p><div>
+                <label for="nombre">Nombre de Linea Base:</label>
+                <input type="text" id="nombre" name="nombre" value="{{nombre}}" readonly>
+            </div></p>
+            <p><div>
+                <label for="nombre">Creador:</label>
+                <input type="text" id="creador" name="creador" value="{{user}}" readonly>
+            </div></p>
+            {{ "Obs.: Solo el creador de la linea base podra cerrar la misma." }}
+            <p><label for="items">Selecciona los items a agregar en la linea base:</label>
+            <p><div>
+                {%for i in items%}
+                        <input class="form-check-input" type="checkbox" value="{{i.id}}" id="items" name="items">
+                        <label class="form-check-label" for="items">{{i.nombre}}</label>
+                {%endfor%}
+            </div></p>
+            <button type="submit" onclick="myFunction()">Guardar</button>
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+        </form>
+    </section>
+</body>
+<script>
+        function myFunction() {
+            alert("Linea Base creada correctamente.");
+        }
+</script>
+</html>

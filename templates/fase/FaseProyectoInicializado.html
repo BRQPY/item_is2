@@ -46,18 +46,40 @@
                                 <div class="col l4 left">
                                     <b>{{ i.nombre }}</b>
                                 </div>
-                                <div class="col l2">
-                                    {{ i.costo }} horas.
+                                <div class="col l2 right">
+                                    <a href="{%url 'itemView' i.id fase.id proyecto.id%}">
+                                        Remover Ítem
+                                        <i class="material-icons dark red-text left">delete</i>
+                                    </a>
+                                </div>
+                                <div class="col l4 right">
+                                    <a href="{%url 'itemConfigurar' i.id fase.id proyecto.id%}"
+                                       title="Permite establer relaciones, modificar su información, cambiar su estado"
+                                    >
+                                        Configurar Ítem
+                                        <i class="material-icons dark blue-text left">edit</i>
+                                    </a>
+                                </div>
+                                <div class="col l2 right">
+                                    <a href="{%url 'itemView' i.id fase.id proyecto.id%}">
+                                        Consultar Ítem
+                                        <i class="material-icons dark blue-text left">info_outline</i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col 1">
+                                    <b>Estado:</b>
+                                    {{ i.estado}}
+                                </div>
+                                <div class="col l4 left">
+                                    <b>Costo en horas:</b>
+                                    {{ i.costo }}h
                                 </div>
                                 <div class="col 3">
-                                    <b>{{ i.tipoItem.nombreTipo}}</b>
+                                    <b>Tipo de ítem:</b>
+                                    {{ i.tipoItem.nombreTipo}}
                                 </div>
-                                <div class="col 1">
-                                    <b>{{ i.estado}}</b>
-                                </div>
-                                <a href="{%url 'itemView' i.id fase.id proyecto.id%}">
-                                    <i class="material-icons dark blue-text right">info_outline</i>
-                                </a>
                             </div>
                         </div>
                     </li>

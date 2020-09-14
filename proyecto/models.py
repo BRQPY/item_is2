@@ -2,7 +2,9 @@ from django.db import models
 from django.contrib.auth.models import User, Group
 from django.contrib.postgres.fields import ArrayField
 from simple_history.models import HistoricalRecords
-from datetime import datetime
+
+
+
 
 class TipodeItem(models.Model):
     nombreTipo = models.CharField(max_length=40)
@@ -12,6 +14,7 @@ class TipodeItem(models.Model):
 
 
 class Item(models.Model):
+
     tipoItem = models.ForeignKey(TipodeItem, on_delete=models.CASCADE, default=None, related_name="tipoItem")
     nombre = models.CharField(max_length=40, null=False, default=None)
     campo_extra_valores = ArrayField(models.CharField(max_length=40), default=list, blank=True)
@@ -22,8 +25,11 @@ class Item(models.Model):
     #relaciones_items = ArrayField(models.CharField(max_length=200), default=list, blank=True)
     costo= models.IntegerField(default=0, blank=True)
     dateCreacion = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-    history = HistoricalRecords()
+    relaciones = models.ManyToManyField('self', default=None, through='Relacion', symmetrical=False)
+    version = models.IntegerField(default=0, editable=False)
+    history = HistoricalRecords(excluded_fields=['campo_extra_valores'])
     __history_date = None
+
 
 
     @property
@@ -35,6 +41,13 @@ class Item(models.Model):
         self.__history_date = value
 
 
+
+class LineaBase(models.Model):
+    nombre = models.CharField(max_length=40, null=False, default=None)
+    items = models.ManyToManyField(Item, default=None)
+    estado = models.CharField(max_length=40, default=None)
+    creador = models.ForeignKey(User, on_delete=models.CASCADE, default=None, null=True)
+
 class Fase(models.Model):
     nombre = models.CharField(max_length=40)
     descripcion = models.CharField(max_length=40, default=None)
@@ -42,6 +55,9 @@ class Fase(models.Model):
     items = models.ManyToManyField(Item, default=None)
     tipoItem = models.ManyToManyField(TipodeItem, default=None)
     history = HistoricalRecords()
+
+    lineasBase = models.ManyToManyField(LineaBase, default=None)
+
     class Meta:
         permissions = (
             ("create_item", "Can create item"),
@@ -58,6 +74,8 @@ class Fase(models.Model):
             ("deshabilitar_item", "Deshabilitar Item"),
             ("obtener_calculoImpacto", "Obtener cálculo de impacto de ítem."),
             ("create_lineaBase", "Crear Línea Base."),
+            ("modify_lineaBase", "Modificar Linea Base."),
+            ("ver_lineaBase", "Ver Línea Base."),
             ("break_lineaBase", "Romper Línea Base."),
             ("solicitar_roturaLineaBase", "Solicitar rotura de línea base."),
         )
@@ -68,6 +86,11 @@ class FaseUser(models.Model):
     fase = models.ForeignKey(Fase, on_delete=models.CASCADE, default=None)
     history = HistoricalRecords()
 
+class Relacion(models.Model):
+    tipo = models.CharField(max_length=40, default=None)
+    fase_item_to = models.ForeignKey(Fase, default=None, on_delete=models.CASCADE)
+    item_from = models.ForeignKey(Item, default=None, on_delete=models.CASCADE, related_name='item_from')
+    item_to = models.ForeignKey(Item, default=None, on_delete=models.CASCADE, related_name='item_to')
 
 class Rol(models.Model):
     nombre = models.CharField(max_length=40, default=None)

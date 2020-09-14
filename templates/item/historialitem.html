@@ -43,10 +43,11 @@
   transition: max-height 0.2s ease-out;
 }
 
+var counter = 0;
 </style>
-    <form action="/proyecto/proyectoVer/proyectoid={{ proyecto.id }}/">
+    <form action="/fase/FaseProyectoInicializado/faseid={{ faseid  }}/proyectoid={{ proyectoid }}/">
         <button type="submit" class="waves-effect waves-teal btn-flat">
-            Volver a la vista general del proyecto
+            Volver a la vista general de items
             <i class="material-icons dark blue-text left">keyboard_return</i>
         </button>
     </form>
@@ -55,10 +56,13 @@
         <h3 style="text-align: center">{{ item.nombre }}</h3>
         <h5 style="text-align: center" class="grey-text">Historial del item</h5>
         <h8 style="text-align: left" class="grey-text">Haga click en el ícono + para desplegar la informacion sobre la version del item .</h8>
-        {% for i in item.history.all %}
+
+       {% for i in item.history.all %}
+
             <button class="accordion" >
-                {{ i.history_date }}
-                <i class="material-icons blue-text left">info_outline</i>
+                Version {{ i.version }}
+
+                <i class="material-icons blue-text left"></i>
             </button>
             <div class="panel">
                 <section class="DescripcionProyecto">
@@ -67,9 +71,11 @@
                   <div class="col s12 md6 xl3">
                     <div class="card-panel">
                         <b>Nombre:</b>  {{ i.nombre }}<br>
-                        <b>Descripción:</b>   {{ i.descripcion }}<br>
-                        <b>Fecha de inicio:</b>   {{ i.costo }}<br>
-                        <b>Fecha de finalización:</b>   {{i.estado}}<br>
+                        <b>Estado:</b>   {{i.estado}}<br>
+                        <b>Costo:</b>   {{ i.costo }}<br>
+                        <b>Observacion:</b>   {{ i.observacion }}<br>
+                        <b>Fecha:</b>   {{ i.fecha }}<br>
+                        <b>Fecha de Modificacion:</b>   {{ i.history_date}}<br>
                     </div>
                     <a href="{%url 'itemRev'  proyectoid faseid i.id i.history_date %}">
                         <i class="material-icons dark blue-text right">autorenew</i>

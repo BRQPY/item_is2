@@ -1,8 +1,11 @@
 from django.shortcuts import render, redirect
-from proyecto.models import Proyecto, Fase, TipodeItem, Item, FaseUser, User, Rol
+from proyecto.models import Proyecto, Fase, TipodeItem, Item, FaseUser, User, Rol, Relacion, LineaBase
 from guardian.shortcuts import assign_perm, remove_perm
 from proyecto.views import proyectoView, faseView
+
 from datetime import datetime
+
+from django.db.models import Q
 
 
 def gestionFase(request):
@@ -765,15 +768,14 @@ def itemCrear(request):
             """Creacion del item con los datos proveidos por el usuario."""
             item = Item.objects.create(tipoItem=obj, nombre=dato['nombre'], fecha=dato['fecha'],
                                        observacion=dato['observacion'], costo=dato['costo'],
-                                       _history_date=datetime.now(), dateCreacion=datetime.now())
+                                       _history_date=datetime.now(), estado='en desarrollo')
 
-            """Estado del item predefinido en la creacion igual a en desarrollo."""
-            item.estado = "en desarrollo"
             """Almacenar la informacion de cada campo extra proveido por el usuario."""
             for c in obj.campo_extra:
                 item.campo_extra_valores.append(dato[c])
             """Guardar."""
             item.save()
+
             """Agregar item a fase."""
             fase.items.add(item)
             """Redirigir a la vista de la fase correspondiente."""
@@ -921,6 +923,24 @@ def gestionItem(request):
     return render(request, 'item/gestionItem.html', {'proyectoid': proyectoid, 'faseid': faseid, 'itemid': itemid, })
 
 
+def itemConfigurar(request, itemid, faseid, proyectoid):
+    if request.method == "GET":
+        """Fase en el cual se encuentra el item."""
+        fase = Fase.objects.get(id=faseid)
+        """Proyecto en el cual se encuentra el item."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Item a visualizar."""
+        item = Item.objects.get(id=itemid)
+        """Verificar que el usuario cuente con los permisos necesarios."""
+        if not (request.user.has_perm("ver_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+
+        return render(request, "item/itemConfiguracion.html", {'fase': fase, 'item': item, 'proyecto': proyecto,
+                                                               'campos': zip(item.tipoItem.campo_extra,
+                                                                             item.campo_extra_valores), })
+
+
 def itemModificar(request):
     """
            **itemModificar:**
@@ -942,7 +962,7 @@ def itemModificar(request):
         itemid = request.GET.get('itemid')
         """Item a modificar."""
         item = Item.objects.get(id=itemid)
-        """Fase en la cual se encuentra el iten a modificar."""
+        """Fase en la cual se encuentra el item a modificar."""
         fase = Fase.objects.get(id=faseid)
         """Verificar que el usuario cuente con los permisos necesarios."""
         if not (request.user.has_perm("modify_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
@@ -1010,13 +1030,18 @@ def itemModificar(request):
     item.observacion = dato['observacion']
     """Actualizar costo del item."""
     item.costo = dato['costo']
+    """Actualizar el numero de version del item"""
+    num = Item.objects.last()
+    item.version = num.version + 1
 
     cont = 0
     """Actualizar campos extra del item."""
     for c in item.tipoItem.campo_extra:
         item.campo_extra_valores[cont] = dato[c]
         cont = cont + 1
+
     item._history_date = datetime.now()
+
     """Guardar"""
     item.save()
 
@@ -1062,6 +1087,56 @@ def itemCambiarEstado(request):
             if not (request.user.has_perm("aprove_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
                 """Al no contar con los permisos, niega el acceso, redirigiendo."""
                 return redirect('/permissionError/')
+
+            """Para aprobar el item es necesario identificar que tenga alguna relacion con un antecesor
+            que se encuentre en una linea base cerrada, o bien con un padre(o hijo) que este aprobado."""
+            fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+            cont = 0
+            esPrimeraFase = False
+            for fp in fasesProyecto:
+                cont = cont + 1
+                if fp == fase:
+                    if cont == 1:
+                        esPrimeraFase = True
+                        break
+            "Solo verificar si son items posteriores a la primera fase."
+            if esPrimeraFase == False:
+                anterior = None
+                for fp in fasesProyecto:
+                    if fp == fase:
+                        break
+                    anterior = fp
+
+                listoAprobacion = False
+                itemsRelacionados = item.relaciones.all()
+                for ir in itemsRelacionados:
+                    relacion = Relacion.objects.get(item_from=item, item_to=ir)
+                    if relacion.fase_item_to == anterior and ir.estado == "en linea base":
+                        lineaBaseItem = LineaBase.objects.get(items__id=ir.id)
+                        if lineaBaseItem.estado == "cerrada":
+                            listoAprobacion = True
+                            break
+                    if relacion.fase_item_to == fase and ir.estado == "aprobado":
+                        listoAprobacion = True
+                        break
+
+                if listoAprobacion == False:
+                    mensaje = "No es posible aprobar el item ya que este no posee una relacion con un item antecesor" \
+                              "en linea base cerrada, o bien, con un item padre aprobado."
+                    """
+                        Template a renderizar: item.html 
+                        con parametros -> faseid, proyectoid, item, proyecto, campos extra de item,
+                        permiso para establecer item como pendiente de aprobacion, 
+                        permiso para establecer item como parobado, choices
+                        con los distintos estados del item y el mensaje correspondiente.
+                        """
+                    return render(request, 'item/item.html',
+                                  {'faseid': dato['faseid'], 'proyectoid': dato['proyectoid'], 'item': item,
+                                   'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
+                                   'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
+                                   'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
+                                   'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ],
+                                   'mensaje': mensaje, })
 
         """Verificar que el estado del proyecto sea inicializado."""
         if proyecto.estado != "inicializado":
@@ -1142,6 +1217,330 @@ def itemDeshabilitar(request):
     return redirect('proyectoView', id=proyectoid)
 
 
+def itemVerRelaciones(request, itemid, faseid, proyectoid):
+    if request.method == 'GET':
+        """ID del proyecto"""
+        # proyectoid = request.GET.get('proyectoid')
+        """Proyecto en el cual se encuentra el item."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """ID de fase."""
+        # faseid = request.GET.get('faseid')
+        """Fase en la cual se encuentra el item."""
+        fase = Fase.objects.get(id=faseid)
+        # itemid = request.GET.get('itemid')
+        item_recibido = Item.objects.get(id=itemid)
+        """ Recupera la lista de items antecesores a él de la tabla de relaciones"""
+        items_antecesores = list(Relacion.objects.filter(tipo="sucesor", item_from=item_recibido))
+        # if items_antecesores:
+        """ Se encuentra la fase en donde están sus ítems antecesores"""
+        # fase_antecesora = items_antecesores[0].fase
+
+        """ Recupera la lista de items sucesores a él de la tabla de relaciones"""
+        items_sucesores = list(Relacion.objects.filter(tipo="antecesor", item_from=item_recibido))
+        # if items_sucesores:
+        """ Se encuentra la fase en donde están sus ítems antecesores"""
+        # fase_sucesora = items_sucesores[0].fase
+
+        """ Recupera la lista de items padres de él de la tabla de relaciones"""
+        items_padres = list(Relacion.objects.filter(tipo="hijo", item_from=item_recibido))
+        """ Sus padres e hijos son de su misma fase"""
+        fase_padre_hijo = fase
+
+        """ Recupera la lista de items hijos de él de la tabla de relaciones"""
+        items_hijos = list(Relacion.objects.filter(tipo="padre", item_from=item_recibido))
+
+        return render(request, "item/ItemVerRelacion.html", {'proyecto': proyecto, 'fase': fase, 'item': item_recibido,
+                                                             'antecesores': items_antecesores,
+                                                             'sucesores': items_sucesores,
+                                                             'padres': items_padres, 'hijos': items_hijos, })
+
+
+def itemRelacionesRemover(request, itemid, item_rm, faseid, proyectoid):
+    if request.method == 'GET':
+        """ID del proyecto"""
+        # proyectoid = request.GET.get('proyectoid')
+        """Proyecto en el cual se encuentra el item."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """ID de fase."""
+        # faseid = request.GET.get('faseid')
+        """Fase en la cual se encuentra el item."""
+        fase = Fase.objects.get(id=faseid)
+        # itemid = request.GET.get('itemid')
+        # itemid_final = request.GET.get('itemid_final')
+        item_inicio = Item.objects.get(id=itemid)
+        item_final_remover = Item.objects.get(id=item_rm)
+        relaciones_uno = Relacion.objects.get(item_from=item_inicio, item_to=item_final_remover)
+        relaciones_uno.delete()
+        relaciones_dos = Relacion.objects.get(item_from=item_final_remover, item_to=item_inicio)
+        relaciones_dos.delete()
+        return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid)
+
+
+def itemAddRelacion(request):
+    if request.method == 'GET':
+        proyectoid = request.GET.get('proyectoid')
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        faseid = request.GET.get('faseid')
+        fase = Fase.objects.get(id=faseid)
+        itemid = request.GET.get('itemid')
+        item = Item.objects.get(id=itemid)
+        """Verificar que el usuario cuente con los permisos necesarios."""
+        if not (request.user.has_perm("relacionar_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+        fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+        anterior = None
+        siguiente = None
+        for fp in fasesProyecto:
+            if fp == fase:
+                break
+            anterior = fp
+
+        actual = False
+        for fp in fasesProyecto:
+            if actual == True:
+                siguiente = fp
+                break
+            if fp == fase:
+                actual = True
+
+        relaciones = item.relaciones.all()
+        relacionesId = []
+        for r in relaciones:
+            relacionesId.append(r.id)
+        itemsFaseAnterior = None
+        if anterior is not None:
+            itemsFaseAnterior = anterior.items.exclude(Q(estado="deshabilitado") | Q(id__in=relaciones)).order_by('id')
+
+        itemsFaseSiguiente = None
+        if siguiente is not None:
+            itemsFaseSiguiente = siguiente.items.exclude(Q(estado="deshabilitado") | Q(id__in=relaciones)).order_by(
+                'id')
+
+        itemsFaseActual = fase.items.exclude(Q(estado="deshabilitado") | Q(id=itemid) | Q(id__in=relaciones)).order_by(
+            'id')
+
+        return render(request, 'item/itemAddRelacion.html',
+                      {'proyecto': proyecto, 'fase': fase, 'item': item, 'itemsFaseAnterior': itemsFaseAnterior,
+                       'itemsFaseSiguiente': itemsFaseSiguiente, 'itemsFaseActual': itemsFaseActual,
+                       'faseAnterior': anterior, 'faseSiguiente': siguiente, })
+
+    else:
+        proyectoid = request.POST.get('proyectoid')
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        faseid = request.POST.get('faseid')
+        fase = Fase.objects.get(id=faseid)
+        itemIdActual = request.POST.get('itemIdActual')
+        itemActual = Item.objects.get(id=itemIdActual)
+        itemIdRelacion = request.POST.get('itemIdRelacion')
+        faseAnterior = request.POST.get('anterior')
+        faseSiguiente = request.POST.get('siguiente')
+        fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+        itemRelacion = Item.objects.get(id=itemIdRelacion)
+        for fp in fasesProyecto:
+            items = fp.items.all()
+            for i in items:
+                if i == itemRelacion:
+                    if int(fp.id) == int(faseAnterior):
+                        Relacion.objects.create(tipo="sucesor", item_from=itemActual, item_to=itemRelacion,
+                                                fase_item_to=fp)
+                        Relacion.objects.create(tipo="antecesor", item_from=itemRelacion, item_to=itemActual,
+                                                fase_item_to=fase)
+                    if int(fp.id) == int(faseSiguiente):
+                        Relacion.objects.create(tipo="antecesor", item_from=itemActual, item_to=itemRelacion,
+                                                fase_item_to=fp)
+                        Relacion.objects.create(tipo="sucesor", item_from=itemRelacion, item_to=itemActual,
+                                                fase_item_to=fase)
+                    if fp == fase:
+                        Relacion.objects.create(tipo="padre", item_from=itemActual, item_to=itemRelacion,
+                                                fase_item_to=fp)
+                        Relacion.objects.create(tipo="hijo", item_from=itemRelacion, item_to=itemActual,
+                                                fase_item_to=fase)
+
+        '''
+        Relacion.objects.create(tipo="tipo", item_from=itemRelacion, item_to=itemActual)
+        itemActual.relaciones.add(itemRelacion)
+        itemRelacion.relaciones.add(itemIdActual)
+        '''
+        return redirect("/home/")
+
+
+def faseGestionLineaBase(request):
+    if request.method == 'GET':
+        proyectoid = request.GET.get('proyectoid')
+        faseid = request.GET.get('faseid')
+        fase = Fase.objects.get(id=faseid)
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        if not (request.user.has_perm("ver_lineaBase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+        lineasBase = fase.lineasBase.exclude(estado="rota")
+
+        proyectoid = request.GET.get('proyectoid')
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        faseid = request.GET.get('faseid')
+        itemid = request.GET.get('itemid')
+        item = Item.objects.get(id=itemid)
+        fase = Fase.objects.get(id=faseid)
+
+        return render(request, "fase/faseGestionLineaBase.html",
+                      {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+
+
+def faseAddLineaBase(request):
+    if request.method == "POST":
+        """
+        Consulta si el post recibido es el de la selección de 
+        un Tipo de Item o el post para guardar la información modificada.
+        """
+        proyecto = Proyecto.objects.get(id=request.POST.get('proyectoid'))
+        fase = Fase.objects.get(id=request.POST.get('faseid'))
+        nombre = request.POST.get('nombre')
+        items = request.POST.getlist('items')
+
+        lineaBase = LineaBase.objects.create(nombre=nombre, estado="abierta", creador=request.user)
+        for i in items:
+            item = Item.objects.get(id=i)
+            item.estado = "en linea base"
+            item.save()
+            lineaBase.items.add(item)
+
+        lineaBase.save()
+        fase.lineasBase.add(lineaBase)
+        fase.save()
+
+        lineasBase = fase.lineasBase.exclude(estado="rota")
+        """Template a renderizar: gestionProyecto.html con parametro -> proyectoid"""
+        return render(request, 'fase/faseGestionLineaBase.html',
+                      {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+
+    """Se recibe el ID del proyecto en el cual se encuentra actualmente el Usuario"""
+    """Recupera de la BD el proyecto en el que se encuentra el usuario."""
+    proyecto = Proyecto.objects.get(id=request.GET.get('proyectoid'))
+    fase = Fase.objects.get(id=request.GET.get('faseid'))
+    """Verificar permiso necesario en el proyecto correspondiente"""
+    if not (request.user.has_perm("create_lineaBase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+        return redirect('/permissionError/')
+
+    if proyecto.estado != "inicializado":
+        return redirect('faseView', faseid=fase.id, proyectoid=proyecto.id)
+
+    itemsAprobados = fase.items.filter(estado="aprobado")
+    for i in itemsAprobados:
+        print(i.estado)
+    cantidad = fase.lineasBase.all().count()
+    nombre = "LineaBase" + str(cantidad + 1) + "-" + fase.nombre
+    return render(request, "fase/faseAddLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                          'items': itemsAprobados, 'nombre': nombre, })
+
+
+def faseConfigLineaBase(request, proyectoid, faseid, lineaBaseid):
+    if request.method == 'GET':
+        # proyectoid = request.GET.get('proyectoid')
+        # faseid = request.GET.get('faseid')
+        fase = Fase.objects.get(id=faseid)
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        if not (request.user.has_perm("ver_lineaBase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+        items = lineaBase.items.all().order_by('id')
+
+        return render(request, "fase/faseConfigLineaBase.html",
+                      {'fase': fase, 'proyecto': proyecto, 'items': items, 'lineaBase': lineaBase, })
+
+
+def lineaBaseAddItem(request):
+    if request.method == 'GET':
+        proyectoid = request.GET.get('proyectoid')
+        faseid = request.GET.get('faseid')
+        lineaBaseid = request.GET.get('lineaBaseid')
+        fase = Fase.objects.get(id=faseid)
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        if not (request.user.has_perm("modify_lineaBase", fase)) and not (
+                request.user.has_perm("is_gerente", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+
+        "No se pueden agregar en una linea base cerrada o rota"
+        if lineaBase.estado != "abierta":
+            itemsLineaBase = lineaBase.items.all().order_by('id')
+            return render(request, "fase/faseConfigLineaBase.html",
+                          {'fase': fase, 'proyecto': proyecto, 'items': itemsLineaBase, 'lineaBase': lineaBase, })
+
+        items_disponibles = fase.items.filter(estado="aprobado")
+
+        return render(request, 'fase/lineaBaseAddItem.html',
+                      {'proyecto': proyecto, 'fase': fase, 'lineaBase': lineaBase, 'items': items_disponibles, })
+
+    else:
+        proyectoid = request.POST.get('proyectoid')
+        faseid = request.POST.get('faseid')
+        lineaBaseid = request.POST.get('lineaBaseid')
+        fase = Fase.objects.get(id=faseid)
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        items = request.POST.getlist('items')
+        for i in items:
+            item = Item.objects.get(id=i)
+            lineaBase.items.add(item)
+        lineaBase.save()
+        itemsLineaBase = lineaBase.items.all().order_by('id')
+        return render(request, "fase/faseConfigLineaBase.html",
+                      {'fase': fase, 'proyecto': proyecto, 'items': itemsLineaBase, 'lineaBase': lineaBase, })
+
+
+def lineaBaseRemoveItem(request, proyectoid, faseid, lineaBaseid, itemid):
+    if request.method == 'GET':
+
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        fase = Fase.objects.get(id=faseid)
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        item_remover = Item.objects.get(id=itemid)
+        if not (request.user.has_perm("modify_lineaBase", fase)) and not (
+                request.user.has_perm("is_gerente", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+
+        "No se pueden agregar en una linea base cerrada o rota"
+        if lineaBase.estado != "abierta":
+            itemsLineaBase = lineaBase.items.all().order_by('id')
+            return render(request, "fase/faseConfigLineaBase.html",
+                          {'fase': fase, 'proyecto': proyecto, 'items': itemsLineaBase, 'lineaBase': lineaBase, })
+
+        lineaBase.items.remove(item_remover)
+        lineaBase.save()
+        item_remover.estado = "aprobado"
+        item_remover.save()
+        itemsLineaBase = lineaBase.items.all().order_by('id')
+        return render(request, "fase/faseConfigLineaBase.html",
+                      {'fase': fase, 'proyecto': proyecto, 'items': itemsLineaBase, 'lineaBase': lineaBase, })
+
+
+def faseCerrarLineaBase(request):
+    if request.method == 'GET':
+        proyectoid = request.GET.get('proyectoid')
+        faseid = request.GET.get('faseid')
+        lineaBaseid = request.GET.get('lineaBaseid')
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        fase = Fase.objects.get(id=faseid)
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        if not (request.user == lineaBase.creador):
+            return redirect('/permissionError/')
+        if not lineaBase.items.all():
+            itemsLineaBase = lineaBase.items.all().order_by('id')
+            return render(request, "fase/faseConfigLineaBase.html",
+                          {'fase': fase, 'proyecto': proyecto, 'items': itemsLineaBase, 'lineaBase': lineaBase, })
+
+        lineaBase.estado = "cerrada"
+        lineaBase.save()
+        lineasBase = fase.lineasBase.exclude(estado="rota")
+
+        return render(request, "fase/faseGestionLineaBase.html",
+                      {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+
+
 def itemHistorial(request):
     if request.method == 'GET':
         proyectoid = request.GET.get('proyectoid')
@@ -1156,33 +1555,39 @@ def itemHistorial(request):
 
 
 def itemReversionar(request, proyectoid, faseid, itemid, history_date):
+    """
+                  **itemReversiona:**
+                   Vista utilizada para volver a una version anterior del Item.
+                   Solicita que el usuario que realiza el request
+                   cuente con los permisos para reversionar y que el
+                   estado del item sea "en desarrollo"
 
+    """
 
-    fase = Fase.objects.get(id=faseid)
-    proyecto = Proyecto.objects.get(id=proyectoid)
-    item = Item.objects.get(id=itemid)
+    if request.method == 'GET':
 
-    if item.estado == "en desarrollo":
+        fase = Fase.objects.get(id=faseid)
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        item = Item.objects.get(id=itemid)
 
-        a = history_date[0] + history_date[1] + history_date[2] + history_date[3]
-        m = history_date[5] + history_date[6]
-        d = history_date[8] + history_date[9]
-        h = history_date[11] + history_date[12]
-        min = history_date[14] + history_date[15]
-        s = history_date[17] + history_date[18]
+        """Verificar que el usuario cuente con los permisos necesarios."""
+        if not (request.user.has_perm("reversionar_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
 
-        a1= int(a)
-        m1=int (m)
-        d1=int (d)
-        h1=int(h)
-        min1=int(min)
-        s1=int(s)
-        reversionar = item.history.as_of(datetime(a1, m1, d1, h1, min1, s1))
-        item = reversionar
-        item._history_date = datetime.now()
-        item.save()
+        """ Se podra reversionar el item si este se encuentra en estado de desarrollo"""
+        if (item.estado == 'en desarrollo'):
+            """ Obtiene la version del item seleccionada por el usuario"""
 
+            rever = item.history.as_of(history_date)
+            """Obtiene el numero de la ultima version para incrementar el contador de versiones"""
 
-        return redirect('itemView', faseid=faseid, proyectoid=proyectoid, itemid=itemid)
-    else:
-        return redirect('itemView', faseid=faseid, proyectoid=proyectoid, itemid=itemid)
+            num = Item.objects.last()
+            """ Reversiona el item """
+            item = rever
+            item._history_date = datetime.now()
+            item.version = num.version + 1
+            item.save()
+            return redirect('itemView', faseid=faseid, proyectoid=proyectoid, itemid=itemid)
+        else:
+            return redirect('itemView', faseid=faseid, proyectoid=proyectoid, itemid=itemid)
