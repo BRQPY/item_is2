@@ -944,7 +944,7 @@ def itemModificar(request):
         Verificar que el estado del item se 
         encuentre en desarrollo, permitiendo modificaciones.
         """
-        if item.estado == "pendiente de aprobacion" or item.estado == "aprobado":
+        if item.estado == "pendiente de aprobacion" or item.estado == "aprobado" or item.estado == "en linea base":
             mensaje = "El estado actual del item no permite la modificacion del mismo."
             """
             En caso contrario, no permite la modificacion del item y 
@@ -1032,6 +1032,34 @@ def itemCambiarEstado(request):
     """Item al cual modificar el estado."""
     item = Item.objects.get(id=dato['itemid'])
 
+    "Verificar que si el item esta aprobado, no debe cambiar su estado si este ya posee relaciones."
+    if item.estado == "aprobado":
+        relaciones = item.relaciones.exclude(estado="deshabilitado")
+        cambiar_estado = True
+        for r in relaciones:
+            relacion = Relacion.objects.get(item_from=item, item_to=r)
+            if relacion.tipo == "padre" or relacion.tipo == "antecesor":
+                cambiar_estado = False
+                break
+
+        if not cambiar_estado:
+            mensaje = "No es posible cambiar el estado del item ya que este cuenta con relaciones."
+            """
+                Template a renderizar: item.html 
+                con parametros -> faseid, proyectoid, item, proyecto, campos extra de item,
+                permiso para establecer item como pendiente de aprobacion, 
+                permiso para establecer item como parobado, choices
+                con los distintos estados del item y el mensaje correspondiente.
+                """
+            return render(request, 'item/item.html',
+                          {'faseid': dato['faseid'], 'proyectoid': dato['proyectoid'], 'item': item,
+                           'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
+                           'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
+                           'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
+                           'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ],
+                           'mensaje': mensaje, })
+
+
     mensaje = ""
     """Verificar que el estado no sea el mismo que ya poseia."""
     if item.estado != dato['estado']:
@@ -1039,6 +1067,14 @@ def itemCambiarEstado(request):
         if dato['estado'] == "pendiente de aprobacion":
             """Verificar que el usuario cuente con los permisos para asignar ese estado."""
             if not (request.user.has_perm("establecer_itemPendienteAprob", fase)) and not (
+                    request.user.has_perm("is_gerente", proyecto)):
+                """Al no contar con los permisos, niega el acceso, redirigiendo."""
+                return redirect('/permissionError/')
+
+        """Si el nuevo estado es en desarrollo."""
+        if dato['estado'] == "en desarrollo":
+            """Verificar que el usuario cuente con los permisos para asignar ese estado."""
+            if not (request.user.has_perm("establecer_itemDesarrollo", fase)) and not (
                     request.user.has_perm("is_gerente", proyecto)):
                 """Al no contar con los permisos, niega el acceso, redirigiendo."""
                 return redirect('/permissionError/')
@@ -1078,7 +1114,7 @@ def itemCambiarEstado(request):
                         if lineaBaseItem.estado == "cerrada":
                             listoAprobacion = True
                             break
-                    if relacion.fase_item_to == fase and ir.estado == "aprobado":
+                    if relacion.fase_item_to == fase and (ir.estado == "aprobado" or ir.estado == "en linea base"):
                         listoAprobacion = True
                         break
 
@@ -1160,7 +1196,7 @@ def itemDeshabilitar(request):
         return redirect('proyectoView',id=proyectoid)
 
     """Verificar que el estado del item sea en desarrollo."""
-    if item.estado == "pendiente de aprobacion" or item.estado == "aprobado":
+    if item.estado == "pendiente de aprobacion" or item.estado == "aprobado" or item.estado == "en linea base":
         mensaje = "El estado actual del item no permite la deshabilitacion del mismo."
         """
         En caso contrario niega la deshabilitacion del mismo y 
@@ -1170,15 +1206,48 @@ def itemDeshabilitar(request):
         return render(request, 'item/gestionItem.html',
                       {'proyectoid': proyectoid, 'faseid': faseid, 'itemid': itemid, 'mensaje': mensaje, })
 
-    """Establece estado de item como deshabilitado."""
-    item.estado = "deshabilitado"
-    """Guardar."""
-    item.save()
+    "VERIFICAR SI ES POSIBLE DESHABILITAR EL ITEM TENIENDO EN CUENTA SUS RELACIONES."
+    relaciones_item_deshabilitar = item.relaciones.all()
+    ok_deshabilitar = True
+    for rd in relaciones_item_deshabilitar:
+        if rd.estado == "aprobado" or rd.estado == "en linea base":
+            "Debe verificar que el item no quede sin al menos una relacion a otro item aprobado o antecesor en linea base."
+            relaciones_item_afectado = rd.relaciones.exclude(id=item.id)
+            ok_sobrevivir = False
+            for r in relaciones_item_afectado:
+                relacion = Relacion.objects.get(item_from=r, item_to=rd)
+                if relacion.tipo == "padre" and (r.estado == "aprobado" or r.estado == "en linea base"):
+                    ok_sobrevivir = True
+                    break
+                if relacion.tipo == "antecesor" and r.estado == "en linea base":
+                    lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                    if lineaBaseItem.estado == "cerrada":
+                        ok_sobrevivir = True
+                        break
+
+            "Si un item afectado no sobrevive ya no es posible deshabilitar el item deseado."
+            if not ok_sobrevivir:
+                ok_deshabilitar = False
+
+    if ok_deshabilitar:
+        for rd in relaciones_item_deshabilitar:
+            relaciones_uno = Relacion.objects.get(item_from=item, item_to=rd)
+            relaciones_uno.delete()
+            relaciones_dos = Relacion.objects.get(item_from=rd, item_to=item)
+            relaciones_dos.delete()
+
+        """Establece estado de item como deshabilitado."""
+        item.estado = "deshabilitado"
+        """Guardar."""
+        item.save()
+        """Redirige a la vista de la fase correspondiente."""
+        return redirect('proyectoView', id=proyectoid)
+
     """Redirige a la vista de la fase correspondiente."""
     return redirect('proyectoView', id=proyectoid)
 
-def itemVerRelaciones(request,itemid, faseid, proyectoid):
 
+def itemVerRelaciones(request,itemid, faseid, proyectoid):
     if request.method =='GET':
         """ID del proyecto"""
         #proyectoid = request.GET.get('proyectoid')
@@ -1214,8 +1283,8 @@ def itemVerRelaciones(request,itemid, faseid, proyectoid):
                                                              'antecesores': items_antecesores, 'sucesores':items_sucesores,
                                                              'padres': items_padres, 'hijos': items_hijos, })
 
-def itemRelacionesRemover(request,itemid,item_rm, faseid, proyectoid):
 
+def itemRelacionesRemover(request,itemid,item_rm, faseid, proyectoid):
     if request.method =='GET':
         """ID del proyecto"""
         #proyectoid = request.GET.get('proyectoid')
@@ -1229,11 +1298,48 @@ def itemRelacionesRemover(request,itemid,item_rm, faseid, proyectoid):
         #itemid_final = request.GET.get('itemid_final')
         item_inicio = Item.objects.get(id=itemid)
         item_final_remover = Item.objects.get(id=item_rm)
-        relaciones_uno = Relacion.objects.get(item_from=item_inicio, item_to=item_final_remover)
-        relaciones_uno.delete()
-        relaciones_dos = Relacion.objects.get(item_from=item_final_remover, item_to=item_inicio)
-        relaciones_dos.delete()
-        return redirect('itemVerRelaciones', itemid=item_inicio.id,faseid=faseid, proyectoid=proyectoid)
+        ok_remover_final = False
+        if item_final_remover.estado == "aprobado" or item_final_remover.estado == "en linea base":
+            "Debe verificar que el item no quede sin al menos una relacion a otro item aprobado o antecesor en linea base."
+            relaciones_item_remover = item_final_remover.relaciones.exclude(id=item_inicio.id)
+            for r in relaciones_item_remover:
+                relacion = Relacion.objects.get(item_from=r, item_to=item_final_remover)
+                if relacion.tipo == "padre" and (r.estado == "aprobado" or r.estado == "en linea base"):
+                    ok_remover_final = True
+                    break
+                if relacion.tipo == "antecesor" and r.estado == "en linea base":
+                    lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                    if lineaBaseItem.estado == "cerrada":
+                        ok_remover_final = True
+                        break
+        else:
+            ok_remover_final = True
+
+        "El mismo testeo para el item del cual queremos remover la relacion."
+        ok_remover_inicio = False
+        "Debe verificar que el item no quede sin al menos una relacion a otro item aprobado o antecesor en linea base."
+        relaciones_item_inicio = item_inicio.relaciones.exclude(id=item_final_remover.id)
+        for r in relaciones_item_inicio:
+            relacion = Relacion.objects.get(item_from=r, item_to=item_inicio)
+            if relacion.tipo == "padre" and (r.estado == "aprobado" or r.estado == "en linea base"):
+                ok_remover_inicio = True
+                break
+            if relacion.tipo == "antecesor" and r.estado == "en linea base":
+                lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                if lineaBaseItem.estado == "cerrada":
+                    ok_remover_final = True
+                    break
+
+        if ok_remover_inicio and ok_remover_final:
+            relaciones_uno = Relacion.objects.get(item_from=item_inicio, item_to=item_final_remover)
+            relaciones_uno.delete()
+            relaciones_dos = Relacion.objects.get(item_from=item_final_remover, item_to=item_inicio)
+            relaciones_dos.delete()
+            return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid)
+
+        return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid)
+
+
 def itemAddRelacion(request):
     if request.method == 'GET':
         proyectoid = request.GET.get('proyectoid')
@@ -1246,40 +1352,38 @@ def itemAddRelacion(request):
         if not (request.user.has_perm("relacionar_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
-        fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
-        anterior = None
-        siguiente = None
-        for fp in fasesProyecto:
-            if fp == fase:
-                break
-            anterior = fp
+        if item.estado != "aprobado" and item.estado != "en linea base":
+            return redirect('itemVerRelaciones', itemid=itemid, faseid=faseid, proyectoid=proyectoid)
 
-        actual = False
-        for fp in fasesProyecto:
-            if actual == True:
-                siguiente = fp
-                break
-            if fp == fase:
-                actual = True
-
+        "Todos los id de las relaciones del item."
         relaciones = item.relaciones.all()
         relacionesId = []
         for r in relaciones:
             relacionesId.append(r.id)
-        itemsFaseAnterior = None
-        if anterior is not None:
-            itemsFaseAnterior = anterior.items.exclude(Q(estado="deshabilitado") | Q(id__in=relaciones)).order_by('id')
-
+        "Solo si esta en linea base puede avanzar de fase."
+        siguiente = None
         itemsFaseSiguiente = None
-        if siguiente is not None:
-            itemsFaseSiguiente = siguiente.items.exclude(Q(estado="deshabilitado") | Q(id__in=relaciones)).order_by('id')
+        if item.estado == "en linea base":
+            fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+            actual = False
+            for fp in fasesProyecto:
+                if actual == True:
+                    siguiente = fp
+                    break
+                if fp == fase:
+                    actual = True
 
-        itemsFaseActual = fase.items.exclude(Q(estado="deshabilitado") | Q(id=itemid) | Q(id__in=relaciones)).order_by('id')
+            if siguiente is not None:
+                itemsFaseSiguiente = siguiente.items.exclude(Q(estado="deshabilitado") | Q(id__in=relaciones)).order_by(
+                    'id')
+
+        itemsFaseActual = fase.items.exclude(
+            Q(estado="deshabilitado") | Q(id=itemid) | Q(id__in=relaciones)).order_by('id')
 
         return render(request, 'item/itemAddRelacion.html',
-               {'proyecto': proyecto, 'fase': fase, 'item': item, 'itemsFaseAnterior': itemsFaseAnterior,
-                'itemsFaseSiguiente': itemsFaseSiguiente, 'itemsFaseActual': itemsFaseActual,
-                'faseAnterior': anterior, 'faseSiguiente': siguiente, })
+                      {'proyecto': proyecto, 'fase': fase, 'item': item,
+                       'itemsFaseSiguiente': itemsFaseSiguiente, 'itemsFaseActual': itemsFaseActual,
+                       'faseSiguiente': siguiente, })
 
     else:
         proyectoid = request.POST.get('proyectoid')
@@ -1289,7 +1393,6 @@ def itemAddRelacion(request):
         itemIdActual = request.POST.get('itemIdActual')
         itemActual = Item.objects.get(id=itemIdActual)
         itemIdRelacion = request.POST.get('itemIdRelacion')
-        faseAnterior = request.POST.get('anterior')
         faseSiguiente = request.POST.get('siguiente')
         fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
         itemRelacion = Item.objects.get(id=itemIdRelacion)
@@ -1297,28 +1400,19 @@ def itemAddRelacion(request):
             items = fp.items.all()
             for i in items:
                 if i == itemRelacion:
-                    if int(fp.id) == int(faseAnterior):
-                        Relacion.objects.create(tipo="sucesor", item_from=itemActual, item_to=itemRelacion,
-                                                fase_item_to=fp)
-                        Relacion.objects.create(tipo="antecesor", item_from=itemRelacion, item_to=itemActual,
-                                                fase_item_to=fase)
-                    if int(fp.id) == int(faseSiguiente):
-                        Relacion.objects.create(tipo="antecesor", item_from=itemActual, item_to=itemRelacion,
-                                                fase_item_to=fp)
-                        Relacion.objects.create(tipo="sucesor", item_from=itemRelacion, item_to=itemActual,
-                                                fase_item_to=fase)
+                    if faseSiguiente != "no":
+                        if int(fp.id) == int(faseSiguiente):
+                            Relacion.objects.create(tipo="antecesor", item_from=itemActual, item_to=itemRelacion,
+                                                    fase_item_to=fp)
+                            Relacion.objects.create(tipo="sucesor", item_from=itemRelacion, item_to=itemActual,
+                                                    fase_item_to=fase)
                     if fp == fase:
                         Relacion.objects.create(tipo="padre", item_from=itemActual, item_to=itemRelacion,
                                                 fase_item_to=fp)
                         Relacion.objects.create(tipo="hijo", item_from=itemRelacion, item_to=itemActual,
                                                 fase_item_to=fase)
 
-        '''
-        Relacion.objects.create(tipo="tipo", item_from=itemRelacion, item_to=itemActual)
-        itemActual.relaciones.add(itemRelacion)
-        itemRelacion.relaciones.add(itemIdActual)
-        '''
-        return redirect("/home/")
+        return redirect('itemVerRelaciones', itemid=itemActual.id, faseid=faseid, proyectoid=proyectoid)
 
 
 def faseGestionLineaBase(request):
