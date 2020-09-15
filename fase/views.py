@@ -1180,15 +1180,29 @@ def itemDeshabilitar(request):
 def itemVerRelaciones(request,itemid, faseid, proyectoid):
 
     if request.method =='GET':
-        """ID del proyecto"""
-        #proyectoid = request.GET.get('proyectoid')
-        """Proyecto en el cual se encuentra el item."""
+
         proyecto = Proyecto.objects.get(id=proyectoid)
-        """ID de fase."""
-        #faseid = request.GET.get('faseid')
-        """Fase en la cual se encuentra el item."""
         fase = Fase.objects.get(id=faseid)
-        #itemid = request.GET.get('itemid')
+        fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+        varias_fases = False
+
+        anterior = None
+        siguiente = None
+        if len(fasesProyecto) > 1:
+            varias_fases = True
+            for fp in fasesProyecto:
+                if fp == fase:
+                    break
+                anterior = fp
+
+            actual = False
+            for fp in fasesProyecto:
+                if actual == True:
+                    siguiente = fp
+                    break
+                if fp == fase:
+                    actual = True
+
         item_recibido = Item.objects.get(id=itemid)
         """ Recupera la lista de items antecesores a él de la tabla de relaciones"""
         items_antecesores = list(Relacion.objects.filter(tipo="sucesor", item_from=item_recibido))
@@ -1212,7 +1226,8 @@ def itemVerRelaciones(request,itemid, faseid, proyectoid):
 
         return render(request, "item/ItemVerRelacion.html", {'proyecto': proyecto, 'fase': fase, 'item': item_recibido,
                                                              'antecesores': items_antecesores, 'sucesores':items_sucesores,
-                                                             'padres': items_padres, 'hijos': items_hijos, })
+                                                             'padres': items_padres, 'hijos': items_hijos, 'faseAnterior': anterior,
+                                                             'faseSiguiente': siguiente, 'varias_fases':varias_fases })
 
 def itemRelacionesRemover(request,itemid,item_rm, faseid, proyectoid):
 
@@ -1275,7 +1290,7 @@ def itemAddRelacion(request):
             itemsFaseSiguiente = siguiente.items.exclude(Q(estado="deshabilitado") | Q(id__in=relaciones)).order_by('id')
 
         itemsFaseActual = fase.items.exclude(Q(estado="deshabilitado") | Q(id=itemid) | Q(id__in=relaciones)).order_by('id')
-
+        print(type(anterior))
         return render(request, 'item/itemAddRelacion.html',
                {'proyecto': proyecto, 'fase': fase, 'item': item, 'itemsFaseAnterior': itemsFaseAnterior,
                 'itemsFaseSiguiente': itemsFaseSiguiente, 'itemsFaseActual': itemsFaseActual,
@@ -1297,16 +1312,18 @@ def itemAddRelacion(request):
             items = fp.items.all()
             for i in items:
                 if i == itemRelacion:
-                    if int(fp.id) == int(faseAnterior):
-                        Relacion.objects.create(tipo="sucesor", item_from=itemActual, item_to=itemRelacion,
-                                                fase_item_to=fp)
-                        Relacion.objects.create(tipo="antecesor", item_from=itemRelacion, item_to=itemActual,
-                                                fase_item_to=fase)
-                    if int(fp.id) == int(faseSiguiente):
-                        Relacion.objects.create(tipo="antecesor", item_from=itemActual, item_to=itemRelacion,
-                                                fase_item_to=fp)
-                        Relacion.objects.create(tipo="sucesor", item_from=itemRelacion, item_to=itemActual,
-                                                fase_item_to=fase)
+                    if faseAnterior is not None:
+                        if int(fp.id) == int(faseAnterior):
+                            Relacion.objects.create(tipo="sucesor", item_from=itemActual, item_to=itemRelacion,
+                                                    fase_item_to=fp)
+                            Relacion.objects.create(tipo="antecesor", item_from=itemRelacion, item_to=itemActual,
+                                                    fase_item_to=fase)
+                    if faseSiguiente is not None:
+                        if int(fp.id) == int(faseSiguiente):
+                            Relacion.objects.create(tipo="antecesor", item_from=itemActual, item_to=itemRelacion,
+                                                    fase_item_to=fp)
+                            Relacion.objects.create(tipo="sucesor", item_from=itemRelacion, item_to=itemActual,
+                                                    fase_item_to=fase)
                     if fp == fase:
                         Relacion.objects.create(tipo="padre", item_from=itemActual, item_to=itemRelacion,
                                                 fase_item_to=fp)
@@ -1331,10 +1348,21 @@ def faseGestionLineaBase(request):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
         lineasBase = fase.lineasBase.exclude(estado="rota")
-
+        items_disponibles = fase.items.filter(estado="aprobado")
+        if items_disponibles:
+            crear_lb = True
+        else:
+            crear_lb = False
         return render(request, "fase/faseGestionLineaBase.html",
-                      {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
-
+                      {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, 'crear_lb': crear_lb })
+def consultarLineaBase(request,proyectoid,faseid,lineaBaseid):
+    if request.method == "GET":
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        fase = Fase.objects.get(id=faseid)
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        items_lb = lineaBase.items.all()
+        return render(request, "fase/lineaBaseConsultar.html", {'proyecto': proyecto, 'fase': fase,
+                                                              'items': items_lb, 'lineaBase': lineaBase,})
 
 def faseAddLineaBase(request):
     if request.method=="POST":
@@ -1346,7 +1374,6 @@ def faseAddLineaBase(request):
         fase = Fase.objects.get(id=request.POST.get('faseid'))
         nombre = request.POST.get('nombre')
         items = request.POST.getlist('items')
-
         lineaBase = LineaBase.objects.create(nombre=nombre, estado="abierta", creador=request.user)
         for i in items:
             item = Item.objects.get(id=i)
@@ -1359,9 +1386,14 @@ def faseAddLineaBase(request):
         fase.save()
 
         lineasBase = fase.lineasBase.exclude(estado="rota")
-        """Template a renderizar: gestionProyecto.html con parametro -> proyectoid"""
-        return render(request, 'fase/faseGestionLineaBase.html',
-                      {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+        items_disponibles = fase.items.filter(estado="aprobado")
+        if items_disponibles:
+            crear_lb = True
+        else:
+            crear_lb = False
+        return render(request, "fase/faseGestionLineaBase.html",
+                      {'fase': fase, 'proyecto': proyecto, 'linea'
+                                                           'sBase': lineasBase, 'crear_lb': crear_lb })
 
     """Se recibe el ID del proyecto en el cual se encuentra actualmente el Usuario"""
     """Recupera de la BD el proyecto en el que se encuentra el usuario."""
@@ -1394,9 +1426,14 @@ def faseConfigLineaBase(request,proyectoid,faseid,lineaBaseid):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
         items = lineaBase.items.all().order_by('id')
+        items_disponibles = fase.items.filter(estado="aprobado")
+        if items_disponibles:
+            crear_lb = True
+        else:
+            crear_lb = False
 
         return render(request, "fase/faseConfigLineaBase.html",
-                      {'fase': fase, 'proyecto': proyecto, 'items': items, 'lineaBase': lineaBase, })
+                      {'fase': fase, 'proyecto': proyecto, 'items': items, 'lineaBase': lineaBase,'crear_lb':crear_lb })
 
 def lineaBaseAddItem(request):
     if request.method == 'GET':
@@ -1406,6 +1443,7 @@ def lineaBaseAddItem(request):
         fase = Fase.objects.get(id=faseid)
         proyecto = Proyecto.objects.get(id=proyectoid)
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
+
         if not (request.user.has_perm("modify_lineaBase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
@@ -1431,6 +1469,8 @@ def lineaBaseAddItem(request):
         items = request.POST.getlist('items')
         for i in items:
             item = Item.objects.get(id=i)
+            item.estado = "en linea base"
+            item.save()
             lineaBase.items.add(item)
         lineaBase.save()
         itemsLineaBase = lineaBase.items.all().order_by('id')
@@ -1462,11 +1502,11 @@ def lineaBaseRemoveItem(request,proyectoid,faseid,lineaBaseid,itemid):
         return render(request, "fase/faseConfigLineaBase.html",
                       {'fase': fase, 'proyecto': proyecto, 'items': itemsLineaBase, 'lineaBase': lineaBase, })
 
-def faseCerrarLineaBase(request):
+def faseCerrarLineaBase(request,proyectoid,faseid,lineaBaseid):
     if request.method == 'GET':
-        proyectoid = request.GET.get('proyectoid')
-        faseid = request.GET.get('faseid')
-        lineaBaseid = request.GET.get('lineaBaseid')
+        #proyectoid = request.GET.get('proyectoid')
+        #faseid = request.GET.get('faseid')
+        #lineaBaseid = request.GET.get('lineaBaseid')
         proyecto = Proyecto.objects.get(id=proyectoid)
         fase = Fase.objects.get(id=faseid)
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
