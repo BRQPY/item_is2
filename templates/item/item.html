@@ -19,6 +19,7 @@
                 {{item.fecha}}
             </div></p>
             {%if proyecto.estado != "cancelado"%}
+                {% if item.estado != "en linea base" %}
                 {%if pendientePermiso or aprobadoPermiso%}
             <form action="/item/itemCambiarEstado/">
                 <p><div>
@@ -81,6 +82,9 @@
                 {%else%}
                     Estado: {{item.estado}}
                 {%endif%}
+                {% else %}
+                    Estado: {{item.estado}}
+                {% endif %}
             {%else%}
                 Estado: {{item.estado}}
             {%endif%}
