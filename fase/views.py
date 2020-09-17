@@ -3,6 +3,7 @@ from proyecto.models import Proyecto, Fase, TipodeItem, Item, FaseUser, User, Ro
 from guardian.shortcuts import assign_perm, remove_perm
 from proyecto.views import proyectoView, faseView
 from django.db.models import Q
+from collections import deque
 
 
 def gestionFase(request):
@@ -1412,7 +1413,105 @@ def itemAddRelacion(request):
                         Relacion.objects.create(tipo="hijo", item_from=itemRelacion, item_to=itemActual,
                                                 fase_item_to=fase)
 
+        "CONTROL DE CICLO EN EL GRAFO"
+        cantidad_items_proyecto = 0
+        for fp in fasesProyecto:
+            cantidad_items_proyecto = cantidad_items_proyecto + int(fp.items.exclude(estado="deshabilitado").count())
+
+        V = cantidad_items_proyecto
+        adj = {}
+        for fp in fasesProyecto:
+            itemsFase = fp.items.exclude(estado="deshabilitado")
+            for iF in itemsFase:
+                relaciones_por_item = []
+                relaciones = Relacion.objects.filter((Q(tipo="antecesor") | Q(tipo="padre")) & Q(item_from=iF))
+                for r in relaciones:
+                    relaciones_por_item.append(int(r.item_to.id))
+
+                adj[int(iF.id)] = relaciones_por_item
+
+        "SI TIENE UN CICLO ELIMINAR RELACIONES Y RETORNAR A VISUALIZACION DE RELACIONES"
+        if isCyclicDisconnected(adj, V):
+            relaciones_uno = Relacion.objects.get(item_from=itemActual, item_to=itemRelacion)
+            relaciones_uno.delete()
+            relaciones_dos = Relacion.objects.get(item_from=itemRelacion, item_to=itemActual)
+            relaciones_dos.delete()
+            return redirect('itemVerRelaciones', itemid=itemIdActual, faseid=faseid, proyectoid=proyectoid)
+
+
+        "SINO, TODO OK"
         return redirect('itemVerRelaciones', itemid=itemActual.id, faseid=faseid, proyectoid=proyectoid)
+
+
+def addEdge(adj: dict, u, v):
+    adj[u].append(v)
+    adj[v].append(u)
+
+
+def isCyclicConnected(adj: dict, s, V,
+                      visited: dict):
+    # Set parent vertex for every vertex as -1.
+    parent = {}
+    for key, value in adj.items():
+        parent[key] = -1
+
+    # Create a queue for BFS
+    q = []
+
+    # Mark the current node as
+    # visited and enqueue it
+    visited[s] = True
+    q.append(s)
+
+    while q != []:
+
+        # Dequeue a vertex from queue and print it
+        u = q.pop()
+
+        # Get all adjacent vertices of the dequeued
+        # vertex u. If a adjacent has not been visited,
+        # then mark it visited and enqueue it. We also
+        # mark parent so that parent is not considered
+        # for cycle.
+        for v in adj[u]:
+            if not visited[v]:
+                visited[v] = True
+                q.append(v)
+                parent[v] = u
+            elif parent[u] != v:
+                return True
+
+    return False
+
+
+def isCyclicDisconnected(adj: dict, V):
+    # Mark all the vertices as not visited
+    visited = {}
+    for key, value in adj.items():
+        visited[key] = False
+
+    for key, value in adj.items():
+        if not visited[key] and \
+                isCyclicConnected(adj, key, V, visited):
+            return True
+    return False
+
+'''
+# Driver Code 
+if __name__ == "__main__":
+    V = 4
+    adj = [[] for i in range(V)]
+    addEdge(adj, 0, 1)
+    addEdge(adj, 1, 2)
+    addEdge(adj, 2, 0)
+    addEdge(adj, 2, 3)
+
+    if isCyclicDisconnected(adj, V):
+        print("Yes")
+    else:
+        print("No")
+'''
+
 
 
 def faseGestionLineaBase(request):
@@ -1470,8 +1569,6 @@ def faseAddLineaBase(request):
 
 
     itemsAprobados = fase.items.filter(estado="aprobado")
-    for i in itemsAprobados:
-        print(i.estado)
     cantidad = fase.lineasBase.all().count()
     nombre = "LineaBase" + str(cantidad+1) + "-" + fase.nombre
     return render(request, "fase/faseAddLineaBase.html", {'proyecto': proyecto, 'fase': fase,
@@ -1566,6 +1663,7 @@ def faseCerrarLineaBase(request):
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
         if not(request.user == lineaBase.creador):
             return redirect('/permissionError/')
+
         if not lineaBase.items.all():
             itemsLineaBase = lineaBase.items.all().order_by('id')
             return render(request, "fase/faseConfigLineaBase.html",
