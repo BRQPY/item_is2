@@ -21,35 +21,75 @@
     {% endif %}
     <div class="container">
         <h5 style="text-align: center"><b>Items de la Linea Base</b></h5>
-
-            <form action="/fase/lineaBaseAddItem/">
-                <button type="submit" class="btn btn-small blue darken-1 right">
-                    Añadir Items a la Linea Base
+            {% if crear_lb %}
+                <form action="/fase/lineaBaseAddItem/">
+                    <button type="submit" class="btn-small blue darken-1 right">
+                        Añadir Ítems a la Linea Base
+                        <i class="material-icons white-text left">add_circle</i>
+                    </button>
+                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                    <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                    <input  type="hidden" value={{lineaBase.id}} id="lineaBaseid" name="lineaBaseid">
+                </form><br>
+            {% else %}
+                <button
+                    title="Todos los ítems aprobados de la fase ya forman parte de alguna Línea Base."
+                    style="cursor: default"
+                    class="btn btn-small #eeeeee grey lighten-3 black-text right"
+                >
+                    Añadir Ítems a la Linea Base
                     <i class="material-icons white-text left">add_circle</i>
-                </button>
-                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-                <input  type="hidden" value={{lineaBase.id}} id="lineaBaseid" name="lineaBaseid">
-            </form><br>
+                </button><br>
+            {% endif %}
+
         {% if items %}
-            {% for i in items %}
-                <div>
-                {{ i.nombre }}
-                <a href="{%url 'lineaBaseRemoveItem' proyecto.id fase.id lineaBase.id i.id%}">Remover</a>
-                </div>
-            {% endfor %}
+            <div class="col s12 md6 x8">
+                <ul class="z-depth-1">
+                    {% for i in items %}
+                        <li>
+                            <div class="card-panel z-depth-4 expense">
+                                <div class="row">
+                                    <div class="col 14 left">
+                                        <b>{{ i.nombre }}</b>
+                                    </div>
+                                    <div class="col 14 right">
+                                        <a href="{%url 'lineaBaseRemoveItem' proyecto.id fase.id lineaBase.id i.id%}"
+                                           title="Quitar ítem de la lista de ítems de la Línea Base"
+                                           onclick="return confirm('Está seguro de remover el ítem de la Línea Base?');"
+                                        >
+                                            Remover Ítem de la Linea Base
+                                            <i class="material-icons red-text left">delete</i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% if lineaBase.items.values  %}
+                {% if lineaBase.creador == user %}
+                    <form action="{%url 'lineaBaseCerrar' proyecto.id fase.id lineaBase.id%}"
+                          onsubmit="return confirm('Está seguro de cerrar la Línea Base {{ lineaBase.nombre }} ?');"
+                    >
+                        <button type="submit" class="btn btn-small red darken-1 right">
+                            Cerrar Linea Base
+                            <i class="material-icons white-text left">lock</i>
+                        </button>
+                    </form><br>
+                {% else %}
+                    <button
+                            style="cursor: default"
+                            class="btn btn-small #eeeeee grey lighten-3 black-text right"
+                    >
+                        Cerrar Linea Base
+                        <i class="material-icons white-text left">lock</i>
+                    </button>
+                {% endif %}
+            {% endif %}
         {% else %}
             <h5>Aún no hay items en esta linea base :(</h5>
         {% endif %}
-        <form action="/fase/cerrarLineaBase/">
-                <button type="submit" class="btn btn-small blue darken-1 right">
-                    Cerrar Linea Base
-                    <i class="material-icons white-text left">add_circle</i>
-                </button>
-                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-                <input  type="hidden" value={{lineaBase.id}} id="lineaBaseid" name="lineaBaseid">
-        </form><br>
     </div>
 
 {% endblock%}
