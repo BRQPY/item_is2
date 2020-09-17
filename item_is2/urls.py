@@ -114,7 +114,6 @@ urlpatterns = [
     path('fase/gestionTipoItem/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', viewsFase.FaseGestionTipoItem,
          name="faseTipoItem"),
     path('fase/addTipoItem/', viewsFase.FaseAddTipoItem),
-<<<<<<< HEAD
     path('fase/ConfigLineaBase/proyectoid=<str:proyectoid>/faseid=<str:faseid>/lineaBaseid=<str:lineaBaseid>', viewsFase.faseConfigLineaBase, name="faseConfigLineaBase"),
     path('fase/gestionLineaBase/', viewsFase.faseGestionLineaBase),
     path('fase/addLineaBase/', viewsFase.faseAddLineaBase),
@@ -127,48 +126,15 @@ urlpatterns = [
     path('item/gestionItem/', viewsFase.gestionItem),
     path('item/itemVer/itemid=<int:itemid>faseid=<int:faseid>proyectoid=<int:proyectoid>/', viewsFase.itemView, name="itemView"),
     path('item/configurar/itemid=<int:itemid>faseid=<int:faseid>proyectoid=<int:proyectoid>/', viewsFase.itemConfigurar, name="itemConfigurar"),
-=======
-    path('fase/ConfigLineaBase/proyectoid=<str:proyectoid>/faseid=<str:faseid>/lineaBaseid=<str:lineaBaseid>',
-         viewsFase.faseConfigLineaBase, name="faseConfigLineaBase"),
-    path('fase/gestionLineaBase/', viewsFase.faseGestionLineaBase),
-    path('fase/addLineaBase/', viewsFase.faseAddLineaBase),
-    path('fase/lineaBaseAddItem/', viewsFase.lineaBaseAddItem),
-    path(
-        'fase/lineaBaseRemoveItem/proyectoid=<str:proyectoid>/faseid=<str:faseid>/lineaBaseid=<str:lineaBaseid>/itemid=<str:itemid>/',
-        viewsFase.lineaBaseRemoveItem, name="lineaBaseRemoveItem"),
-    path('fase/cerrarLineaBase/', viewsFase.faseCerrarLineaBase),
-    path('fase/RemoveTipoItem/proyectoid=<str:proyectoid>/faseid=<str:faseid>/tipoid=<str:tipoid>',
-         viewsFase.FaseRemoveTipoItem, name="faseRemoveTipo"),
-    path('fase/fasesDeshabilitadas/', viewsFase.fasesDeshabilitadas),
-    path('item/gestionItem/', viewsFase.gestionItem),
-    path('item/itemVer/itemid=<int:itemid>faseid=<int:faseid>proyectoid=<int:proyectoid>/', viewsFase.itemView,
-         name="itemView"),
-    path('item/configurar/itemid=<int:itemid>faseid=<int:faseid>proyectoid=<int:proyectoid>/', viewsFase.itemConfigurar,
-         name="itemConfigurar"),
->>>>>>> origin/envio-notifivaciones-email
     path('item/itemCrear/', viewsFase.itemCrear),
     path('item/modify/', viewsFase.itemModificar),
     path('item/itemCambiarEstado/', viewsFase.itemCambiarEstado),
-    path('item/unable/', viewsFase.itemDeshabilitar),
-<<<<<<< HEAD
-    path('item/relaciones/ver/itemid=<str:itemid>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',viewsFase.itemVerRelaciones, name="itemVerRelaciones"),
+    path('item/unable/', viewsFase.itemDeshabilitar),path('item/relaciones/ver/itemid=<str:itemid>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',viewsFase.itemVerRelaciones, name="itemVerRelaciones"),
     path('item/relaciones/remover/itemid=<str:itemid>/item_rm=<str:item_rm>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',viewsFase.itemRelacionesRemover, name="itemRelacionesRemover"),
     path('item/addRelacion/', viewsFase.itemAddRelacion),
-]
-=======
     path('item/history/', viewsFase.itemHistorial),
-
-    path(
-        'item/history/reversionar/proyecto<int:proyectoid>/faseid<int:faseid>/itemid<int:itemid>/history_data<str:history_date>/',
-        viewsFase.itemReversionar, name="itemRev"),
-    path('item/relaciones/ver/itemid=<str:itemid>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',
-         viewsFase.itemVerRelaciones, name="itemVerRelaciones"),
-    path(
-        'item/relaciones/remover/itemid=<str:itemid>/item_rm=<str:item_rm>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',
-        viewsFase.itemRelacionesRemover, name="itemRelacionesRemover"),
-    path('item/addRelacion/', viewsFase.itemAddRelacion),
-
+    path('item/history/reversionar/proyecto<int:proyectoid>/faseid<int:faseid>/itemid<int:itemid>/history_data<str:history_date>/',viewsFase.itemReversionar, name="itemRev"),
+    path('item/relaciones/ver/itemid=<str:itemid>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', viewsFase.itemVerRelaciones, name="itemVerRelaciones"),
+    path('item/relaciones/remover/itemid=<str:itemid>/item_rm=<str:item_rm>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',viewsFase.itemRelacionesRemover, name="itemRelacionesRemover"),
     path('item/downloadFile/filename=<str:filename>/', viewsFase.downloadFile, name="download"),
-
-]
->>>>>>> origin/envio-notifivaciones-email
+    ]
