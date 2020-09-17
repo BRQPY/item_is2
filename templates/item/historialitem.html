@@ -57,35 +57,48 @@ var counter = 0;
         <h5 style="text-align: center" class="grey-text">Historial del item</h5>
         <h8 style="text-align: left" class="grey-text">Haga click en el ícono + para desplegar la informacion sobre la version del item .</h8>
 
-       {% for i in item.history.all %}
 
-            <button class="accordion" >
-                Version {{ i.version }}
+       {% for i in lista %}
 
-                <i class="material-icons blue-text left"></i>
-            </button>
-            <div class="panel">
-                <section class="DescripcionProyecto">
+                <button class="accordion" >
+                    Version {{ i.version }}
+                    <i class="material-icons blue-text left"></i>
+                </button>
+                <div class="panel">
+                    <section class="DescripcionProyecto">
 
-               <p style="font-size:18px; padding-left: 50px">
-                  <div class="col s12 md6 xl3">
-                    <div class="card-panel">
-                        <b>Nombre:</b>  {{ i.nombre }}<br>
-                        <b>Estado:</b>   {{i.estado}}<br>
-                        <b>Costo:</b>   {{ i.costo }}<br>
-                        <b>Observacion:</b>   {{ i.observacion }}<br>
-                        <b>Fecha:</b>   {{ i.fecha }}<br>
-                        <b>Fecha de Modificacion:</b>   {{ i.history_date}}<br>
-                    </div>
-                    <a href="{%url 'itemRev'  proyectoid faseid i.id i.history_date %}">
-                        <i class="material-icons dark blue-text right">autorenew</i>
-                    </a>
-                   </div>
-               </p>
+                   <p style="font-size:18px; padding-left: 50px">
+                      <div class="col s12 md6 xl3">
+                        <div class="card-panel">
+                            <b>Nombre:</b>  {{ i.nombre }}<br>
+                            <b>Estado:</b>   {{i.estado}}<br>
+                            <b>Costo:</b>   {{ i.costo }}<br>
+                            <b>Observacion:</b>   {{ i.observacion }}<br>
+                            <b>Fecha:</b>   {{ i.fecha }}<br>
+                                {%for c, c2 in campos%}
 
-            <br><br>
-           </section>
-       </div>
+                                        <b>{{c}}:</b>
+                                        {{c2}}
+                                {%endfor%}<br>
+
+                            <b>Fecha de Modificacion:</b>   {{ i.history_date}}<br>
+                            <b>Archivos</b>
+                            <div>
+                                {% for a in archivos %}
+                                    {{ a }}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <a href="{%url 'itemRev'  proyectoid faseid i.id i.history_date %}">
+                            <i class="material-icons dark blue-text right">autorenew</i>
+                        </a>
+                       </div>
+                   </p>
+
+                     <br><br>
+               </section>
+                 </div>
+
        {% endfor %}
    </div>
 

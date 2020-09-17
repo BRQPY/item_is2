@@ -12,6 +12,10 @@ class TipodeItem(models.Model):
     campo_extra = ArrayField(models.CharField(max_length=40), default=list, blank=True)
     history = HistoricalRecords()
 
+class Files(models.Model):
+    file = models.FileField(null=True, blank=True, default=None)
+
+
 
 class Item(models.Model):
 
@@ -27,7 +31,9 @@ class Item(models.Model):
     dateCreacion = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     relaciones = models.ManyToManyField('self', default=None, through='Relacion', symmetrical=False)
     version = models.IntegerField(default=0, editable=False)
-    history = HistoricalRecords(excluded_fields=['campo_extra_valores'])
+    history = HistoricalRecords()
+    archivos = models.ManyToManyField(Files,default=None)
+
     __history_date = None
 
 

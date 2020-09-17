@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Rol, Proyecto, FaseUser, TipodeItem, Fase, Item
+from .models import Rol, Proyecto, FaseUser, TipodeItem, Fase, Item, Files
 from simple_history.admin import SimpleHistoryAdmin
 
 class ProyectoHistoryAdmin(SimpleHistoryAdmin):
@@ -13,6 +13,7 @@ from .models import Rol, Proyecto, FaseUser, TipodeItem, Fase, Item, Relacion, L
 
 admin.site.register(Fase)
 admin.site.register(FaseUser)
+admin.site.register(Files)
 admin.site.register(Rol)
 admin.site.register(Proyecto,SimpleHistoryAdmin)
 admin.site.register(TipodeItem)

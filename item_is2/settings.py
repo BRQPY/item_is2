@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'proyecto',
     'item_is2',
     'simple_history',
+    'storages',
 ]
 
 SITE_ID = 1
@@ -117,9 +118,9 @@ WSGI_APPLICATION = 'item_is2.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'mydb0',
-        'USER': 'admin0',
-        'PASSWORD': 'admin0',
+        'NAME': 'db2',
+        'USER': 'kath2',
+        'PASSWORD': 'kath2',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -170,7 +171,16 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
     '/var/www/item/item_is2/static',
 ]
-MEDIA_ROOT = ''
+#MEDIA_ROOT = ''
 MEDIA_URL = "/media/"
 
 #STATICFILES_DIRS = [os.path.join(BASE_DIR,"static"),'/static/',]
+
+
+AWS_ACCESS_KEY_ID = 'AKIAUWIIW4ARQQQA4TLN'
+AWS_SECRET_ACCESS_KEY = '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'
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_STORAGE_BUCKET_NAME = 'archivositem'
+AWS_S3_REGION_NAME = 'us-east-2'
+

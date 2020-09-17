@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
-from proyecto.models import Proyecto, Fase, TipodeItem, Item, FaseUser, User, Rol, Relacion, LineaBase
+from proyecto.models import Proyecto, Fase, TipodeItem, Item, FaseUser, User, Rol, Relacion, LineaBase,Files
 from guardian.shortcuts import assign_perm, remove_perm
 from proyecto.views import proyectoView, faseView
+import boto3
 
 from datetime import datetime
 
@@ -726,9 +727,13 @@ def itemCrear(request):
     seleccion = None
     """POST request, recibe los datos ingresados por el usuario para la creacion del item."""
     if request.method == "POST":
+        # doc = request.FILES.get('file')
+        doc = request.FILES.getlist("file[]")
+
+
         """
-        Consulta si el post recibido es el de la selección de 
-        un Tipo de Item o el post para crear el item correspondiente.
+            Consulta si el post recibido es el de la selección de 
+            un Tipo de Item o el post para crear el item correspondiente.
         """
         if 'crear' in request.POST:
             """ID del proyecto en el cual crear el item."""
@@ -767,15 +772,20 @@ def itemCrear(request):
 
             """Creacion del item con los datos proveidos por el usuario."""
             item = Item.objects.create(tipoItem=obj, nombre=dato['nombre'], fecha=dato['fecha'],
-                                       observacion=dato['observacion'], costo=dato['costo'],
-                                       _history_date=datetime.now(), estado='en desarrollo')
+                                       observacion=dato['observacion'], costo=dato['costo'], _history_date=datetime.now(),)
+
 
             """Almacenar la informacion de cada campo extra proveido por el usuario."""
+            item.estado="en desarrollo"
             for c in obj.campo_extra:
                 item.campo_extra_valores.append(dato[c])
+
+            for f in doc:
+                archivo = Files.objects.create(file=f)
+                archivo.save()
+                item.archivos.add(archivo)
             """Guardar."""
             item.save()
-
             """Agregar item a fase."""
             fase.items.add(item)
             """Redirigir a la vista de la fase correspondiente."""
@@ -874,9 +884,13 @@ def itemView(request, itemid, faseid, proyectoid):
     permiso para establecer item como parobado y choices
     con los distintos estados del item.
     """
+    archivos=[]
+    for f in item.archivos.all():
+        archivos.append(f.file)
+
 
     return render(request, 'item/item.html',
-                  {'faseid': faseid, 'proyectoid': proyectoid, 'item': item, 'proyecto': proyecto,
+                  {'faseid': faseid, 'proyectoid': proyectoid, 'item': item, 'proyecto': proyecto,'archivos':list(archivos),
                    'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
                    'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
                    'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
@@ -964,6 +978,8 @@ def itemModificar(request):
         item = Item.objects.get(id=itemid)
         """Fase en la cual se encuentra el item a modificar."""
         fase = Fase.objects.get(id=faseid)
+
+
         """Verificar que el usuario cuente con los permisos necesarios."""
         if not (request.user.has_perm("modify_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
@@ -994,7 +1010,7 @@ def itemModificar(request):
         """
         return render(request, 'item/itemModificar.html',
                       {'faseid': faseid, 'proyectoid': proyectoid, 'item': item,
-                       'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores), })
+                       'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores)})
 
     """POST request, captura la informacion para actualizar los datos del item"""
     """Captura toda la informacion proveida por el usuario."""
@@ -1009,6 +1025,8 @@ def itemModificar(request):
     deshabilitados y al item a modificar en
     caso de que el nombre se mantenga.
     """
+    doc = request.FILES.getlist("file[]")
+
     if fase.items.filter(nombre=dato['nombre']).exclude(estado="deshabilitado").exclude(id=dato['itemid']).exists():
         """
         En el caso de que ya exista un item con el 
@@ -1039,6 +1057,10 @@ def itemModificar(request):
     for c in item.tipoItem.campo_extra:
         item.campo_extra_valores[cont] = dato[c]
         cont = cont + 1
+    "Actualizar Archivos del item"
+    for f in doc:
+        archivo = Files.objects.create(file=f)
+        item.archivos.add(archivo)
 
     item._history_date = datetime.now()
 
@@ -1549,9 +1571,20 @@ def itemHistorial(request):
         itemid = request.GET.get('itemid')
         item = Item.objects.get(id=itemid)
         fase = Fase.objects.get(id=faseid)
+        lista_historial=[]
+        lista_historial = item.history.all().order_by('id')
+        lista_historial = list(lista_historial)
+        print(lista_historial)
+        lista_historial.pop()
+
+        archivos = []
+        for f in item.archivos.all():
+            archivos.append(f.file)
 
         return render(request, 'item/historialitem.html',
-                      {'faseid': faseid, 'proyectoid': proyectoid, 'item': item})
+                      {'faseid': faseid, 'proyectoid': proyectoid,
+                       'item': item, 'lista': lista_historial,
+                       'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),'archivos':list(archivos)})
 
 
 def itemReversionar(request, proyectoid, faseid, itemid, history_date):
@@ -1571,7 +1604,8 @@ def itemReversionar(request, proyectoid, faseid, itemid, history_date):
         item = Item.objects.get(id=itemid)
 
         """Verificar que el usuario cuente con los permisos necesarios."""
-        if not (request.user.has_perm("reversionar_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+        if not (request.user.has_perm("reversionar_item", fase)) and not (
+                request.user.has_perm("is_gerente", proyecto)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
 
@@ -1591,3 +1625,15 @@ def itemReversionar(request, proyectoid, faseid, itemid, history_date):
             return redirect('itemView', faseid=faseid, proyectoid=proyectoid, itemid=itemid)
         else:
             return redirect('itemView', faseid=faseid, proyectoid=proyectoid, itemid=itemid)
+
+
+def downloadFile(request, filename):
+
+    path = '/var/www/item/item_is2/descargas/'
+
+    s3 = boto3.client('s3')
+    s3.download_file('archivositem', filename, path + filename)
+
+    return render(request, "home.html")
+
+
