@@ -72,6 +72,7 @@
                     <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
                     <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
                     <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+
                 <button type="submit" class="btn-small blue darken-3 right" >
                     Cambiar Estado
                     <i class="material-icons left">edit</i><br>
@@ -91,6 +92,11 @@
             <p><div>
                 <h5 style="text-align: left" class="grey-text">Costo en horas:</h5> {{item.costo}} horas.
             </div></p>
+             <p><div>
+                <h5 style="text-align: left" class="grey-text">Archivo:</h5>
+                {{item.file}}
+
+            </div></p>
             <p><div>
 
                 {%for c, c2 in campos%}
@@ -109,7 +115,18 @@
                     <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
                     <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
                     <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+
                 </form>
+                <form action="/item/history/">
+                    <button type="submit" class="btn pink">
+                        Historial del ítem
+                       <i class="material-icons white-text left">edit</i>
+                    </button>
+                    <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                    <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+                    <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+                </form>
+
                 <form action="/item/unable/">
                     <button type="submit" class="btn red darken-5 left">
                         Deshabilitar Item
@@ -118,6 +135,26 @@
                     <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
                         <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
                         <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+
+                 </form>
+
+                </div>
+                    {% for a in archivos %}
+                        <a href="{%url 'download' a %}">
+                                {{ a }}
+                            <i class="material-icons dark blue-text right">autorenew</i>
+                        </a>
+                    {% endfor %}
+                </div>
+
+                <form action="/item/relaciones/ver/itemid={{ item.id }}/faseid={{ faseid }}/proyectoid={{ proyectoid }}/">
+                    <button type="submit" class="btn blue darken-5 left">
+                        Relaciones del item
+                       <i class="material-icons white-text left">timeline</i>
+                    </button>
+                    <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                    <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+                    <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
                  </form>
                 <form action="/item/relaciones/ver/itemid={{ item.id }}/faseid={{ faseid }}/proyectoid={{ proyectoid }}/">
                     <button type="submit" class="btn blue darken-5 left">
@@ -128,6 +165,16 @@
                     <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
                     <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
                  </form>
+
+                <form action="/item/addRelacion/">
+                    <button type="submit" class="btn red darken-5 left">
+                        Relacionar Item
+                       <i class="material-icons white-text left">delete</i>
+                    </button>
+                        <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                        <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+                        <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+                </form>
 
                 <form action="/item/addRelacion/">
                     <button type="submit" class="btn red darken-5 left">

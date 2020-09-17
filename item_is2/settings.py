@@ -29,6 +29,17 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = None
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
+EMAIL_HOST ='smtp.gmail.com'
+
+EMAIL_HOST_USER = 'itemproject20@gmail.com'
+
+EMAIL_HOST_PASSWORD = 'itemadmin12345'
+
+EMAIL_PORT = 587
+
+EMAIL_USE_TLS = True
+# Application definition
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -50,6 +61,8 @@ INSTALLED_APPS = [
     'fase',
     'proyecto',
     'item_is2',
+    'simple_history',
+    'storages',
 ]
 
 SITE_ID = 1
@@ -73,6 +86,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
 ROOT_URLCONF = 'item_is2.urls'
@@ -104,9 +118,9 @@ WSGI_APPLICATION = 'item_is2.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'mydb4',
-        'USER': 'admin4',
-        'PASSWORD': 'admin4',
+        'NAME': 'db2',
+        'USER': 'kath2',
+        'PASSWORD': 'kath2',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -135,15 +149,15 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Asuncion'
 
 USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -157,7 +171,16 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
     '/var/www/item/item_is2/static',
 ]
-MEDIA_ROOT = ''
+#MEDIA_ROOT = ''
 MEDIA_URL = "/media/"
 
 #STATICFILES_DIRS = [os.path.join(BASE_DIR,"static"),'/static/',]
+
+
+AWS_ACCESS_KEY_ID = 'AKIAUWIIW4ARQQQA4TLN'
+AWS_SECRET_ACCESS_KEY = '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'
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_STORAGE_BUCKET_NAME = 'archivositem'
+AWS_S3_REGION_NAME = 'us-east-2'
+

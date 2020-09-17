@@ -27,7 +27,8 @@
         <p>
         </form>
         {% if select is not None %}
-            <form action="." method="POST">{% csrf_token %}
+            <form action="." method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
                 <div>
                     <label for="nombre">Nombre del Item:</label>
                     <input type="text" id="nombre" name="nombre" required>
@@ -44,6 +45,10 @@
                     <label for="costo">Costo:</label>
                     <input type="number" id="costo" name="costo" required>
                 </div>
+
+                <div id="file"></div>
+                <input type="button" name="add_file" id="add_file" value="Agregar archivo">
+
                 <div>
                     {%for c in select.campo_extra%}
                         <div>
@@ -52,7 +57,7 @@
                         </div>
                     {%endfor%}
                 </div>
-                <button id="boton" type='submit' name="crear" class="btn-small blue darken-3 right">
+                <button id="boton" type='submit' name="crear" class="btn-small blue darken-3 right" value="Save Data">
                     Crear ítem
                     <i class="material-icons white-text left">add_circle_outline</i>
                 </button>
@@ -66,4 +71,40 @@
         </p>
     </section>
 	</div>
+    
+    <script>
+
+
+    document.getElementById("add_file").onclick=function (ev) {
+
+        var file=document.getElementById("file");
+        var newInput=document.createElement("input");
+        newInput.type="file";
+        newInput.name="file[]";
+
+
+        var br=document.createElement("br");
+        var br1=document.createElement("br");
+
+        newInput.onchange=function (ev1) {
+            if(this.files && this.files[0]){
+                var fileReader=new FileReader();
+
+              //  fileReader.onload=function (ev2) {
+                   // preview.src=ev2.target.result;
+               // };
+
+                fileReader.readAsDataURL(this.files[0])
+            }
+        };
+
+
+        file.appendChild(newInput);
+        file.appendChild(br);
+        file.appendChild(br1);
+
+    }
+</script>
+    
+    
 {% endblock%}

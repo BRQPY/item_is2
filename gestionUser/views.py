@@ -3,7 +3,10 @@ from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required, permission_required
-
+from django.core.mail import  EmailMultiAlternatives
+from django.conf import settings
+from django.contrib import messages
+from django.template.loader import get_template
 
 
 @login_required
@@ -70,12 +73,30 @@ def confUserView(request):
             usuario = User.objects.get(id=u)
             usuario.user_permissions.add(permiso)
             usuario.save()
+            mail = usuario.email
+            name = usuario.username
+            messages.success(request, "Permisos asignados exitosamente!")
+            sendEmailView(mail, name)
         """
         Template a renderizar: gestionUser.html.
         """
         return render(request, 'gestionUser/gestionUser.html')
 
+def sendEmailView(mail,name):
 
+    context = {'name': name}
+
+    template = get_template('gestionUser/correo.html')
+    content = template.render(context)
+
+    email = EmailMultiAlternatives(
+        'Noficacion de acceso',
+        'item',
+        settings.EMAIL_HOST_USER,
+        [mail]
+    )
+    email.attach_alternative(content, 'text/html')
+    email.send()
 
 @permission_required('perms.assign_perms', login_url='/permissionError/')
 def gestionPermsView(request):

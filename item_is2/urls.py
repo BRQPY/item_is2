@@ -28,6 +28,7 @@ from gestionUser import views as viewsGestionUser
 from django.conf import settings
 from django.conf.urls.static import static
 
+
 @login_required
 def homeView(request):
     usuario = User.objects.get(id=request.user.id)
@@ -36,7 +37,7 @@ def homeView(request):
         cant = 0
         for p in proyectos:
             if not p.estado == "deshabilitado":
-                cant=+1
+                cant = +1
 
         return render(request, "home.html", {'proyectos': proyectos, 'cant': cant, })
     return render(request, "wrong.html")
@@ -49,8 +50,8 @@ def permissionErrorView(request):
 
 urlpatterns = []
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL,document_root= settings.STATIC_ROOT)
-    urlpatterns += static(settings.MEDIA_URL,document_root= settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -76,33 +77,44 @@ urlpatterns = [
     path('proyecto/unable/', views.proyectoDeshabilitar),
     path('proyecto/proyectoUser/', views.proyectoUser),
     path('proyecto/proyectoUser/add/', views.proyectoUserAdd),
-    path('proyecto/proyectoUser/remove/proyectoid=<str:proyectoid>/userid=<str:userid>', views.proyectoUserRemove, name="ProyectoUserRemove"),
+    path('proyecto/proyectoUser/remove/proyectoid=<str:proyectoid>/userid=<str:userid>', views.proyectoUserRemove,
+         name="ProyectoUserRemove"),
     path('proyecto/proyectoComite/', views.proyectoComite),
     path('proyecto/proyectoComite/add/', views.proyectoComiteAdd),
     path('proyecto/proyectoComite/remove/', views.proyectoComiteRemove),
     path('proyecto/proyectoRol/', views.proyectoRol),
     path('proyecto/proyectoRol/create/', views.proyectoRolCrear),
-    path('proyecto/proyectoRol/modify/proyectoid=<str:proyectoid>/rolid=<str:rolid>/', views.proyectoRolModificar, name="ProyectoRolModify"),
-    path('proyecto/proyectoRol/delete/proyectoid=<str:proyectoid>/rolid=<str:rolid>/', views.proyectoRolEliminar, name="ProyectoRolRemove"),
+    path('proyecto/proyectoRol/modify/proyectoid=<str:proyectoid>/rolid=<str:rolid>/', views.proyectoRolModificar,
+         name="ProyectoRolModify"),
+    path('proyecto/proyectoRol/delete/proyectoid=<str:proyectoid>/rolid=<str:rolid>/', views.proyectoRolEliminar,
+         name="ProyectoRolRemove"),
     path('fase/faseVer/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', views.faseView, name="faseView"),
     path('proyecto/proyectoTipodeItem/', views.gestionar_tipo_de_item, name="gestionTipoItem"),
     path('proyecto/creartipo/', views.crear_tipo_form, name="creartipo"),
-    path('proyecto/modifdeItem/proyectoid=<str:proyectoid>/tipoid=<str:tipoid>/', views.modificar_tipo_de_item, name="modificartipo"),
+    path('proyecto/modifdeItem/proyectoid=<str:proyectoid>/tipoid=<str:tipoid>/', views.modificar_tipo_de_item,
+         name="modificartipo"),
     path('proyecto/importTdeItem/', views.importar_tipo_de_item, name="importartipo"),
-    path('proyecto/proyectoremoverTdeItem/proyectoid=<str:proyectoid>/tipoid=<str:tipoid>/', views.remover_tipo_de_item, name="removertipo"),
+    path('proyecto/proyectoremoverTdeItem/proyectoid=<str:proyectoid>/tipoid=<str:tipoid>/', views.remover_tipo_de_item,
+         name="removertipo"),
     path('fase/faseCrear/', viewsFase.faseCrear),
     path('fase/faseUsers/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', viewsFase.faseUsers, name="faseUsers"),
     path('fase/gestionFase/', viewsFase.gestionFase),
     path('fase/modify/', viewsFase.faseModificar),
     path('fase/unable/', viewsFase.faseDeshabilitar),
-    path('fase/asignarRol/proyectoid=<str:proyectoid>/faseid=<str:faseid>/userid=<str:userid>', viewsFase.faseRolAsignar, name="faseRolAsignar"),
-    path('fase/removerRol/proyectoid=<str:proyectoid>/faseid=<str:faseid>/userid=<str:userid>', viewsFase.faseRolRemover, name="faseRolRemover"),
-    path('fase/removerUser/proyectoid=<str:proyectoid>/faseid=<str:faseid>/userid=<str:userid>', viewsFase.FaseRemoveUser, name="faseRemoverUser"),
-    path('fase/FaseProyectoInicializado/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', viewsFase.faseVerProyectoInicializado, name="faseViewInicializado"),
+    path('fase/asignarRol/proyectoid=<str:proyectoid>/faseid=<str:faseid>/userid=<str:userid>',
+         viewsFase.faseRolAsignar, name="faseRolAsignar"),
+    path('fase/removerRol/proyectoid=<str:proyectoid>/faseid=<str:faseid>/userid=<str:userid>',
+         viewsFase.faseRolRemover, name="faseRolRemover"),
+    path('fase/removerUser/proyectoid=<str:proyectoid>/faseid=<str:faseid>/userid=<str:userid>',
+         viewsFase.FaseRemoveUser, name="faseRemoverUser"),
+    path('fase/FaseProyectoInicializado/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',
+         viewsFase.faseVerProyectoInicializado, name="faseViewInicializado"),
     path('fase/FaseIniciada/config/', viewsFase.FaseConfigInicializada),
     path('fase/addUser/', viewsFase.FaseAddUser),
-    path('fase/gestionTipoItem/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', viewsFase.FaseGestionTipoItem, name="faseTipoItem"),
+    path('fase/gestionTipoItem/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', viewsFase.FaseGestionTipoItem,
+         name="faseTipoItem"),
     path('fase/addTipoItem/', viewsFase.FaseAddTipoItem),
+<<<<<<< HEAD
     path('fase/ConfigLineaBase/proyectoid=<str:proyectoid>/faseid=<str:faseid>/lineaBaseid=<str:lineaBaseid>', viewsFase.faseConfigLineaBase, name="faseConfigLineaBase"),
     path('fase/gestionLineaBase/', viewsFase.faseGestionLineaBase),
     path('fase/addLineaBase/', viewsFase.faseAddLineaBase),
@@ -115,11 +127,48 @@ urlpatterns = [
     path('item/gestionItem/', viewsFase.gestionItem),
     path('item/itemVer/itemid=<int:itemid>faseid=<int:faseid>proyectoid=<int:proyectoid>/', viewsFase.itemView, name="itemView"),
     path('item/configurar/itemid=<int:itemid>faseid=<int:faseid>proyectoid=<int:proyectoid>/', viewsFase.itemConfigurar, name="itemConfigurar"),
+=======
+    path('fase/ConfigLineaBase/proyectoid=<str:proyectoid>/faseid=<str:faseid>/lineaBaseid=<str:lineaBaseid>',
+         viewsFase.faseConfigLineaBase, name="faseConfigLineaBase"),
+    path('fase/gestionLineaBase/', viewsFase.faseGestionLineaBase),
+    path('fase/addLineaBase/', viewsFase.faseAddLineaBase),
+    path('fase/lineaBaseAddItem/', viewsFase.lineaBaseAddItem),
+    path(
+        'fase/lineaBaseRemoveItem/proyectoid=<str:proyectoid>/faseid=<str:faseid>/lineaBaseid=<str:lineaBaseid>/itemid=<str:itemid>/',
+        viewsFase.lineaBaseRemoveItem, name="lineaBaseRemoveItem"),
+    path('fase/cerrarLineaBase/', viewsFase.faseCerrarLineaBase),
+    path('fase/RemoveTipoItem/proyectoid=<str:proyectoid>/faseid=<str:faseid>/tipoid=<str:tipoid>',
+         viewsFase.FaseRemoveTipoItem, name="faseRemoveTipo"),
+    path('fase/fasesDeshabilitadas/', viewsFase.fasesDeshabilitadas),
+    path('item/gestionItem/', viewsFase.gestionItem),
+    path('item/itemVer/itemid=<int:itemid>faseid=<int:faseid>proyectoid=<int:proyectoid>/', viewsFase.itemView,
+         name="itemView"),
+    path('item/configurar/itemid=<int:itemid>faseid=<int:faseid>proyectoid=<int:proyectoid>/', viewsFase.itemConfigurar,
+         name="itemConfigurar"),
+>>>>>>> origin/envio-notifivaciones-email
     path('item/itemCrear/', viewsFase.itemCrear),
     path('item/modify/', viewsFase.itemModificar),
     path('item/itemCambiarEstado/', viewsFase.itemCambiarEstado),
     path('item/unable/', viewsFase.itemDeshabilitar),
+<<<<<<< HEAD
     path('item/relaciones/ver/itemid=<str:itemid>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',viewsFase.itemVerRelaciones, name="itemVerRelaciones"),
     path('item/relaciones/remover/itemid=<str:itemid>/item_rm=<str:item_rm>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',viewsFase.itemRelacionesRemover, name="itemRelacionesRemover"),
     path('item/addRelacion/', viewsFase.itemAddRelacion),
 ]
+=======
+    path('item/history/', viewsFase.itemHistorial),
+
+    path(
+        'item/history/reversionar/proyecto<int:proyectoid>/faseid<int:faseid>/itemid<int:itemid>/history_data<str:history_date>/',
+        viewsFase.itemReversionar, name="itemRev"),
+    path('item/relaciones/ver/itemid=<str:itemid>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',
+         viewsFase.itemVerRelaciones, name="itemVerRelaciones"),
+    path(
+        'item/relaciones/remover/itemid=<str:itemid>/item_rm=<str:item_rm>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',
+        viewsFase.itemRelacionesRemover, name="itemRelacionesRemover"),
+    path('item/addRelacion/', viewsFase.itemAddRelacion),
+
+    path('item/downloadFile/filename=<str:filename>/', viewsFase.downloadFile, name="download"),
+
+]
+>>>>>>> origin/envio-notifivaciones-email
