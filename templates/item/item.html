@@ -101,11 +101,7 @@
             <p><div>
                 <h5 style="text-align: left" class="grey-text">Costo en horas:</h5> {{item.costo}} horas.
             </div></p>
-             <p><div>
-                <h5 style="text-align: left" class="grey-text">Archivo:</h5>
-                {{item.file}}
 
-            </div></p>
             <p><div>
 
                 {%for c, c2 in campos%}
@@ -146,15 +142,20 @@
                         <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
 
                  </form>
+                 <h5 style="text-align: left" class="grey-text">Archivo:</h5>
+                {% if archivos %}
+                    <div>
 
-                </div>
-                    {% for a in archivos %}
-                        <a href="{%url 'download' a %}">
-                                {{ a }}
-                            <i class="material-icons dark blue-text right">autorenew</i>
-                        </a>
-                    {% endfor %}
-                </div>
+                        {% for a in archivos %}
+                            <a href="{%url 'download' a %}">
+                                    {{ a }}
+                                <i class="material-icons dark blue-text right">autorenew</i>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                        <div> El item aun no cuenta con archivos adjuntos </div>
+                    {% endif %}
 
                 <form action="/item/relaciones/ver/itemid={{ item.id }}/faseid={{ faseid }}/proyectoid={{ proyectoid }}/">
                     <button type="submit" class="btn blue darken-5 left">

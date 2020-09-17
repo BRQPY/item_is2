@@ -4,46 +4,44 @@ from django.contrib.postgres.fields import ArrayField
 from simple_history.models import HistoricalRecords
 
 
-
-
 class TipodeItem(models.Model):
     nombreTipo = models.CharField(max_length=40)
     descripcion = models.CharField(max_length=40)
     campo_extra = ArrayField(models.CharField(max_length=40), default=list, blank=True)
     history = HistoricalRecords()
 
-class Files(models.Model):
-    file = models.FileField(null=True, blank=True, default=None)
-
-
 
 class Item(models.Model):
-
     tipoItem = models.ForeignKey(TipodeItem, on_delete=models.CASCADE, default=None, related_name="tipoItem")
     nombre = models.CharField(max_length=40, null=False, default=None)
     campo_extra_valores = ArrayField(models.CharField(max_length=40), default=list, blank=True)
-    #file = models.FileField(upload_to='media', blank=True)
-    fecha= models.CharField(max_length=40, null=False, default=None)
+    # file = models.FileField(upload_to='media', blank=True)
+    fecha = models.CharField(max_length=40, null=False, default=None)
     estado = models.CharField(max_length=40, blank=True, null=True)
-    observacion = models.CharField(max_length=50, blank=True, default= None)
-    #relaciones_items = ArrayField(models.CharField(max_length=200), default=list, blank=True)
-    costo= models.IntegerField(default=0, blank=True)
+    observacion = models.CharField(max_length=50, blank=True, default=None)
+    # relaciones_items = ArrayField(models.CharField(max_length=200), default=list, blank=True)
+    costo = models.IntegerField(default=0, blank=True)
     relaciones = models.ManyToManyField('self', default=None, through='Relacion', symmetrical=False)
     dateCreacion = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     version = models.IntegerField(default=0, editable=False)
-    archivos = models.ManyToManyField(Files,default=None)
+    # archivos = models.ManyToManyField(Files,default=None)
+    archivos = ArrayField(models.CharField(max_length=40), default=list, blank=True)
     history = HistoricalRecords()
 
     __history_date = None
+
     @property
     def _history_date(self):
         return self.__history_date
-
 
     @_history_date.setter
     def _history_date(self, value):
         self.__history_date = value
 
+
+class Files(models.Model):
+    file = models.FileField(null=True, blank=True, default=None)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, default=None)
 
 
 class LineaBase(models.Model):
@@ -51,6 +49,7 @@ class LineaBase(models.Model):
     items = models.ManyToManyField(Item, default=None)
     estado = models.CharField(max_length=40, default=None)
     creador = models.ForeignKey(User, on_delete=models.CASCADE, default=None, null=True)
+
 
 class Fase(models.Model):
     nombre = models.CharField(max_length=40)
@@ -60,6 +59,7 @@ class Fase(models.Model):
     tipoItem = models.ManyToManyField(TipodeItem, default=None)
     history = HistoricalRecords()
     lineasBase = models.ManyToManyField(LineaBase, default=None)
+
     class Meta:
         permissions = (
             ("create_item", "Can create item"),
@@ -98,11 +98,23 @@ class FaseUser(models.Model):
     fase = models.ForeignKey(Fase, on_delete=models.CASCADE, default=None)
     history = HistoricalRecords()
 
+
 class Relacion(models.Model):
     tipo = models.CharField(max_length=40, default=None)
     fase_item_to = models.ForeignKey(Fase, default=None, on_delete=models.CASCADE)
     item_from = models.ForeignKey(Item, default=None, on_delete=models.CASCADE, related_name='item_from')
     item_to = models.ForeignKey(Item, default=None, on_delete=models.CASCADE, related_name='item_to')
+    history = HistoricalRecords()
+    __history_date = None
+
+    @property
+    def _history_date(self):
+        return self.__history_date
+
+    @_history_date.setter
+    def _history_date(self, value):
+        self.__history_date = value
+
 
 class Rol(models.Model):
     nombre = models.CharField(max_length=40, default=None)
@@ -179,5 +191,3 @@ class ProyectoFase(models.Model):
     @_history_date.setter
     def _history_date(self, value):
         self.__history_date = value
-
-

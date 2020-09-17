@@ -75,18 +75,19 @@ var counter = 0;
                             <b>Costo:</b>   {{ i.costo }}<br>
                             <b>Observacion:</b>   {{ i.observacion }}<br>
                             <b>Fecha:</b>   {{ i.fecha }}<br>
-                                {%for c, c2 in campos%}
 
-                                        <b>{{c}}:</b>
-                                        {{c2}}
+                                {%for key, value in campos.items %}
+                                        <b>{{key}}:</b>
+                                            {{value}}
+                                    <p> </p>
                                 {%endfor%}<br>
+
 
                             <b>Fecha de Modificacion:</b>   {{ i.history_date}}<br>
                             <b>Archivos</b>
                             <div>
-                                {{ i.archivos }}
                                 {% for a in i.archivos %}
-                                    {{ a.file }}
+                                    {{ a }}
                                 {% endfor %}
                             </div>
                         </div>
