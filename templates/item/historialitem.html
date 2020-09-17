@@ -84,8 +84,9 @@ var counter = 0;
                             <b>Fecha de Modificacion:</b>   {{ i.history_date}}<br>
                             <b>Archivos</b>
                             <div>
-                                {% for a in archivos %}
-                                    {{ a }}
+                                {{ i.archivos }}
+                                {% for a in i.archivos %}
+                                    {{ a.file }}
                                 {% endfor %}
                             </div>
                         </div>

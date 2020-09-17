@@ -90,7 +90,7 @@ def faseCrear(request):
         """Descripcion de la Fase"""
         descripcion = request.POST.get('descripcion')
         """Creacion de la fase con los datos proveidos por el usuario."""
-        fase = Fase.objects.create(nombre=nombre, descripcion=descripcion, estado="abierta")
+        fase = Fase.objects.create(nombre=nombre, descripcion=descripcion, estado="abierta", )
         """Agregar la fase creada al proyecto correspondiente."""
         proyecto.fases.add(fase)
         """Guardar"""
@@ -1573,9 +1573,10 @@ def itemHistorial(request):
         lista_historial=[]
         lista_historial = item.history.all().order_by('id')
         lista_historial = list(lista_historial)
-        print(lista_historial)
         lista_historial.pop()
-
+        for l in lista_historial:
+            for a in l.archivos:
+                print(a)
         archivos = []
         for f in item.archivos.all():
             archivos.append(f.file)

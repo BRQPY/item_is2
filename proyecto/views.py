@@ -39,7 +39,7 @@ def proyectoCrear(request):
         creador = User.objects.get(id=request.user.id)
         """Creacion del Proyecto"""
         proyecto = Proyecto.objects.create(nombre=nombre, descripcion=descripcion, fecha_inicio=fechaini,
-                                           fecha_fin=fechafin, gerente=gerente)
+                                           fecha_fin=fechafin, gerente=gerente, )
         """Asignar el creador"""
         proyecto.creador = creador
         """Agregar creador a lista de usuarios"""

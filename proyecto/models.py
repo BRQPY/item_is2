@@ -31,8 +31,8 @@ class Item(models.Model):
     relaciones = models.ManyToManyField('self', default=None, through='Relacion', symmetrical=False)
     dateCreacion = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     version = models.IntegerField(default=0, editable=False)
-    history = HistoricalRecords()
     archivos = models.ManyToManyField(Files,default=None)
+    history = HistoricalRecords()
 
     __history_date = None
     @property
@@ -81,6 +81,16 @@ class Fase(models.Model):
             ("break_lineaBase", "Romper Línea Base."),
             ("solicitar_roturaLineaBase", "Solicitar rotura de línea base."),
         )
+
+    __history_date = None
+
+    @property
+    def _history_date(self):
+        return self.__history_date
+
+    @_history_date.setter
+    def _history_date(self, value):
+        self.__history_date = value
 
 
 class FaseUser(models.Model):
@@ -145,11 +155,29 @@ class Proyecto(models.Model):
         verbose_name = 'Proyecto'
         verbose_name_plural = 'Proyectos'
         ordering = ['nombre']
+        __history_date = None
+
+        @property
+        def _history_date(self):
+            return self.__history_date
+
+        @_history_date.setter
+        def _history_date(self, value):
+            self.__history_date = value
 
 
 class ProyectoFase(models.Model):
     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
     fase = models.ForeignKey(Fase, on_delete=models.CASCADE, default=None)
     history = HistoricalRecords()
+    __history_date = None
+
+    @property
+    def _history_date(self):
+        return self.__history_date
+
+    @_history_date.setter
+    def _history_date(self, value):
+        self.__history_date = value
 
 
