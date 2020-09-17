@@ -36,18 +36,40 @@
     </form>
     <div class="container">
         <h4 style="text-align: center">Relaciones del item {{ item.nombre }}</h4>
-        <form action="/item/addRelacion/">
-            <button type="submit" class="btn-small blue darken-5 right"
-                    title="Crear o remover relaciones del ítem {{ item.nombre }}"
-            >
-                Añadir relaciones
-                <i class="material-icons white-text left">add_circle</i>
-            </button>
-            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-            <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
-        </form><br><br>
     </div>
+    {% if puede_relacionarse %}
+        {% if habilitar_Add_relacion %}
+            <div class="container">
+                <form action="/item/addRelacion/">
+                    <button type="submit" class="btn-small blue darken-5 right"
+                            title="Crear o remover relaciones del ítem {{ item.nombre }}"
+                    >
+                        Añadir relaciones
+                        <i class="material-icons white-text left">add_circle</i>
+                    </button>
+                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                    <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                    <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+                </form><br><br>
+            </div>
+        {% else %}
+            <div class="container">
+                <button style="cursor: default"
+                        class="btn btn-small #eeeeee grey lighten-3 black-text right"
+                        title="No hay ítems disponibles para establecer relaciones."
+                >
+                    Añadir relaciones
+                    <i class="material-icons white-text left">add_circle</i>
+                </button><br><br>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="container" style="text-align: right">
+            <h8 style="text-align:right">
+                <b>El ítem debe estar aprobado para establecer una relación desde él.</b>
+            </h8><br>
+        </div>
+    {% endif %}
     {% if varias_fases %}
         <div class="row_fase">
             <div class="column"

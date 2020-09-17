@@ -1043,7 +1043,7 @@ def itemCambiarEstado(request):
                 break
 
         if not cambiar_estado:
-            mensaje = "No es posible cambiar el estado del item ya que este cuenta con relaciones."
+            mensaje_error = "No es posible cambiar el estado del item ya que este cuenta con relaciones."
             """
                 Template a renderizar: item.html 
                 con parametros -> faseid, proyectoid, item, proyecto, campos extra de item,
@@ -1057,10 +1057,11 @@ def itemCambiarEstado(request):
                            'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
                            'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
                            'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ],
-                           'mensaje': mensaje, })
+                           'mensaje_error': mensaje_error, })
 
 
     mensaje = ""
+    mensaje_error = ""
     """Verificar que el estado no sea el mismo que ya poseia."""
     if item.estado != dato['estado']:
         """Si el nuevo estado es pendiente de aprobacion."""
@@ -1119,7 +1120,7 @@ def itemCambiarEstado(request):
                         break
 
                 if listoAprobacion == False:
-                    mensaje = "No es posible aprobar el item ya que este no posee una relacion con un item antecesor" \
+                    mensaje_error = "No es posible aprobar el item ya que este no posee una relacion con un item antecesor" \
                               "en linea base cerrada, o bien, con un item padre aprobado."
                     """
                         Template a renderizar: item.html 
@@ -1134,7 +1135,7 @@ def itemCambiarEstado(request):
                                    'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
                                    'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
                                    'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ],
-                                   'mensaje': mensaje, })
+                                   'mensaje_error': mensaje_error, })
 
         """Verificar que el estado del proyecto sea inicializado."""
         if proyecto.estado != "inicializado":
@@ -1142,7 +1143,7 @@ def itemCambiarEstado(request):
             return redirect('faseView', faseid=dato['faseid'], proyectoid=dato['proyectoid'])
 
         mensaje = "Estado actualizado correctamente."
-        """Acgtualiza estado del item."""
+        """Actualiza estado del item."""
         item.estado = dato['estado']
         """Guardar."""
         item.save()
@@ -1161,7 +1162,7 @@ def itemCambiarEstado(request):
                    'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
                    'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
                    'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ],
-                   'mensaje': mensaje, })
+                   'mensaje_error': mensaje_error, })
 
 
 def itemDeshabilitar(request):
@@ -1292,11 +1293,50 @@ def itemVerRelaciones(request,itemid, faseid, proyectoid):
 
         """ Recupera la lista de items hijos de él de la tabla de relaciones"""
         items_hijos = list(Relacion.objects.filter(tipo="padre", item_from=item_recibido))
+        """ Verificar si el ítem puede establecer relaciones, considerando su estado"""
+        puede_relacionarse = False
+        if item_recibido.estado == "aprobado" or item_recibido.estado == "en linea base":
+            puede_relacionarse = True
+
+        """Verificar si el ítem puede establecer relaciones, verificando que existan ítems disponibles"""
+        habilitar_Add_relacion = False
+        "Todos los id de las relaciones del item."
+        relaciones = item_recibido.relaciones.all()
+        relacionesId = []
+        for r in relaciones:
+            relacionesId.append(r.id)
+        "Solo si esta en linea base puede avanzar de fase."
+        siguiente = None
+        itemsFaseSiguiente = None
+        if item_recibido.estado == "en linea base":
+            linea_base_item = LineaBase.objects.filter(items=item_recibido)
+            if linea_base_item.get().estado == "cerrada":
+                fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+                actual = False
+                for fp in fasesProyecto:
+                    if actual == True:
+                        siguiente = fp
+                        break
+                    if fp == fase:
+                        actual = True
+
+                if siguiente is not None:
+                    itemsFaseSiguiente = siguiente.items.exclude(Q(estado="deshabilitado") | Q(id__in=relaciones)).order_by(
+                        'id')
+            else:
+                itemsFaseSiguiente = None
+        itemsFaseActual = fase.items.exclude(
+            Q(estado="deshabilitado") | Q(id=itemid) | Q(id__in=relaciones)).order_by('id')
+
+        "Verifica si hay al menos un ítem con el cual establecer relaciones"
+        if itemsFaseActual or itemsFaseSiguiente:
+            habilitar_Add_relacion = True
 
         return render(request, "item/ItemVerRelacion.html", {'proyecto': proyecto, 'fase': fase, 'item': item_recibido,
                                                              'antecesores': items_antecesores, 'sucesores':items_sucesores,
                                                              'padres': items_padres, 'hijos': items_hijos, 'faseAnterior': anterior,
-                                                             'faseSiguiente': siguiente, 'varias_fases':varias_fases })
+                                                             'faseSiguiente': siguiente, 'varias_fases':varias_fases,
+                                                             'puede_relacionarse': puede_relacionarse, 'habilitar_Add_relacion': habilitar_Add_relacion })
 
 
 def itemRelacionesRemover(request,itemid,item_rm, faseid, proyectoid):
@@ -1314,6 +1354,7 @@ def itemRelacionesRemover(request,itemid,item_rm, faseid, proyectoid):
         item_inicio = Item.objects.get(id=itemid)
         item_final_remover = Item.objects.get(id=item_rm)
         ok_remover_final = False
+
         if item_final_remover.estado == "aprobado" or item_final_remover.estado == "en linea base":
             "Debe verificar que el item no quede sin al menos una relacion a otro item aprobado o antecesor en linea base."
             relaciones_item_remover = item_final_remover.relaciones.exclude(id=item_inicio.id)
@@ -1379,19 +1420,22 @@ def itemAddRelacion(request):
         siguiente = None
         itemsFaseSiguiente = None
         if item.estado == "en linea base":
-            fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
-            actual = False
-            for fp in fasesProyecto:
-                if actual == True:
-                    siguiente = fp
-                    break
-                if fp == fase:
-                    actual = True
+            linea_base_item = LineaBase.objects.filter(items=item)
+            if linea_base_item.get().estado == "cerrada":
+                fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+                actual = False
+                for fp in fasesProyecto:
+                    if actual == True:
+                        siguiente = fp
+                        break
+                    if fp == fase:
+                        actual = True
 
-            if siguiente is not None:
-                itemsFaseSiguiente = siguiente.items.exclude(Q(estado="deshabilitado") | Q(id__in=relaciones)).order_by(
-                    'id')
-
+                if siguiente is not None:
+                    itemsFaseSiguiente = siguiente.items.exclude(Q(estado="deshabilitado") | Q(id__in=relaciones)).order_by(
+                        'id')
+            else:
+                itemsFaseSiguiente = None
         itemsFaseActual = fase.items.exclude(
             Q(estado="deshabilitado") | Q(id=itemid) | Q(id__in=relaciones)).order_by('id')
 
