@@ -1,44 +1,82 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>CREAR LINEA BASE</title>
-</head>
-<body>
-    <section>
-        <form action="/fase/faseGestionLineaBase/">
-        <input type="submit" value="Atras" />
+
+{% block content %}
+    <form action="/fase/FaseIniciada/config/">
+        <button type="submit" class="waves-effect waves-teal btn-flat">
+            Volver a la configuración de la fase {{ fase.nombre }}
+            <i class="material-icons dark blue-text left">keyboard_return</i>
+        </button>
         <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
         <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-        </form>
+    </form>
+    <div class="container">
+        <h3 style="text-align: center">Crear Línea Base</h3><br>
         <form action="/fase/addLineaBase/" method="post">
             {% csrf_token %}
-            <p><div>
-                <label for="nombre">Nombre de Linea Base:</label>
-                <input type="text" id="nombre" name="nombre" value="{{nombre}}" readonly>
-            </div></p>
-            <p><div>
-                <label for="nombre">Creador:</label>
-                <input type="text" id="creador" name="creador" value="{{user}}" readonly>
-            </div></p>
-            {{ "Obs.: Solo el creador de la linea base podra cerrar la misma." }}
-            <p><label for="items">Selecciona los items a agregar en la linea base:</label>
-            <p><div>
+            <div style="position: relative;">
+                <div style="position: absolute; left: 0; top: 0; text-align: left">
+                    <h6>Nombre generado para la Línea Base:</h6>
+                </div>
+                <div style="position: absolute; left: 25em; top: 0; text-align: left">
+                    <h6
+                        title="Generado automáticamente"
+                    >
+                        <b>
+                            {{nombre}}
+                        </b>
+                    </h6>
+                </div>
+            </div><br><br>
+            <div style="position: relative;">
+                <div style="position: absolute; left: 0; top: 0; text-align: left">
+                    <h6>Creador de la Línea Base:</h6>
+                </div>
+                <div style="position: absolute; left: 25em; top: 0; text-align: left">
+                    <h6
+                        title="Éste campo no puede ser modificado."
+                    >
+                        <b>
+                            {{user}}
+                        </b>
+                    </h6>
+                </div>
+            </div><br><br>
+            <i>Obs.: Sólo el creador de la línea base podra cerrar la misma.</i><br><br>
+            <div>
+                <h6>Selecciona los items a agregar en la linea base:</h6>
                 {%for i in items%}
-                        <input class="form-check-input" type="checkbox" value="{{i.id}}" id="items" name="items">
-                        <label class="form-check-label" for="items">{{i.nombre}}</label>
+                    <div class="form-check">
+                            <label>
+                                <label>
+                                    <input class="filled-in" type="checkbox"
+                                           value= " {{i.id}} "
+                                           id= "items"
+                                           name="items"
+                                    >
+                                    <span style="color:black">
+                                        {{i.nombre}}
+                                    </span>
+                                </label>
+                            </label>
+
+                    </div>
                 {%endfor%}
-            </div></p>
-            <button type="submit" onclick="myFunction()">Guardar</button>
+            </div>
+            <button type="submit" class="btn btn-small blue darken-1 right"
+                    onclick="myFunction()"
+            >
+                Crear Linea Base
+                <i class="material-icons white-text left">add_circle</i>
+            </button>
             <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
             <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+            <input  type="hidden" value={{nombre}} id="nombre" name="nombre">
         </form>
-    </section>
-</body>
+  </div>
+{% endblock%}
 <script>
         function myFunction() {
             alert("Linea Base creada correctamente.");
         }
 </script>
-</html>

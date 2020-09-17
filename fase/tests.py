@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User, Group, Permission
 from guardian.shortcuts import assign_perm, remove_perm
-from proyecto.models import Proyecto, Fase, FaseUser, Rol, TipodeItem, Item
+from proyecto.models import Proyecto, Fase, FaseUser, Rol, TipodeItem, Item, LineaBase
 
 
 class TestViews(TestCase):
@@ -12,7 +12,593 @@ class TestViews(TestCase):
 
         client = Client()
 
+    def test_itemRelacionar_GET_OK(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
+        tipo.campo_extra.append("CampoExtra")
+        tipo.campo_extra.append("CampoExtra2")
+        tipo.save()
+        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ])
+        item.estado = "aprobado"
+        item.save()
+        assign_perm("relacionar_item", user, fase)
 
+        self.client.login(username='user', password='user')
+        response = self.client.get('/item/addRelacion/', {'proyectoid': proyecto.id, 'faseid': fase.id, 'itemid': item.id, })
+
+        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
+        self.assertTemplateUsed(response, 'item/itemAddRelacion.html',
+                                "El template renderizado debe ser item/itemAddRelacion.html")
+
+    def test_itemRelacionar_GET_FAIL1(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
+        tipo.campo_extra.append("CampoExtra")
+        tipo.campo_extra.append("CampoExtra2")
+        tipo.save()
+        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ])
+        item.estado = "aprobado"
+        item.save()
+
+        self.client.login(username='user', password='user')
+        response = self.client.get('/item/addRelacion/', {'proyectoid': proyecto.id, 'faseid': fase.id, 'itemid': item.id, })
+
+        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
+        self.assertRedirects(response, '/permissionError/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido a la vista esperada.")
+
+    def test_itemRelacionar_GET_FAIL2(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
+        tipo.campo_extra.append("CampoExtra")
+        tipo.campo_extra.append("CampoExtra2")
+        tipo.save()
+        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ])
+        item.estado = "en desarrollo"
+        item.save()
+        assign_perm("relacionar_item", user, fase)
+
+        self.client.login(username='user', password='user')
+        response = self.client.get('/item/addRelacion/', {'proyectoid': proyecto.id, 'faseid': fase.id, 'itemid': item.id, })
+
+        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna.")
+        self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido a la vista esperada.")
+
+
+    def test_itemRelacionar_POST_OK(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        proyecto.fases.add(fase)
+        proyecto.save()
+        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
+        tipo.campo_extra.append("CampoExtra")
+        tipo.campo_extra.append("CampoExtra2")
+        tipo.save()
+        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ])
+        item.estado = "aprobado"
+        item.save()
+        item2 = Item.objects.create(tipoItem=tipo, nombre="Item2", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ])
+        item2.estado = "aprobado"
+        item2.save()
+        fase.items.add(item)
+        fase.items.add(item2)
+        fase.save()
+        assign_perm("relacionar_item", user, fase)
+
+        self.client.login(username='user', password='user')
+        response = self.client.post('/item/addRelacion/', {'itemIdActual': item.id, 'itemIdRelacion': item2.id,
+                                                      'siguiente': 'no',
+                                                      'proyectoid': proyecto.id,
+                                                      'faseid': fase.id, 'itemid': item.id, })
+
+        item = Item.objects.get(id=item.id)
+        item2 = Item.objects.get(id=item2.id)
+        self.assertEquals(item2 in item.relaciones.all(), True, "No se ha establecido la relacion en item origen.")
+        self.assertEquals(item in item2.relaciones.all(), True, "No se ha establecido la relacion en item destino.")
+        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
+        self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido a la vista esperada.")
+
+    def test_gestionLineaBase_GET_OK(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        assign_perm("ver_lineaBase", user, fase)
+
+        self.client.login(username='user', password='user')
+        response = self.client.get('/fase/gestionLineaBase/', {'proyectoid': proyecto.id, 'faseid': fase.id, })
+
+        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
+        self.assertTemplateUsed(response, 'fase/faseGestionLineaBase.html',
+                                "El template renderizado debe ser fase/faseGestionLineaBase.html")
+
+    def test_gestionLineaBase_GET_FAIL(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+
+        self.client.login(username='user', password='user')
+        response = self.client.get('/fase/gestionLineaBase/', {'proyectoid': proyecto.id, 'faseid': fase.id, })
+
+        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
+        self.assertRedirects(response, '/permissionError/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido a la vista esperada.")
+
+    def test_configLineaBase_GET_OK(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="abierta", creador=user)
+        assign_perm("ver_lineaBase", user, fase)
+
+        self.client.login(username='user', password='user')
+        response = self.client.get(reverse('faseConfigLineaBase', kwargs={'proyectoid': proyecto.id, 'faseid': fase.id,
+                                                               'lineaBaseid': lineaBase.id, }))
+        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
+        self.assertTemplateUsed(response, 'fase/faseConfigLineaBase.html',
+                                "El template renderizado debe ser fase/faseConfigLineaBase.html")
+
+    def test_configLineaBase_GET_FAIL(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="abierta", creador=user)
+
+        self.client.login(username='user', password='user')
+        response = self.client.get(reverse('faseConfigLineaBase', kwargs={'proyectoid': proyecto.id, 'faseid': fase.id,
+                                                               'lineaBaseid': lineaBase.id, }))
+        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
+        self.assertRedirects(response, '/permissionError/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido a la vista esperada.")
+
+    def test_addLineaBase_GET_OK(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        assign_perm("create_lineaBase", user, fase)
+
+        self.client.login(username='user', password='user')
+        response = self.client.get('/fase/addLineaBase/', {'proyectoid': proyecto.id, 'faseid': fase.id, })
+
+        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
+        self.assertTemplateUsed(response, 'fase/faseAddLineaBase.html',
+                                "El template renderizado debe ser fase/faseAddLineaBase.html")
+
+    def test_addLineaBase_GET_FAIL(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+
+        self.client.login(username='user', password='user')
+        response = self.client.get('/fase/addLineaBase/', {'proyectoid': proyecto.id, 'faseid': fase.id, })
+
+        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
+        self.assertRedirects(response, '/permissionError/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido a la vista esperada.")
+
+    def test_addLineaBase_GET_FAIL2(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "pendiente"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        assign_perm("create_lineaBase", user, fase)
+
+
+        self.client.login(username='user', password='user')
+        response = self.client.get('/fase/addLineaBase/', {'proyectoid': proyecto.id, 'faseid': fase.id, })
+
+        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
+        self.assertRedirects(response, '/fase/faseVer/faseid=' + str(fase.id) + '/' + 'proyectoid=' + str(
+            proyecto.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido a la vista esperada.")
+
+    def test_addLineaBase_POST(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        proyecto.fases.add(fase)
+        proyecto.save()
+
+        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
+        tipo.campo_extra.append("CampoExtra")
+        tipo.campo_extra.append("CampoExtra2")
+        tipo.save()
+        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ])
+        item.estado = "aprobado"
+        item.save()
+        item2 = Item.objects.create(tipoItem=tipo, nombre="Item2", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ])
+        item2.estado = "aprobado"
+        item2.save()
+        fase.items.add(item)
+        fase.items.add(item2)
+        fase.save()
+
+        self.client.login(username='user', password='user')
+        response = self.client.post('/fase/addLineaBase/', {'nombre': "LineaBase1", 'items': [item.id, item2.id],
+                                                      'proyectoid': proyecto.id,
+                                                      'faseid': fase.id, 'itemid': item.id, })
+
+        fase= Fase.objects.get(id=fase.id)
+        item = Item.objects.get(id=item.id)
+        item2 = Item.objects.get(id=item2.id)
+        self.assertEquals(LineaBase.objects.count(), 1, "No se ha creado la linea base.")
+        lineaBase = LineaBase.objects.get(nombre="LineaBase1")
+        self.assertEquals(lineaBase in fase.lineasBase.all(), True, "No se ha guardado la linea base en la fase.")
+        self.assertEquals(item in lineaBase.items.all(), True, "No se ha agregado item a linea base.")
+        self.assertEquals(item2 in lineaBase.items.all(), True, "No se ha agregado item2 a linea base.")
+        self.assertEquals("en linea base", item.estado, "No se cambio el estado de item.")
+        self.assertEquals("en linea base", item2.estado, "No se cambio el estado de item2.")
+        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
+        self.assertTemplateUsed(response, 'fase/faseGestionLineaBase.html',
+                                "El template renderizado debe ser fase/faseGestionLineaBase.html")
+
+    def test_lineaBaseAddItem_GET_OK(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="abierta", creador=user)
+
+        assign_perm("modify_lineaBase", user, fase)
+
+        self.client.login(username='user', password='user')
+        response = self.client.get('/fase/lineaBaseAddItem/', {'proyectoid': proyecto.id, 'faseid': fase.id, 'lineaBaseid': lineaBase.id })
+
+        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
+        self.assertTemplateUsed(response, 'fase/lineaBaseAddItem.html',
+                                "El template renderizado debe ser fase/lineaBaseAddItem.html")
+
+    def test_lineaBaseAddItem_GET_Fail1(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="abierta", creador=user)
+
+        self.client.login(username='user', password='user')
+        response = self.client.get('/fase/lineaBaseAddItem/', {'proyectoid': proyecto.id, 'faseid': fase.id, 'lineaBaseid': lineaBase.id })
+
+        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
+        self.assertRedirects(response, '/permissionError/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido a la vista esperada.")
+
+    def test_lineaBaseAddItem_GET_Fail2(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="cerrada", creador=user)
+        assign_perm("modify_lineaBase", user, fase)
+
+
+        self.client.login(username='user', password='user')
+        response = self.client.get('/fase/lineaBaseAddItem/',
+                                   {'proyectoid': proyecto.id, 'faseid': fase.id, 'lineaBaseid': lineaBase.id})
+
+        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
+        self.assertTemplateUsed(response, 'fase/faseConfigLineaBase.html',
+                                "El template renderizado debe ser fase/faseConfigLineaBase.html")
+
+    def test_lineaBaseAddItem_POST(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        proyecto.fases.add(fase)
+        proyecto.save()
+        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="abierta", creador=user)
+
+
+        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
+        tipo.campo_extra.append("CampoExtra")
+        tipo.campo_extra.append("CampoExtra2")
+        tipo.save()
+        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ])
+        item.estado = "aprobado"
+        item.save()
+        item2 = Item.objects.create(tipoItem=tipo, nombre="Item2", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ])
+        item2.estado = "aprobado"
+        item2.save()
+        fase.items.add(item)
+        fase.items.add(item2)
+        fase.save()
+
+        self.client.login(username='user', password='user')
+        response = self.client.post('/fase/lineaBaseAddItem/', {'lineaBaseid': lineaBase.id, 'items': [item.id, item2.id],
+                                                      'proyectoid': proyecto.id,
+                                                      'faseid': fase.id, 'itemid': item.id, })
+
+        lineaBase= LineaBase.objects.get(id=lineaBase.id)
+        item = Item.objects.get(id=item.id)
+        item2 = Item.objects.get(id=item2.id)
+        self.assertEquals(item in lineaBase.items.all(), True, "No se ha agregado item a linea base.")
+        self.assertEquals(item2 in lineaBase.items.all(), True, "No se ha agregado item2 a linea base.")
+        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
+        self.assertTemplateUsed(response, 'fase/faseConfigLineaBase.html',
+                                "El template renderizado debe ser fase/faseConfigLineaBase.html")
+
+    def test_lineaBaseRemoveItem_GET_OK(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
+        tipo.campo_extra.append("CampoExtra")
+        tipo.campo_extra.append("CampoExtra2")
+        tipo.save()
+        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ])
+        item.estado = "en linea base"
+        item.save()
+        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="abierta", creador=user)
+        lineaBase.items.add(item)
+        lineaBase.save()
+
+        assign_perm("modify_lineaBase", user, fase)
+
+        self.client.login(username='user', password='user')
+        response = self.client.get(reverse('lineaBaseRemoveItem', kwargs={'proyectoid': proyecto.id, 'faseid': fase.id,
+                                                                          'lineaBaseid': lineaBase.id, 'itemid': item.id }))
+
+        lineaBase=LineaBase.objects.get(id=lineaBase.id)
+        item=Item.objects.get(id=item.id)
+        self.assertEquals(item in lineaBase.items.all(), False, "No se ha removido el item de la linea base.")
+        self.assertEquals("aprobado", item.estado, "No se ha modificado el estado del item.")
+        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
+        self.assertTemplateUsed(response, 'fase/faseConfigLineaBase.html',
+                                "El template renderizado debe ser fase/faseConfigLineaBase.html")
+
+    def test_lineaBaseRemoveItem_GET_Fail1(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
+        tipo.campo_extra.append("CampoExtra")
+        tipo.campo_extra.append("CampoExtra2")
+        tipo.save()
+        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ])
+        item.estado = "en linea base"
+        item.save()
+        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="abierta", creador=user)
+        lineaBase.items.add(item)
+
+
+        self.client.login(username='user', password='user')
+        response = self.client.get(reverse('lineaBaseRemoveItem', kwargs={'proyectoid': proyecto.id, 'faseid': fase.id,
+                                                                          'lineaBaseid': lineaBase.id,
+                                                                          'itemid': item.id}))
+
+        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
+        self.assertRedirects(response, '/permissionError/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido a la vista esperada.")
+
+    def test_lineaBaseRemoveItem_GET_Fail2(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
+        tipo.campo_extra.append("CampoExtra")
+        tipo.campo_extra.append("CampoExtra2")
+        tipo.save()
+        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ])
+        item.estado = "en linea base"
+        item.save()
+        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="cerrada", creador=user)
+        lineaBase.items.add(item)
+        lineaBase.save()
+
+        assign_perm("modify_lineaBase", user, fase)
+
+        self.client.login(username='user', password='user')
+        response = self.client.get(reverse('lineaBaseRemoveItem', kwargs={'proyectoid': proyecto.id, 'faseid': fase.id,
+                                                                          'lineaBaseid': lineaBase.id,
+                                                                          'itemid': item.id}))
+
+        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
+        self.assertTemplateUsed(response, 'fase/faseConfigLineaBase.html',
+                                "El template renderizado debe ser fase/faseConfigLineaBase.html")
+
+    def test_lineaCerrar_GET_OK(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
+        tipo.campo_extra.append("CampoExtra")
+        tipo.campo_extra.append("CampoExtra2")
+        tipo.save()
+        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ])
+        item.estado = "en linea base"
+        item.save()
+        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="abierta", creador=user)
+        lineaBase.items.add(item)
+        lineaBase.save()
+
+        self.client.login(username='user', password='user')
+        response = self.client.get('/fase/cerrarLineaBase/', {'proyectoid': proyecto.id, 'faseid': fase.id, 'lineaBaseid': lineaBase.id })
+
+        lineaBase = LineaBase.objects.get(id=lineaBase.id)
+        self.assertEquals("cerrada", lineaBase.estado, "No se ha modificado el estado de la linea base.")
+        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
+        self.assertTemplateUsed(response, 'fase/faseGestionLineaBase.html',
+                                "El template renderizado debe ser fase/faseGestionLineaBase.html")
+
+    def test_lineaBaseCerrar_GET_Fail1(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        user2 = User.objects.create(username="user2", password="user2")
+        user.set_password("user2")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
+        tipo.campo_extra.append("CampoExtra")
+        tipo.campo_extra.append("CampoExtra2")
+        tipo.save()
+        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ])
+        item.estado = "en linea base"
+        item.save()
+        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="abierta", creador=user2)
+        lineaBase.items.add(item)
+        lineaBase.save()
+
+        self.client.login(username='user', password='user')
+        response = self.client.get('/fase/cerrarLineaBase/', {'proyectoid': proyecto.id, 'faseid': fase.id, 'lineaBaseid': lineaBase.id })
+
+        lineaBase = LineaBase.objects.get(id=lineaBase.id)
+        self.assertEquals("abierta", lineaBase.estado, "Se ha modificado el estado de la linea base.")
+        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
+        self.assertRedirects(response, '/permissionError/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido a la vista esperada.")
+
+    def test_lineaBaseCerrar_GET_Fail2(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        lineaBase = LineaBase.objects.create(nombre="LineaBase2", estado="abierta", creador=user)
+
+
+        self.client.login(username='user', password='user')
+        response = self.client.get('/fase/cerrarLineaBase/',
+                                   {'proyectoid': proyecto.id, 'faseid': fase.id, 'lineaBaseid': lineaBase.id})
+
+        lineaBase = LineaBase.objects.get(id=lineaBase.id)
+        self.assertEquals("abierta", lineaBase.estado, "Se ha modificado el estado de la linea base.")
+        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
+        self.assertTemplateUsed(response, 'fase/faseConfigLineaBase.html',
+                                "El template renderizado debe ser fase/faseConfigLineaBase.html")
+
+
+
+
+'''
     def test_faseCrear_GET_OK(self):
         user = User.objects.create(username="user", password="user")
         user.set_password("user")
@@ -1049,3 +1635,4 @@ class TestViews(TestCase):
         self.assertRedirects(response, '/permissionError/',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido al url esperado.")
+'''

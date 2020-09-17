@@ -8,7 +8,12 @@
                     <i class="material-icons dark blue-text left">keyboard_return</i>
             </button>
     </form>
-    {{mensaje}}
+    {% if mensaje_error %}
+        <div class="alert">
+          <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+          <strong>Error!</strong> {{ mensaje_error }}
+        </div>
+    {% endif %}
 	<div class="container">
         <section>
             <h3 style="text-align: center">Item: {{item.nombre}}</h3>
@@ -19,6 +24,7 @@
                 {{item.fecha}}
             </div></p>
             {%if proyecto.estado != "cancelado"%}
+                {% if item.estado != "en linea base" %}
                 {%if pendientePermiso or aprobadoPermiso%}
             <form action="/item/itemCambiarEstado/">
                 <p><div>
@@ -82,6 +88,9 @@
                 {%else%}
                     Estado: {{item.estado}}
                 {%endif%}
+                {% else %}
+                    Estado: {{item.estado}}
+                {% endif %}
             {%else%}
                 Estado: {{item.estado}}
             {%endif%}
@@ -156,37 +165,8 @@
                     <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
                     <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
                  </form>
-                <form action="/item/relaciones/ver/itemid={{ item.id }}/faseid={{ faseid }}/proyectoid={{ proyectoid }}/">
-                    <button type="submit" class="btn blue darken-5 left">
-                        Relaciones del item
-                       <i class="material-icons white-text left">timeline</i>
-                    </button>
-                    <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-                    <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
-                    <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
-                 </form>
-
-                <form action="/item/addRelacion/">
-                    <button type="submit" class="btn red darken-5 left">
-                        Relacionar Item
-                       <i class="material-icons white-text left">delete</i>
-                    </button>
-                        <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-                        <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
-                        <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
-                </form>
-
-                <form action="/item/addRelacion/">
-                    <button type="submit" class="btn red darken-5 left">
-                        Relacionar Item
-                       <i class="material-icons white-text left">delete</i>
-                    </button>
-                        <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-                        <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
-                        <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
-                </form>
-
             {%endif%}
+        </div>
         </section>
 	</div>
 

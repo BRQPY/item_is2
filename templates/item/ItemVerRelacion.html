@@ -14,6 +14,12 @@
           padding: 10px;
           height: 300px; /* Should be removed. Only for demonstration */
         }
+        .column_unasola {
+          text-align: center;
+          width: 33.33%;
+          padding: 10px;
+          height: 300px; /* Should be removed. Only for demonstration */
+        }
 
         /* Clear floats after the columns */
         .row_fase:after {
@@ -30,59 +36,83 @@
     </form>
     <div class="container">
         <h4 style="text-align: center">Relaciones del item {{ item.nombre }}</h4>
-        <form action="/item/relaciones/ver/itemid={{ item.id }}/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/">
-            <button type="submit" class="btn-small blue darken-5 right"
-                    title="Crear o remover relaciones del ítem {{ item.nombre }}"
-            >
-                Añadir relaciones
-                <i class="material-icons white-text left">add_circle</i>
-            </button>
-            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-            <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
-        </form><br><br>
     </div>
+    {% if puede_relacionarse %}
+        {% if habilitar_Add_relacion %}
+            <div class="container">
+                <form action="/item/addRelacion/">
+                    <button type="submit" class="btn-small blue darken-5 right"
+                            title="Crear o remover relaciones del ítem {{ item.nombre }}"
+                    >
+                        Añadir relaciones
+                        <i class="material-icons white-text left">add_circle</i>
+                    </button>
+                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                    <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                    <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+                </form><br><br>
+            </div>
+        {% else %}
+            <div class="container">
+                <button style="cursor: default"
+                        class="btn btn-small #eeeeee grey lighten-3 black-text right"
+                        title="No hay ítems disponibles para establecer relaciones."
+                >
+                    Añadir relaciones
+                    <i class="material-icons white-text left">add_circle</i>
+                </button><br><br>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="container" style="text-align: right">
+            <h8 style="text-align:right">
+                <b>El ítem debe estar aprobado para establecer una relación desde él.</b>
+            </h8><br>
+        </div>
+    {% endif %}
+    {% if varias_fases %}
         <div class="row_fase">
             <div class="column"
                  style="background-color:#F5F5F5;"
             >
-                <h6 style="text-align: center">
-                    <b>Fase 1</b><br>
-                    <i>antecesores</i>
-                </h6>
-                <div class="container">
-                    {% if antecesores %}
-                        {% for a in antecesores %}
-                            <div class="row">
-                                <i class="small material-icons blue-text left">timeline</i>
-                                <a href="{%url 'itemRelacionesRemover' item.id a.item_to.id fase.id proyecto.id%}"
-                                   title="Remover relación."
-                                   onclick="return confirm('Está seguro de remover la relación entre {{ item.nombre }} y {{ a.item_to.nombre }} ?');"
-                                >
-                                    <i class="small material-icons red-text lighten-4 right">
-                                        delete
-                                    </i>
-                                </a>
-                                <h5 style="text-align: left">
-                                    {{ a.item_to.nombre }}
-                                </h5>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <h8>El ítem no posee relaciones con la fase anterior.</h8>
-                    {% endif %}
-                </div>
+                {% if faseAnterior %}
+                    <h6 style="text-align: center">
+                        <b>{{ faseAnterior.nombre }}</b><br>
+                    </h6>
+                    <div class="container">
+                        {% if antecesores %}
+                            {% for a in antecesores %}
+                                <div class="row">
+                                    <i class="small material-icons blue-text left">timeline</i>
+                                    <a href="{%url 'itemRelacionesRemover' item.id a.item_to.id fase.id proyecto.id%}"
+                                       title="Remover relación."
+                                       onclick="return confirm('Está seguro de remover la relación entre {{ item.nombre }} y {{ a.item_to.nombre }} ?');"
+                                    >
+                                        <i class="small material-icons red-text lighten-4 right">
+                                            delete
+                                        </i>
+                                    </a>
+                                    <h5 style="text-align: left">
+                                        {{ a.item_to.nombre }}
+                                    </h5>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <h8>El ítem no posee relaciones con la fase anterior.</h8>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <h6 style="text-align: center">
+                        El ítem se encuentra en la primera fase.<br>No cuenta con fase anterior.<br>
+                    </h6>
+                {% endif %}
             </div>
             <div class="column"
                  style="background-color:#ECECEC;"
             >
                 <h6 style="text-align: center">
-                    <b>Fase 2</b><br>
-                    <i>padres e hijos</i>
+                    <b>{{ fase.nombre }} </b><br>
                 </h6>
-                <h8 style="text-align: center">
-                    Padres
-                </h8>
                 <div class="container">
                     {% if padres %}
                         {% for p in padres %}
@@ -105,9 +135,6 @@
                         <h8>El ítem no posee padres.</h8>
                     {% endif %}
                 </div>
-                <h8 style="text-align: center">
-                    Hijos
-                </h8>
                 <div class="container">
                     {% if hijos %}
                         {% for h in hijos %}
@@ -134,51 +161,96 @@
             <div class="column"
                  style="background-color:#F5F5F5;"
             >
+                {% if faseSiguiente %}
+                    <h6 style="text-align: center">
+                        <b>{{ faseSiguiente.nombre}}</b><br>
+                    </h6>
+                    <div class="container">
+                        {% if sucesores %}
+                            {% for s in sucesores %}
+                                <div class="row">
+                                    <i class="small material-icons blue-text left">timeline</i>
+                                    <a href="{%url 'itemRelacionesRemover' item.id s.item_to.id fase.id proyecto.id%}"
+                                       title="Remover relación."
+                                       onclick="return confirm('Está seguro de remover la relación entre {{ item.nombre }} y {{ s.item_to.nombre }} ?');"
+                                    >
+                                        <i class="small material-icons red-text lighten-4 right">
+                                            delete
+                                        </i>
+                                    </a>
+                                    <h5 style="text-align: left">
+                                        {{ s.item_to.nombre }}
+                                    </h5>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <h8>El ítem no posee relaciones con la fase posterior.</h8>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <h6 style="text-align: center">
+                        El ítem se encuentra en la última fase.<br>No cuenta con fase siguiente.<br>
+                    </h6>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <div class="row">
+            <div class="column_unasola"
+                 style="background-color:#ECECEC;"
+                 align="center"
+            >
                 <h6 style="text-align: center">
-                    <b>Fase 3</b><br>
-                    <i>sucesores</i>
+                    <b>{{ fase.nombre }} </b><br>
                 </h6>
                 <div class="container">
-                    {% if sucesores %}
-                        {% for s in sucesores %}
+                    {% if padres %}
+                        {% for p in padres %}
                             <div class="row">
                                 <i class="small material-icons blue-text left">timeline</i>
-                                <a href="{%url 'itemRelacionesRemover' item.id s.item_to.id fase.id proyecto.id%}"
+                                <a href="{%url 'itemRelacionesRemover' item.id p.item_to.id fase.id proyecto.id%}"
                                    title="Remover relación."
-                                   onclick="return confirm('Está seguro de remover la relación entre {{ item.nombre }} y {{ s.item_to.nombre }} ?');"
+                                   onclick="return confirm('Está seguro de remover la relación entre {{ item.nombre }} y {{ p.item_to.nombre }} ?');"
                                 >
                                     <i class="small material-icons red-text lighten-4 right">
                                         delete
                                     </i>
                                 </a>
                                 <h5 style="text-align: left">
-                                    {{ s.item_to.nombre }}
+                                    {{ p.item_to.nombre }}
                                 </h5>
                             </div>
                         {% endfor %}
                     {% else %}
-                        <h8>El ítem no posee relaciones con la fase posterior.</h8>
+                        <h8>El ítem no posee padres.</h8>
+                    {% endif %}
+                </div>
+                <div class="container">
+                    {% if hijos %}
+                        {% for h in hijos %}
+                            <div class="row">
+                                <i class="small material-icons blue-text left">timeline</i>
+                                <a href="{%url 'itemRelacionesRemover' item.id h.item_to.id fase.id proyecto.id%}"
+                                   title="Remover relación."
+                                   onclick="return confirm('Está seguro de remover la relación entre {{ item.nombre }} y {{ h.item_to.nombre }} ?');"
+                                >
+                                    <i class="small material-icons red-text lighten-4 right">
+                                        delete
+                                    </i>
+                                </a>
+                                <h5 style="text-align: left">
+                                    {{ h.item_to.nombre }}
+                                </h5>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <h8>El ítem no posee hijos.</h8>
                     {% endif %}
                 </div>
             </div>
-        </div>
 
-        {% for r in relaciones %}
-            <h6>Relacion tipo= {{ r }}</h6>
-            <h6>{{ item.nombre }} --> {{ r.nombre }}</h6>
-            <form action="/item/relaciones/remover/">
-                <button type="submit"
-                        class="btn-small red darken-5 left"
-                        onclick="return confirm('Está seguro de remover esta relación?');"
-                >
-                    Remover relación
-                    <i class="material-icons white-text left">delete</i>
-                </button>
-                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-                <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
-                <input  type="hidden" value={{r.id}} id="itemid_final" name="itemid_final">
-            </form><br><br><br>
-        {% endfor %}
+            </div>
+        </div>
+    {% endif %}
 
 {% endblock%}

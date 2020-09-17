@@ -2,44 +2,85 @@
 {% load static %}
 
 {% block content %}
-    {% if proyecto.estado == 'pendiente' %}
-        <form action="/fase/faseVer/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/">
-            <button type="submit" class="waves-effect waves-teal btn-flat">
-                Volver a la configuración de la fase {{ fase.nombre }}
-                <i class="material-icons dark blue-text left">keyboard_return</i>
-            </button>
-        </form>
-    {% else %}
-        <form action="/fase/FaseIniciada/config/">
-            <button type="submit" class="waves-effect waves-teal btn-flat">
-                Volver a la configuración de la fase {{ fase.nombre }}
-                <i class="material-icons dark blue-text left">keyboard_return</i>
-            </button>
-            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-        </form>
-    {% endif %}
+    <form action="/fase/FaseIniciada/config/">
+        <button type="submit" class="waves-effect waves-teal btn-flat">
+            Volver a la configuración de la fase {{ fase.nombre }}
+            <i class="material-icons dark blue-text left">keyboard_return</i>
+        </button>
+        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+    </form>
     <div class="container">
-    <h4 style="text-align: center"> Lineas Base de la fase {{ fase.nombre }}</h4><br>
-        <form action="/fase/addLineaBase/">
-            <button type="submit" class="btn btn-small blue darken-1 right">
-                Añadir Linea Base a la Fase
-                <i class="material-icons white-text left">add_circle</i>
-            </button>
-            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-        </form><br>
+        <h4 style="text-align: center"> Lineas Base de la fase {{ fase.nombre }}</h4>
+            {% if crear_lb %}
+                <form action="/fase/addLineaBase/">
+                    <button type="submit" class="btn btn-small blue darken-1 right">
+                        Crear Linea Base
+                        <i class="material-icons white-text left">add_circle</i>
+                    </button>
+                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                    <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                </form><br>
+            {% else %}
+                <button
+                    title="Todos los ítems aprobados de la fase ya forman parte de alguna Línea Base."
+                    style="cursor: default"
+                    class="btn btn-small #eeeeee grey lighten-3 black-text right"
+                >
+                    Crear Línea Base
+                    <i class="material-icons white-text left">add_circle</i>
+                </button><br>
+            {% endif %}
 
-    {% if lineasBase %}
-        {% for lb in lineasBase %}
-            <div>
-            <a href="{%url 'faseConfigLineaBase' proyecto.id fase.id lb.id%}"><b>{{lb.nombre}}({{ lb.estado }})</b></a>
+        {% if lineasBase %}
+            <div class="col s12 md6 x8">
+                <ul class="z-depth-1">
+                    {% for lb in lineasBase %}
+                        <li>
+                            <div class="card-panel z-depth-4 expense">
+                                <div class="row">
+                                    <div class="col 14 left">
+                                        <b>Nombre:</b>
+                                        {{lb.nombre}}
+                                    </div>
+                                    {% if lb.estado == "abierta" %}
+                                        <div class="col 14 right">
+                                            <a href="{%url 'faseConfigLineaBase' proyecto.id fase.id lb.id%}"
+                                               title="Añadir o remover ítems de la Línea Base"
+                                            >
+                                                Administrar Línea Base
+                                                <i class="material-icons blue-text left">settings</i>
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                    {% if lb.estado == "cerrada" %}
+                                        <div class="col 14 right">
+                                            <a href="{%url 'consultarLineaBase' proyecto.id fase.id lb.id%}"
+                                               title="En una Línea Base Cerrada sólo se puede consultar sus ítems."
+                                            >
+                                                Consultar Línea Base
+                                                <i class="material-icons blue-text left">info_outline</i>
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="row">
+                                    <div class="col 14 left">
+                                        <b>Estado:</b>
+                                        {{lb.estado}}
+                                    </div>
+                                    <div class="col 14 left">
+                                        <b>Creador:</b>
+                                        {{lb.creador}}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
             </div>
-        {% endfor %}
-    {% else %}
-        <h5>Aún no hay Lineas Base en esta fase :(</h5>
-    {% endif %}
-
-
+        {% else %}
+            <h5>Aún no hay Lineas Base en esta fase :(</h5>
+        {% endif %}
     </div>
 {% endblock%}
