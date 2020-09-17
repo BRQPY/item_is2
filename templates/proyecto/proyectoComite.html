@@ -1,18 +1,16 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>MIEMBROS DEL COMITE</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/proyectoComite.css' %}">
-</head>
-<body>
+{% block content %}
     <style> body{background-color: lavender }</style>
-    <section>
         <form action="/proyecto/gestionProyecto/">
-            <input type="submit" value="Atras" />
+            <button type="submit" class="waves-effect waves-teal btn-flat">
+                        Volver a Gestión de Proyecto
+                        <i class="material-icons dark blue-text left">keyboard_return</i>
+                </button>
             <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
         </form>
+
+    <div class="container">
         <h4>Lista de Miembros</h4>
              <div>
                  {% for c in comite %}
@@ -27,13 +25,21 @@
             </div>
 
         <p><form action="/proyecto/proyectoComite/add/">
-            <input type="submit" value="Agregar Miembros" />
+            <button type="submit"  class="btn blue darken-1 left">
+                <i class="material-icons white-text left">person_add_alt_1</i>
+                Agregar Miembros
+            </button>
             <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
         </form></p>
+         <br>
+         <br>
+         <br>
         <form action="/proyecto/proyectoComite/remove/">
-            <input type="submit" value="Remover Miembros" />
+            <button type="submit"  class="btn blue darken-1 left">
+                <i class="material-icons white-text left">person_remove</i>
+                Remover Miembros
+            </button>
             <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
         </form>
-    </section>
-</body>
-</html>
+    </div>
+{% endblock%}
