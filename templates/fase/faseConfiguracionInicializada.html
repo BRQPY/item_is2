@@ -34,5 +34,14 @@
             <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
             <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
         </form>
+
+
+             <a href="{%url 'cerrarFaseView' proyecto.id fase.id  %}">
+
+                 <i class="material-icons dark blue-text right">autorenew</i>
+             </a>
+
+
+            <h1>{{ proyecto.id }}</h1>
     </div>
 {% endblock%}
