@@ -800,7 +800,7 @@ def itemCrear(request):
             """Agregar item a fase."""
             fase.items.add(item)
             """Redirigir a la vista de la fase correspondiente."""
-            return redirect('proyectoView', id=proyectoid)
+            return redirect('faseViewInicializado', faseid=faseid ,proyectoid=proyectoid)
         else:
             """POST para seleccionar tipo de item"""
             """ID del proyecto correspondiente."""
@@ -1478,19 +1478,59 @@ def itemRelacionesRemover(request,itemid,item_rm, faseid, proyectoid):
         item_inicio = Item.objects.get(id=itemid)
         item_final_remover = Item.objects.get(id=item_rm)
         ok_remover_final = False
+        """Bandera para verificar si se puede remover la relacion."""
+        ok_remover_inicio = False
+        fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+        cont = 0
+        esPrimeraFase = False
+        for fp in fasesProyecto:
+            cont = cont + 1
+            if fp == fase:
+                if cont == 1:
+                    esPrimeraFase = True
+                    break
+        if not esPrimeraFase:
+            """Si el item cuenta con un estado aprobado o bien, en linea base."""
+            if item_final_remover.estado == "aprobado" or item_final_remover.estado == "en linea base":
+                "Debe verificar que el item no quede sin al menos una relacion a otro item aprobado o antecesor en linea base."
+                relaciones_item_remover = item_final_remover.relaciones.exclude(id=item_inicio.id)
+                """Recorrer relaciones."""
+                for r in relaciones_item_remover:
+                    """Obtener relacion objeto."""
+                    relacion = Relacion.objects.get(item_from=r, item_to=item_final_remover)
+                    """Si la relacion es de tipo padre y el estado del item es aprobado o en linea base."""
+                    if relacion.tipo == "padre" and (r.estado == "aprobado" or r.estado == "en linea base"):
+                        """Setear bandera en true."""
+                        ok_remover_final = True
+                        """Romper ciclo."""
+                        break
+                    """Si la relacion es de tipo antecesor y el estado del item es en linea base"""
+                    if relacion.tipo == "antecesor" and r.estado == "en linea base":
+                        """Obtener linea base."""
+                        lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                        """Si el estado de la linea base es cerrada."""
+                        if lineaBaseItem.estado == "cerrada":
+                            """Setear bandera en true."""
+                            ok_remover_final = True
+                            """ROmper ciclo."""
+                            break
+            else:
+                """Si no cuenta con estado aprobado o en linea base"""
+                """Setear bandera en true."""
+                ok_remover_final = True
 
-        """Si el item cuenta con un estado aprobado o bien, en linea base."""
-        if item_final_remover.estado == "aprobado" or item_final_remover.estado == "en linea base":
+            "El mismo testeo para el item del cual queremos remover la relacion."
+
             "Debe verificar que el item no quede sin al menos una relacion a otro item aprobado o antecesor en linea base."
-            relaciones_item_remover = item_final_remover.relaciones.exclude(id=item_inicio.id)
+            relaciones_item_inicio = item_inicio.relaciones.exclude(id=item_final_remover.id)
             """Recorrer relaciones."""
-            for r in relaciones_item_remover:
+            for r in relaciones_item_inicio:
                 """Obtener relacion objeto."""
-                relacion = Relacion.objects.get(item_from=r, item_to=item_final_remover)
+                relacion = Relacion.objects.get(item_from=r, item_to=item_inicio)
                 """Si la relacion es de tipo padre y el estado del item es aprobado o en linea base."""
                 if relacion.tipo == "padre" and (r.estado == "aprobado" or r.estado == "en linea base"):
                     """Setear bandera en true."""
-                    ok_remover_final = True
+                    ok_remover_inicio = True
                     """Romper ciclo."""
                     break
                 """Si la relacion es de tipo antecesor y el estado del item es en linea base"""
@@ -1500,39 +1540,13 @@ def itemRelacionesRemover(request,itemid,item_rm, faseid, proyectoid):
                     """Si el estado de la linea base es cerrada."""
                     if lineaBaseItem.estado == "cerrada":
                         """Setear bandera en true."""
-                        ok_remover_final = True
-                        """ROmper ciclo."""
+                        ok_remover_inicio = True
+                        """Romper ciclo."""
                         break
         else:
-            """Si no cuenta con estado aprobado o en linea base"""
-            """Setear bandera en true."""
+            ok_remover_inicio = True
             ok_remover_final = True
 
-        "El mismo testeo para el item del cual queremos remover la relacion."
-        """Bandera para verificar si se puede remover la relacion."""
-        ok_remover_inicio = False
-        "Debe verificar que el item no quede sin al menos una relacion a otro item aprobado o antecesor en linea base."
-        relaciones_item_inicio = item_inicio.relaciones.exclude(id=item_final_remover.id)
-        """Recorrer relaciones."""
-        for r in relaciones_item_inicio:
-            """Obtener relacion objeto."""
-            relacion = Relacion.objects.get(item_from=r, item_to=item_inicio)
-            """Si la relacion es de tipo padre y el estado del item es aprobado o en linea base."""
-            if relacion.tipo == "padre" and (r.estado == "aprobado" or r.estado == "en linea base"):
-                """Setear bandera en true."""
-                ok_remover_inicio = True
-                """Romper ciclo."""
-                break
-            """Si la relacion es de tipo antecesor y el estado del item es en linea base"""
-            if relacion.tipo == "antecesor" and r.estado == "en linea base":
-                """Obtener linea base."""
-                lineaBaseItem = LineaBase.objects.get(items__id=r.id)
-                """Si el estado de la linea base es cerrada."""
-                if lineaBaseItem.estado == "cerrada":
-                    """Setear bandera en true."""
-                    ok_remover_inicio = True
-                    """Romper ciclo."""
-                    break
         """Si ambas banderas son true, se rompe la relacion."""
         if ok_remover_inicio and ok_remover_final:
             """Obtener relacion objeto."""
@@ -1660,7 +1674,6 @@ def itemAddRelacion(request):
         for fp in fasesProyecto:
             """Obtener items de fase."""
             items = fp.items.all()
-            print(items)
             """Recorrer items."""
             for i in items:
                 """Si el item corresponde al item_to"""
