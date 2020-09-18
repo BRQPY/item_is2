@@ -1151,36 +1151,64 @@ def itemCambiarEstado(request):
 
             """Para aprobar el item es necesario identificar que tenga alguna relacion con un antecesor
             que se encuentre en una linea base cerrada, o bien con un padre(o hijo) que este aprobado."""
+
+            """Filtrar fases no deshabilitadas del proyecto."""
             fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+            """Inicializar contador."""
             cont = 0
+            """Inicializar bandera para validar si un item pertenece a la primera fase."""
             esPrimeraFase = False
+            """Recorrer las fases del proyecto."""
             for fp in fasesProyecto:
+                """Aumenta el contador por cada fase."""
                 cont = cont + 1
+                """Si la fase encontrada es igual a la actual"""
                 if fp == fase:
+                    """Si el contador es igual a 1."""
                     if cont == 1:
+                        """Setear bandera en true."""
                         esPrimeraFase = True
+                        """ROmper ciclo."""
                         break
+
             "Solo verificar si son items posteriores a la primera fase."
             if esPrimeraFase == False:
+                """Variable para verificar si se posee una fase anterior."""
                 anterior = None
+                """Recorrer fases del proyecto."""
                 for fp in fasesProyecto:
+                    """Si la fase encontrada es igual a la fase actual."""
                     if fp == fase:
+                        """Romper ciclo"""
                         break
+                    """Sino, actualizar variable de fase anterior."""
                     anterior = fp
 
+                """Bandera para verificar si un item esta listo para ser aprobado."""
                 listoAprobacion = False
+                """Obtener las relaciones del item."""
                 itemsRelacionados = item.relaciones.all()
+                """Recorrer las relaciones."""
                 for ir in itemsRelacionados:
+                    """Obtener relacion objeto."""
                     relacion = Relacion.objects.get(item_from=item, item_to=ir)
+                    """Si el item perteece a la fase anterior y su estado es en linea base."""
                     if relacion.fase_item_to == anterior and ir.estado == "en linea base":
+                        """Obtener linea base."""
                         lineaBaseItem = LineaBase.objects.get(items__id=ir.id)
+                        """Si el estado de la linea base es cerrada."""
                         if lineaBaseItem.estado == "cerrada":
+                            """Setear bandera en true."""
                             listoAprobacion = True
+                            """Romper ciclo."""
                             break
+                    """Si el item peretenece a la fase actual y su estado es aprobado, o bien en linea base."""
                     if relacion.fase_item_to == fase and (ir.estado == "aprobado" or ir.estado == "en linea base"):
+                        """Setear bandera en true."""
                         listoAprobacion = True
                         break
 
+                """Si el item no esta listo para aprobarse."""
                 if listoAprobacion == False:
                     mensaje_error = "No es posible aprobar el item ya que este no posee una relacion con un item antecesor" \
                               "en linea base cerrada, o bien, con un item padre aprobado."
@@ -1269,13 +1297,18 @@ def itemDeshabilitar(request):
         return render(request, 'item/gestionItem.html',
                       {'proyectoid': proyectoid, 'faseid': faseid, 'itemid': itemid, 'mensaje': mensaje, })
 
-    "VERIFICAR SI ES POSIBLE DESHABILITAR EL ITEM TENIENDO EN CUENTA SUS RELACIONES."
+    """VERIFICAR SI ES POSIBLE DESHABILITAR EL ITEM TENIENDO EN CUENTA SUS RELACIONES."""
+    """Obtener relaciones."""
     relaciones_item_deshabilitar = item.relaciones.all()
+    """Bandera para verificar si se puede deshabilitar el item."""
     ok_deshabilitar = True
+    """Recorrer relaciones."""
     for rd in relaciones_item_deshabilitar:
+        """Si el estado del item es aprobado o bien, en linea base."""
         if rd.estado == "aprobado" or rd.estado == "en linea base":
             "Debe verificar que el item no quede sin al menos una relacion a otro item aprobado o antecesor en linea base."
             relaciones_item_afectado = rd.relaciones.exclude(id=item.id)
+            """Bandera para identificar si el item puede seguir sin la relacion con el item a deshabilitar."""
             ok_sobrevivir = False
             for r in relaciones_item_afectado:
                 relacion = Relacion.objects.get(item_from=r, item_to=rd)
@@ -1402,6 +1435,14 @@ def itemVerRelaciones(request,itemid, faseid, proyectoid):
 
 
 def itemRelacionesRemover(request,itemid,item_rm, faseid, proyectoid):
+    """
+                  **itemRelacionesRemover:**
+                   Vista utilizada para remover relaciones del Item.
+                   Solicita que el usuario que realiza el request
+                   cuente con los permisos para remover relaciones de
+                   items en la fase, o bien, los de gerente del proyecto
+                   y que (indirectamente) haya iniciado sesion.
+       """
     if request.method =='GET':
         """ID del proyecto"""
         #proyectoid = request.GET.get('proyectoid')
@@ -1417,54 +1458,100 @@ def itemRelacionesRemover(request,itemid,item_rm, faseid, proyectoid):
         item_final_remover = Item.objects.get(id=item_rm)
         ok_remover_final = False
 
+        """Si el item cuenta con un estado aprobado o bien, en linea base."""
         if item_final_remover.estado == "aprobado" or item_final_remover.estado == "en linea base":
             "Debe verificar que el item no quede sin al menos una relacion a otro item aprobado o antecesor en linea base."
             relaciones_item_remover = item_final_remover.relaciones.exclude(id=item_inicio.id)
+            """Recorrer relaciones."""
             for r in relaciones_item_remover:
+                """Obtener relacion objeto."""
                 relacion = Relacion.objects.get(item_from=r, item_to=item_final_remover)
+                """Si la relacion es de tipo padre y el estado del item es aprobado o en linea base."""
                 if relacion.tipo == "padre" and (r.estado == "aprobado" or r.estado == "en linea base"):
+                    """Setear bandera en true."""
                     ok_remover_final = True
+                    """Romper ciclo."""
                     break
+                """Si la relacion es de tipo antecesor y el estado del item es en linea base"""
                 if relacion.tipo == "antecesor" and r.estado == "en linea base":
+                    """Obtener linea base."""
                     lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                    """Si el estado de la linea base es cerrada."""
                     if lineaBaseItem.estado == "cerrada":
+                        """Setear bandera en true."""
                         ok_remover_final = True
+                        """ROmper ciclo."""
                         break
         else:
+            """Si no cuenta con estado aprobado o en linea base"""
+            """Setear bandera en true."""
             ok_remover_final = True
 
         "El mismo testeo para el item del cual queremos remover la relacion."
+        """Bandera para verificar si se puede remover la relacion."""
         ok_remover_inicio = False
         "Debe verificar que el item no quede sin al menos una relacion a otro item aprobado o antecesor en linea base."
         relaciones_item_inicio = item_inicio.relaciones.exclude(id=item_final_remover.id)
+        """Recorrer relaciones."""
         for r in relaciones_item_inicio:
+            """Obtener relacion objeto."""
             relacion = Relacion.objects.get(item_from=r, item_to=item_inicio)
+            """Si la relacion es de tipo padre y el estado del item es aprobado o en linea base."""
             if relacion.tipo == "padre" and (r.estado == "aprobado" or r.estado == "en linea base"):
+                """Setear bandera en true."""
                 ok_remover_inicio = True
+                """Romper ciclo."""
                 break
+            """Si la relacion es de tipo antecesor y el estado del item es en linea base"""
             if relacion.tipo == "antecesor" and r.estado == "en linea base":
+                """Obtener linea base."""
                 lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                """Si el estado de la linea base es cerrada."""
                 if lineaBaseItem.estado == "cerrada":
+                    """Setear bandera en true."""
                     ok_remover_final = True
+                    """Romper ciclo."""
                     break
 
+        """Si ambas banderas son true, se rompe la relacion."""
         if ok_remover_inicio and ok_remover_final:
+            """Obtener relacion objeto."""
             relaciones_uno = Relacion.objects.get(item_from=item_inicio, item_to=item_final_remover)
+            """Eliminar relacion objeto."""
             relaciones_uno.delete()
+            """Obtener relacion objeto."""
             relaciones_dos = Relacion.objects.get(item_from=item_final_remover, item_to=item_inicio)
+            """Eliminar relacion objeto."""
             relaciones_dos.delete()
+            """Redirigir a la vista itemVerRelaciones."""
             return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid)
 
+        """Redirigir a la vista itemVerRelaciones sin romper la relacion."""
         return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid)
 
 
 def itemAddRelacion(request):
+    """
+                   **itemAddRelacion:**
+                    Vista utilizada para agregar relaciones al Item.
+                    Solicita que el usuario que realiza el request
+                    cuente con los permisos para agregar relaciones
+                    a items en la fase, o bien, los de gerente del proyecto
+                    y que (indirectamente) haya iniciado sesion.
+         """
+
     if request.method == 'GET':
+        """ID del proyecto"""
         proyectoid = request.GET.get('proyectoid')
+        """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
+        """ID de la fase"""
         faseid = request.GET.get('faseid')
+        """Obtener fase."""
         fase = Fase.objects.get(id=faseid)
+        """ID del item"""
         itemid = request.GET.get('itemid')
+        """Obtener el item"""
         item = Item.objects.get(id=itemid)
         """Verificar que el usuario cuente con los permisos necesarios."""
         if not (request.user.has_perm("relacionar_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
@@ -1475,65 +1562,109 @@ def itemAddRelacion(request):
 
         "Todos los id de las relaciones del item."
         relaciones = item.relaciones.all()
+        """Array auxiliar."""
         relacionesId = []
+        """Recorrer relaciones."""
         for r in relaciones:
+            """Almacenar id de relaciones."""
             relacionesId.append(r.id)
         "Solo si esta en linea base puede avanzar de fase."
+        """Variable correspondiente a la fase siguiente."""
         siguiente = None
+        """Items de la fase siguiente."""
         itemsFaseSiguiente = None
+        """Si el estado del item es en linea base."""
         if item.estado == "en linea base":
+            """Filtrar linea base que aloja al item."""
             linea_base_item = LineaBase.objects.filter(items=item)
+            """Si el estsado de la linea base es cerrada."""
             if linea_base_item.get().estado == "cerrada":
+                """Obtener las fases del proyecto."""
                 fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+                """Bandera para detectar fase actual."""
                 actual = False
+                """Recorrer fases del proyecto."""
                 for fp in fasesProyecto:
+                    """Si ya aparecio la fase actual.."""
                     if actual == True:
+                        """Almacenar fase siguiente."""
                         siguiente = fp
+                        """Romper ciclo."""
                         break
+                    """Si encontramos a la fase actual."""
                     if fp == fase:
+                        """Setear bandera en true."""
                         actual = True
 
+                """Si fase siguiente no es None."""
                 if siguiente is not None:
+                    """Obtener items fase siguiente"""
                     itemsFaseSiguiente = siguiente.items.exclude(Q(estado="deshabilitado") | Q(id__in=relaciones)).order_by(
                         'id')
             else:
+                """SI linea base no esta cerrada no cargar items de la fase siguiente."""
                 itemsFaseSiguiente = None
+        """Obtener items de la fase actual."""
         itemsFaseActual = fase.items.exclude(
             Q(estado="deshabilitado") | Q(id=itemid) | Q(id__in=relaciones)).order_by('id')
 
+        """Renderizar item/itemAddRelacion/html."""
         return render(request, 'item/itemAddRelacion.html',
                       {'proyecto': proyecto, 'fase': fase, 'item': item,
                        'itemsFaseSiguiente': itemsFaseSiguiente, 'itemsFaseActual': itemsFaseActual,
                        'faseSiguiente': siguiente, })
 
     else:
+        """POST REQUEST"""
+
+        """ID del proyecto"""
         proyectoid = request.POST.get('proyectoid')
+        """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
+        """ID de fase"""
         faseid = request.POST.get('faseid')
+        """Obtener fase."""
         fase = Fase.objects.get(id=faseid)
+        """ID de item_from"""
         itemIdActual = request.POST.get('itemIdActual')
+        """Obtener item."""
         itemActual = Item.objects.get(id=itemIdActual)
+        """ID de item_to"""
         itemIdRelacion = request.POST.get('itemIdRelacion')
-        faseSiguiente = request.POST.get('siguiente')
-        fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+        """Obtener item."""
         itemRelacion = Item.objects.get(id=itemIdRelacion)
+        """IDde fase siguiente."""
+        faseSiguiente = request.POST.get('siguiente')
+        """FIltrar fases del proyecto apropiadas."""
+        fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+        """Recorrer Fases del proyecto."""
         for fp in fasesProyecto:
+            """Obtener items de fase."""
             items = fp.items.all()
+            """Recorrer items."""
             for i in items:
+                """Si el item corresponde al item_to"""
                 if i == itemRelacion:
+                    """Si existe fase siguiente."""
                     if faseSiguiente != "no":
+                        """Si fase encontrada igual a fase siguiente."""
                         if int(fp.id) == int(faseSiguiente):
+                            """Crear relacion."""
                             Relacion.objects.create(tipo="antecesor", item_from=itemActual, item_to=itemRelacion,
                                                     fase_item_to=fp)
+                            """Crear relacion."""
                             Relacion.objects.create(tipo="sucesor", item_from=itemRelacion, item_to=itemActual,
                                                     fase_item_to=fase)
+                    """SI se encuentra a la fase actual."""
                     if fp == fase:
+                        """Crear relacion."""
                         Relacion.objects.create(tipo="padre", item_from=itemActual, item_to=itemRelacion,
                                                 fase_item_to=fp)
+                        """Crear relacion."""
                         Relacion.objects.create(tipo="hijo", item_from=itemRelacion, item_to=itemActual,
                                                 fase_item_to=fase)
 
-        "CONTROL DE CICLO EN EL GRAFO"
+        """CONTROL DE CICLO EN EL GRAFO"""
         cantidad_items_proyecto = 0
         for fp in fasesProyecto:
             cantidad_items_proyecto = cantidad_items_proyecto + int(fp.items.exclude(estado="deshabilitado").count())
@@ -1550,24 +1681,25 @@ def itemAddRelacion(request):
 
                 adj[int(iF.id)] = relaciones_por_item
 
-        "SI TIENE UN CICLO ELIMINAR RELACIONES Y RETORNAR A VISUALIZACION DE RELACIONES"
+        """SI TIENE UN CICLO ELIMINAR RELACIONES Y REDIRIGIR A VISUALIZACION DE RELACIONES"""
         if isCyclicDisconnected(adj, V):
             relaciones_uno = Relacion.objects.get(item_from=itemActual, item_to=itemRelacion)
             relaciones_uno.delete()
             relaciones_dos = Relacion.objects.get(item_from=itemRelacion, item_to=itemActual)
-            relaciones_dos.delete()
+            relaciones_dos.delete(),
+
             return redirect('itemVerRelaciones', itemid=itemIdActual, faseid=faseid, proyectoid=proyectoid)
 
 
-        "SINO, TODO OK"
+        """SINO MANTENER RELACIONES Y REDIRIGIR A LA VISTA DE RELACIONES."""
         return redirect('itemVerRelaciones', itemid=itemActual.id, faseid=faseid, proyectoid=proyectoid)
 
-
+"""Funcion para agregar Edge"""
 def addEdge(adj: dict, u, v):
     adj[u].append(v)
     adj[v].append(u)
 
-
+"""FUncion auxiliar del algoritmo."""
 def isCyclicConnected(adj: dict, s, V,
                       visited: dict):
     # Set parent vertex for every vertex as -1.
@@ -1603,7 +1735,7 @@ def isCyclicConnected(adj: dict, s, V,
 
     return False
 
-
+"""Algoritmo BFS para control de ciclos."""
 def isCyclicDisconnected(adj: dict, V):
     # Mark all the vertices as not visited
     visited = {}
@@ -1616,79 +1748,121 @@ def isCyclicDisconnected(adj: dict, V):
             return True
     return False
 
-'''
-# Driver Code 
-if __name__ == "__main__":
-    V = 4
-    adj = [[] for i in range(V)]
-    addEdge(adj, 0, 1)
-    addEdge(adj, 1, 2)
-    addEdge(adj, 2, 0)
-    addEdge(adj, 2, 3)
-
-    if isCyclicDisconnected(adj, V):
-        print("Yes")
-    else:
-        print("No")
-'''
-
-
 
 def faseGestionLineaBase(request):
+    """
+               **itemAddRelacion:**
+                Vista utilizada para gestion de lineas base en Fase.
+                Solicita que el usuario que realiza el request
+                cuente con los permisos para ver lineas base en la fase,
+                 o bien, los de gerente del proyecto y que
+                 (indirectamente) haya iniciado sesion.
+     """
     if request.method == 'GET':
+        """ID de pryecto."""
         proyectoid = request.GET.get('proyectoid')
+        """ID de fase."""
         faseid = request.GET.get('faseid')
+        """Obtener fase."""
         fase = Fase.objects.get(id=faseid)
+        """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
+        """"Controla que el usuario cuente con los permisos necesarios."""
         if not (request.user.has_perm("ver_lineaBase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
+        """Obtener lineas base de la fase, excluyendo las rotas."""
         lineasBase = fase.lineasBase.exclude(estado="rota")
+        """Items disponibles para linea base."""
         items_disponibles = fase.items.filter(estado="aprobado")
+        """SI existen items."""
         if items_disponibles:
+            """Setear bandera en true."""
             crear_lb = True
         else:
+            """Sino, setear bandera en false."""
             crear_lb = False
+        """Renderizar fase/faseGestionLineaBase.html"""
         return render(request, "fase/faseGestionLineaBase.html",
                       {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, 'crear_lb': crear_lb})
 
 
 def consultarLineaBase(request,proyectoid,faseid,lineaBaseid):
+    """
+               **consultarLineaBase:**
+                Vista utilizada para consultar de lineas base en Fase.
+                Solicita que el usuario que realiza el request
+                cuente con los permisos para ver lineas base en la fase,
+                 o bien, los de gerente del proyecto y que
+                 (indirectamente) haya iniciado sesion.
+     """
     if request.method == "GET":
+        """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
         fase = Fase.objects.get(id=faseid)
+        """Obtener linea base."""
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
-        items_lb = lineaBase.items.all()
+        """Obtener items de linea base."""
+        items_lb = lineaBase.items.all() #probablemente hace falta excluir deshabilitados
+        """Renderizar fase/lineaBaseConsultar.html"""
         return render(request, "fase/lineaBaseConsultar.html", {'proyecto': proyecto, 'fase': fase,
                                                               'items': items_lb, 'lineaBase': lineaBase,})
 
 def faseAddLineaBase(request):
+    """
+                   **faseAddLineaBase:**
+                    Vista utilizada para agregar lineas base en Fase.
+                    Solicita que el usuario que realiza el request
+                    cuente con los permisos para crear lineas base en la fase,
+                     o bien, los de gerente del proyecto y que
+                     (indirectamente) haya iniciado sesion.
+         """
     if request.method == "POST":
-        """
-        Consulta si el post recibido es el de la selección de 
-        un Tipo de Item o el post para guardar la información modificada.
-        """
+        """POST REQUEST."""
+        """ID de proyecto."""
         proyecto = Proyecto.objects.get(id=request.POST.get('proyectoid'))
+        """ID de fase"""
         fase = Fase.objects.get(id=request.POST.get('faseid'))
+        """Nombre generado para la linea base"""
         nombre = request.POST.get('nombre')
+        """Lista de IDs de items para la linea base"""
         items = request.POST.getlist('items')
+        """Crear Linea Base."""
         lineaBase = LineaBase.objects.create(nombre=nombre, estado="abierta", creador=request.user)
+        """Recorerr los IDs de items"""
         for i in items:
+            """Obtener item."""
             item = Item.objects.get(id=i)
+            """Actualizar estado de item."""
             item.estado = "en linea base"
+            """Actualizar history date de item, para version."""
+            item._history_date = datetime.now()
+            """Guardar item."""
             item.save()
+            """Agregar item a linea base."""
             lineaBase.items.add(item)
 
+        """GUardar Linea Base."""
         lineaBase.save()
+        """Agregar linea base a fase."""
         fase.lineasBase.add(lineaBase)
+        """Guardar fase."""
         fase.save()
 
+        """Obtener lineas base, excluyendo las rotas.(necesario para el template a renderizar)"""
         lineasBase = fase.lineasBase.exclude(estado="rota")
+        """Obtener items aprobados en la fase."""
         items_disponibles = fase.items.filter(estado="aprobado")
+        """Si existen items disponibles"""
         if items_disponibles:
+            """Se puede crear linea base."""
             crear_lb = True
         else:
+            """Si no existen items disponibles, ya no se podra crear linea base."""
             crear_lb = False
+
+        """Renderizar fase/faseGestionLineaBase.html"""
         return render(request, "fase/faseGestionLineaBase.html",
                       {'fase': fase, 'proyecto': proyecto, 'linea'
                                                            'sBase': lineasBase, 'crear_lb': crear_lb })
@@ -1701,123 +1875,224 @@ def faseAddLineaBase(request):
     if not (request.user.has_perm("create_lineaBase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
         return redirect('/permissionError/')
 
+    """Si el proyecto no se encuentra inicializado."""
     if proyecto.estado != "inicializado":
+        """Redireccionar a la vista de fase, interrumpiendo el proceso."""
         return redirect('faseView', faseid=fase.id, proyectoid=proyecto.id)
 
+    """Obtener items aprobados."""
     itemsAprobados = fase.items.filter(estado="aprobado")
+    """Cantidad de lineas base en fase."""
     cantidad = fase.lineasBase.all().count()
+    """Generar nombre para la linea base"""
     nombre = "LineaBase" + str(cantidad + 1) + "-" + fase.nombre
+    """Renderizar fase/faseAddLineaBase.html"""
     return render(request, "fase/faseAddLineaBase.html", {'proyecto': proyecto, 'fase': fase,
                                                           'items': itemsAprobados, 'nombre': nombre, })
 
 
 def faseConfigLineaBase(request, proyectoid, faseid, lineaBaseid):
+    """
+                       **faseConfigLineaBase:**
+                        Vista utilizada para configurar lineas base en Fase.
+                        Solicita que el usuario que realiza el request
+                        cuente con los permisos para ver lineas base en la fase,
+                         o bien, los de gerente del proyecto y que
+                         (indirectamente) haya iniciado sesion.
+             """
     if request.method == 'GET':
-        # proyectoid = request.GET.get('proyectoid')
-        # faseid = request.GET.get('faseid')
+        """Obtener fase."""
         fase = Fase.objects.get(id=faseid)
+        """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener Linea Base."""
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        """Verificar que el usuario cuente con los permisos necesarios para efectuar la accion."""
         if not (request.user.has_perm("ver_lineaBase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
+        """Obtener todos los items de la linea base, ordenados por id."""
         items = lineaBase.items.all().order_by('id')
+        """Filtra items de la fase aprobados."""
         items_disponibles = fase.items.filter(estado="aprobado")
+        """SI existen items disonibles en la fase."""
         if items_disponibles:
+            """Se puede crear una nueva linea base."""
             crear_lb = True
         else:
+            """SI no existen items disponibles, no se podra crear linea base."""
             crear_lb = False
 
+        """Renderizar fase/faseConfigLineaBase.html"""
         return render(request, "fase/faseConfigLineaBase.html",
                       {'fase': fase, 'proyecto': proyecto, 'items': items, 'lineaBase': lineaBase,'crear_lb':crear_lb })
 
 
 def lineaBaseAddItem(request):
+    """
+                           **lineaBaseAddItem:**
+                            Vista utilizada para agregar items a lineas base en Fase.
+                            Solicita que el usuario que realiza el request
+                            cuente con los permisos para modificar lineas base en la fase,
+                             o bien, los de gerente del proyecto y que
+                             (indirectamente) haya iniciado sesion.
+                 """
     if request.method == 'GET':
+        """ID de proyecto"""
         proyectoid = request.GET.get('proyectoid')
+        """ID de fase"""
         faseid = request.GET.get('faseid')
+        """ID de linea base"""
         lineaBaseid = request.GET.get('lineaBaseid')
+        """Obtener fase."""
         fase = Fase.objects.get(id=faseid)
+        """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener Linea Base."""
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        """Verificar que el usuario cuente con los permisos necesarios para efectuar la accion."""
         if not (request.user.has_perm("modify_lineaBase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
 
         "No se pueden agregar en una linea base cerrada o rota"
         if lineaBase.estado != "abierta":
+            """Obtener items de la linea base ordenadas por id."""
             itemsLineaBase = lineaBase.items.all().order_by('id')
+            """Renderizar fase/faseConfigLineaBase.html interrumpiendo el proceso."""
             return render(request, "fase/faseConfigLineaBase.html",
                           {'fase': fase, 'proyecto': proyecto, 'items': itemsLineaBase, 'lineaBase': lineaBase, })
 
+        """Filtrar items disponibles en la fase."""
         items_disponibles = fase.items.filter(estado="aprobado")
 
+        """Renderizar fase/lienaBaseAddItem.html"""
         return render(request, 'fase/lineaBaseAddItem.html',
                       {'proyecto': proyecto, 'fase': fase, 'lineaBase': lineaBase, 'items': items_disponibles, })
 
     else:
+        """POST REQUEST."""
+        """ID de proyecto"""
         proyectoid = request.POST.get('proyectoid')
+        """ID de fase"""
         faseid = request.POST.get('faseid')
+        """ID de linea base."""
         lineaBaseid = request.POST.get('lineaBaseid')
+        """Obtener fase"""
         fase = Fase.objects.get(id=faseid)
+        """Obtener proyecto"""
         proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener linea base."""
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        """Obtener IDs de items para la linea base."""
         items = request.POST.getlist('items')
+        """Recorrer los IDs"""
         for i in items:
+            """Obtener item"""
             item = Item.objects.get(id=i)
+            """Actualizar estado del item."""
             item.estado = "en linea base"
+            """Actualizar history date del item."""
+            item._history_date = datetime.now()
+            """Guardar item."""
             item.save()
+            """Agregar item a linea base."""
             lineaBase.items.add(item)
+        """Guardar linea base."""
         lineaBase.save()
+        """Obtener items de linea base ordenados por id"""
         itemsLineaBase = lineaBase.items.all().order_by('id')
+        """Renderizar fase/faseCOnfigLineaBase.html"""
         return render(request, "fase/faseConfigLineaBase.html",
                       {'fase': fase, 'proyecto': proyecto, 'items': itemsLineaBase, 'lineaBase': lineaBase, })
 
 
 def lineaBaseRemoveItem(request, proyectoid, faseid, lineaBaseid, itemid):
+    """
+                               **lineaBaseRemoveItem:**
+                                Vista utilizada para remover items de lineas base en Fase.
+                                Solicita que el usuario que realiza el request
+                                cuente con los permisos para modificar lineas base en la fase,
+                                 o bien, los de gerente del proyecto y que
+                                 (indirectamente) haya iniciado sesion.
+                     """
     if request.method == 'GET':
-
+        """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase"""
         fase = Fase.objects.get(id=faseid)
+        """Obtener linea base."""
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        """Obtener item a remover de linea base"""
         item_remover = Item.objects.get(id=itemid)
+        """Verificar que el usuario cuente con los permisos necesarios para efectuar la accion."""
         if not (request.user.has_perm("modify_lineaBase", fase)) and not (
                 request.user.has_perm("is_gerente", proyecto)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
 
+
         "No se pueden agregar en una linea base cerrada o rota"
         if lineaBase.estado != "abierta":
+            """Obtener items de la linea base ordenadas por id."""
             itemsLineaBase = lineaBase.items.all().order_by('id')
+            """Renderizar fase/faseConfigLineaBase.html interrumpiendo el proceso."""
             return render(request, "fase/faseConfigLineaBase.html",
                           {'fase': fase, 'proyecto': proyecto, 'items': itemsLineaBase, 'lineaBase': lineaBase, })
 
+        """Remover item de linea base"""
         lineaBase.items.remove(item_remover)
+        """Guardar LInea Base"""
         lineaBase.save()
+        """Actualizar estado de item."""
         item_remover.estado = "aprobado"
+        """Actualizar history date de item para version."""
+        item_remover._history_date = datetime.now()
+        """Guardar item."""
         item_remover.save()
+        """Obtener items de la linea base ordenados por id."""
         itemsLineaBase = lineaBase.items.all().order_by('id')
+        """Renderizar fase/faseConfigLineaBase.html."""
         return render(request, "fase/faseConfigLineaBase.html",
                       {'fase': fase, 'proyecto': proyecto, 'items': itemsLineaBase, 'lineaBase': lineaBase, })
 
 
 def faseCerrarLineaBase(request,proyectoid,faseid,lineaBaseid):
+    """
+                                   **faseCerrarLineaBase:**
+                                    Vista utilizada para cerrar lineas base en Fase.
+                                    Solicita que el usuario que realiza el request
+                                    sea el creador de la linea base y que
+                                     (indirectamente) haya iniciado sesion.
+                         """
     if request.method == 'GET':
+        """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
         fase = Fase.objects.get(id=faseid)
+        """Obtener Linea Base."""
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        """Verificar que el usuario que desea realizar la accion sea el creador de la linea base."""
         if not (request.user == lineaBase.creador):
+            """EN caso de no ser el creador, interrumpir el proceso, redirigiendo."""
             return redirect('/permissionError/')
 
+        """Si la linea base no tiene items no se puede cerrar la linea base.."""
         if not lineaBase.items.all():
+            """Obtener items de linea base."""
             itemsLineaBase = lineaBase.items.all().order_by('id')
+            """Renderizar fase/faseConfigLineaBase.html interrumpiendo el proceso."""
             return render(request, "fase/faseConfigLineaBase.html",
                           {'fase': fase, 'proyecto': proyecto, 'items': itemsLineaBase, 'lineaBase': lineaBase, })
 
+        """Actualizar el estado de la linea base."""
         lineaBase.estado = "cerrada"
+        """Guardar Linea Base"""
         lineaBase.save()
+        """Obtener lineas base de fase, exluyendo las rotas (ncesario en el template a renderizar)"""
         lineasBase = fase.lineasBase.exclude(estado="rota")
 
+        """Renderizar fase/faseGestionLineaBase.html"""
         return render(request, "fase/faseGestionLineaBase.html",
                       {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
 

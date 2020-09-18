@@ -125,7 +125,7 @@ urlpatterns = [
     path('fase/RemoveTipoItem/proyectoid=<str:proyectoid>/faseid=<str:faseid>/tipoid=<str:tipoid>', viewsFase.FaseRemoveTipoItem, name="faseRemoveTipo"),
     path('fase/fasesDeshabilitadas/', viewsFase.fasesDeshabilitadas),
     path('item/gestionItem/', viewsFase.gestionItem),
-    path('item/itemVer/itemid=<int:itemid>faseid=<int:faseid>proyectoid=<int:proyectoid>/', viewsFase.itemView, name="itemView"),
+    path('item/itemVer/itemid=<int:itemid>/faseid=<int:faseid>/proyectoid=<int:proyectoid>/', viewsFase.itemView, name="itemView"),
     path('item/configurar/itemid=<int:itemid>faseid=<int:faseid>proyectoid=<int:proyectoid>/', viewsFase.itemConfigurar, name="itemConfigurar"),
     path('item/itemCrear/', viewsFase.itemCrear),
     path('item/modify/', viewsFase.itemModificar),
