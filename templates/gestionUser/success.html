@@ -1,17 +1,14 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Success</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/success.css' %}">
-</head>
-<body>
-    <style> body{background-color: lavender }</style>
+{% block title %}Success{% endblock %}
+{% block content %}
+     <form action="/gestionUser/">
+        <button type="submit" class="waves-effect waves-teal btn-flat">
+                Volver a Gestion de Usuario
+                <i class="material-icons dark blue-text left">keyboard_return</i>
+        </button>
+    </form>
     <div>
     <h3>Exito!</h3>
-    <form action="/gestionUser/">
-        <input type="submit" value="Volver a Gestion de Usuarios" /> </h3>
-    </form>
-</body>
-</html>
+    </div>
+{% endblock %}
