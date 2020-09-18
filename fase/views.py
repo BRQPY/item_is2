@@ -1660,7 +1660,6 @@ def itemAddRelacion(request):
         for fp in fasesProyecto:
             """Obtener items de fase."""
             items = fp.items.all()
-            print(items)
             """Recorrer items."""
             for i in items:
                 """Si el item corresponde al item_to"""

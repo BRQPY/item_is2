@@ -692,7 +692,7 @@ class TestViews(TestCase):
         item = Item.objects.get(id=item.id)
         self.assertEquals("Item1", item.nombre, "No se reversiono el item.")
         self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
-        self.assertRedirects(response, '/item/itemVer/itemid=' + str(item.id) + '/' + 'faseid=' + str(
+        self.assertRedirects(response, '/item/configurar/itemid=' + str(item.id) + '/' + 'faseid=' + str(
             fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido a la vista esperada.")
@@ -772,7 +772,7 @@ class TestViews(TestCase):
         item = Item.objects.get(id=item.id)
         self.assertEquals("Item2", item.nombre, "No se reversiono el item.")
         self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
-        self.assertRedirects(response, '/item/itemVer/itemid=' + str(item.id) + '/' + 'faseid=' + str(
+        self.assertRedirects(response, '/item/configurar/itemid=' + str(item.id) + '/' + 'faseid=' + str(
             fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido a la vista esperada.")
@@ -1896,10 +1896,9 @@ class TestViews(TestCase):
         self.client.login(username='user', password='user')
         response = self.client.get('/item/modify/', {'proyectoid': proyecto.id, 'faseid': fase.id, 'itemid': item.id, })
 
-        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
-        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
-                             status_code=302, fetch_redirect_response=False,
-                             msg_prefix="No se ha redirigido al url esperado.")
+        self.assertEquals(response.status_code, 200, "No renderizo el html esperado.")
+        self.assertTemplateUsed(response, 'item/itemModificar.html',
+                                "El template renderizado debe ser item/item.html.")
 
     def test_itemModificar_GET_FAIL3(self):
         user = User.objects.create(username="user", password="user")
@@ -2047,7 +2046,7 @@ class TestViews(TestCase):
         item = Item.objects.get(id=item.id)
         self.assertEquals(item.estado, "pendiente de aprobacion", "El estado del item es incorrecta.")
         self.assertEquals(response.status_code, 200, "El usuario no cuenta con los permisos necesarios.")
-        self.assertTemplateUsed(response, 'item/item.html',
+        self.assertTemplateUsed(response, 'item/itemModificar.html',
                                 "El template renderizado debe ser item/item.html.")
 
     def test_itemCambiarEstado_pendiente_FAIL(self):
@@ -2112,7 +2111,7 @@ class TestViews(TestCase):
         item = Item.objects.get(id=item.id)
         self.assertEquals(item.estado, "aprobado", "El estado del item es incorrecta.")
         self.assertEquals(response.status_code, 200, "El usuario no cuenta con los permisos necesarios.")
-        self.assertTemplateUsed(response, 'item/item.html',
+        self.assertTemplateUsed(response, 'item/itemModificar.html',
                                 "El template renderizado debe ser item/item.html.")
 
     def test_itemCambiarEstado_aprobado_FAIL(self):
