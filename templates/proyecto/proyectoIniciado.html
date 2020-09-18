@@ -9,15 +9,15 @@
             </button>
     </form>
     <div class="container">
-
+        <h3 style="text-align: center">{{ proyecto.nombre }}</h3>
         <form action="/proyecto/gestionProyecto/">
            <button type="submit" class="btn blue darken-2 right" >
-               Configurar
+               Configurar Proyecto
                <i class="material-icons white-text left">settings</i>
             </button>
             <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
         </form>
-        <h3 style="text-align: left">{{ proyecto.nombre }}</h3>
+        <br><br>
         <h5 style="text-align: left" class="bold grey-text">Fases del Proyecto</h5>
         {%if fases%}
             {%if fasesUser%}

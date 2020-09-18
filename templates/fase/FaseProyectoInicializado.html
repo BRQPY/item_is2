@@ -10,9 +10,7 @@
     </form>
 
     <div class="container">
-        <h5 style="text-align: left" >
-            Fase: {{ fase.nombre }}
-        </h5>
+        <h3 style="text-align: center">{{ fase.nombre }}</h3>
         {% if  fase.estado != "cerrada" %}
             <form action="{%url 'faseConfinicializada' proyecto.id fase.id  %}" >
                 <button type="submit" class="btn btn-small blue darken-3 right">
@@ -24,7 +22,7 @@
 
     </div>
     <div class="container">
-         <br><h5>Lísta de Ítems</h5>
+         <br><br><br><h5>Lísta de Ítems</h5>
 
         {% if  fase.estado != "cerrada" %}
             {% if tipos %}

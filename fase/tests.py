@@ -12,6 +12,225 @@ class TestViews(TestCase):
     def setUp(self):
 
         client = Client()
+    def test_itemRelacionar_POST_FAIL(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        proyecto.fases.add(fase)
+        proyecto.save()
+        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
+        tipo.campo_extra.append("CampoExtra")
+        tipo.campo_extra.append("CampoExtra2")
+        tipo.save()
+        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ],_history_date=datetime.now(),)
+        item.estado = "aprobado"
+        item.save()
+        item2 = Item.objects.create(tipoItem=tipo, nombre="Item2", fecha="10/10/2010", observacion="Item1Obs",
+                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ],_history_date=datetime.now(),)
+        item2.estado = "aprobado"
+        item2.save()
+        item3 = Item.objects.create(tipoItem=tipo, nombre="Item3", fecha="10/10/2010", observacion="Item1Obs",
+                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ],_history_date=datetime.now(),)
+        item2.estado = "aprobado"
+        item2.save()
+        fase.items.add(item)
+        fase.items.add(item2)
+        fase.items.add(item3)
+        fase.save()
+        assign_perm("relacionar_item", user, fase)
+
+        Relacion.objects.create(tipo="padre", item_from=item, item_to=item2,
+                                fase_item_to=fase)
+        Relacion.objects.create(tipo="padre", item_from=item2, item_to=item3,
+                                fase_item_to=fase)
+
+        self.client.login(username='user', password='user')
+        response = self.client.post('/item/addRelacion/', {'itemIdActual': item.id, 'itemIdRelacion': item3.id,
+                                                           'siguiente': 'no',
+                                                           'proyectoid': proyecto.id,
+                                                           'faseid': fase.id, 'itemid': item.id, })
+
+        item = Item.objects.get(id=item.id)
+        item3 = Item.objects.get(id=item3.id)
+        self.assertEquals(item3 in item.relaciones.all(), False, "Se ha establecido la relacion en item origen.")
+        self.assertEquals(item in item3.relaciones.all(), False, "Se ha establecido la relacion en item destino.")
+        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
+        self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
+            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + 'Error!%20No%20se%20puede%20relacionar%20porque%20genera%20un%20ciclo.' + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido a la vista esperada.")
+    def test_itemRelacionar_GET_FAIL2(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
+        tipo.campo_extra.append("CampoExtra")
+        tipo.campo_extra.append("CampoExtra2")
+        tipo.save()
+        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ],_history_date=datetime.now(),)
+        item.estado = "en desarrollo"
+        item.save()
+        assign_perm("relacionar_item", user, fase)
+        vacio = ' '
+        self.client.login(username='user', password='user')
+        response = self.client.get('/item/addRelacion/', {'proyectoid': proyecto.id, 'faseid': fase.id, 'itemid': item.id, })
+
+        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna.")
+        self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
+            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + '%20' + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido a la vista esperada.")
+
+    def test_itemRemoveRelaciones_FAIL1(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="ProyectoX", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        fase_dos = Fase.objects.create(nombre="Fase2", descripcion="Descripcion", estado="abierta")
+        proyecto.fases.add(fase)
+        proyecto.save()
+        proyecto.fases.add(fase_dos)
+        proyecto.save()
+        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="cerrada", creador=user)
+        fase_dos.lineasBase.add(lineaBase)
+        fase_dos.save()
+        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
+        tipo.campo_extra.append("CampoExtra")
+        tipo.campo_extra.append("CampoExtra2")
+        tipo.save()
+        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
+                                   , _history_date=datetime.now(), )
+        item.estado = "en linea base"
+        item.save()
+        item2 = Item.objects.create(tipoItem=tipo, nombre="Item2", fecha="10/10/2010", observacion="Item1Obs",
+                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
+                                    , _history_date=datetime.now(), )
+        item2.estado = "en linea base"
+        item2.save()
+        item3 = Item.objects.create(tipoItem=tipo, nombre="Item3", fecha="10/10/2010", observacion="Item1Obs",
+                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
+                                    , _history_date=datetime.now(), )
+        item3.estado = "en linea base"
+        item3.save()
+        item4 = Item.objects.create(tipoItem=tipo, nombre="Item4", fecha="10/10/2010", observacion="Item1Obs",
+                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
+                                    , _history_date=datetime.now(), )
+        item4.estado = "en linea base"
+        item4.save()
+        fase_dos.items.add(item)
+        fase_dos.save()
+        fase_dos.items.add(item2)
+        fase_dos.save()
+        fase_dos.items.add(item3)
+        fase_dos.save()
+        fase_dos.items.add(item4)
+        fase_dos.save()
+
+        Relacion.objects.create(item_from=item, item_to=item2, tipo="padre", fase_item_to=fase_dos)
+        Relacion.objects.create(item_from=item2, item_to=item, tipo="hijo", fase_item_to=fase_dos)
+        Relacion.objects.create(item_from=item4, item_to=item2, tipo="padre", fase_item_to=fase_dos)
+        Relacion.objects.create(item_from=item2, item_to=item4, tipo="hijo", fase_item_to=fase_dos)
+
+        self.client.login(username='user', password='user')
+        response = self.client.get(reverse('itemRelacionesRemover', kwargs={'itemid': item.id, 'item_rm': item2.id,
+                                                                            'faseid': fase_dos.id,
+                                                                            'proyectoid': proyecto.id, }))
+
+        item = Item.objects.get(id=item.id)
+        item2 = Item.objects.get(id=item2.id)
+        self.assertEquals(item in item2.relaciones.all(), True, "Se elimino la relacion.")
+        self.assertEquals(item2 in item.relaciones.all(), True, "Se elimino la relacion.")
+        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
+        self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
+            fase_dos.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + '%20' + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido a la vista esperada.")
+
+    def test_itemRemoveRelaciones_FAIL2(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="ProyectoX", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        fase_dos = Fase.objects.create(nombre="Fase2", descripcion="Descripcion", estado="abierta")
+        proyecto.fases.add(fase)
+        proyecto.save()
+        proyecto.fases.add(fase_dos)
+        proyecto.save()
+        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="cerrada", creador=user)
+        fase_dos.lineasBase.add(lineaBase)
+        fase_dos.save()
+        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
+        tipo.campo_extra.append("CampoExtra")
+        tipo.campo_extra.append("CampoExtra2")
+        tipo.save()
+        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
+                                   , _history_date=datetime.now(), )
+        item.estado = "en linea base"
+        item.save()
+        item2 = Item.objects.create(tipoItem=tipo, nombre="Item2", fecha="10/10/2010", observacion="Item1Obs",
+                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
+                                    , _history_date=datetime.now(), )
+        item2.estado = "en linea base"
+        item2.save()
+        item3 = Item.objects.create(tipoItem=tipo, nombre="Item3", fecha="10/10/2010", observacion="Item1Obs",
+                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
+                                    , _history_date=datetime.now(), )
+        item3.estado = "en linea base"
+        item3.save()
+        item4 = Item.objects.create(tipoItem=tipo, nombre="Item4", fecha="10/10/2010", observacion="Item1Obs",
+                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
+                                    , _history_date=datetime.now(), )
+        item4.estado = "en linea base"
+        item4.save()
+        fase_dos.items.add(item)
+        fase_dos.save()
+        fase_dos.items.add(item2)
+        fase_dos.save()
+        fase_dos.items.add(item3)
+        fase_dos.save()
+        fase_dos.items.add(item4)
+        fase_dos.save()
+
+        Relacion.objects.create(item_from=item, item_to=item2, tipo="padre", fase_item_to=fase_dos)
+        Relacion.objects.create(item_from=item2, item_to=item, tipo="hijo", fase_item_to=fase_dos)
+        Relacion.objects.create(item_from=item3, item_to=item, tipo="padre", fase_item_to=fase_dos)
+        Relacion.objects.create(item_from=item, item_to=item3, tipo="hijo", fase_item_to=fase_dos)
+
+        self.client.login(username='user', password='user')
+        response = self.client.get(reverse('itemRelacionesRemover', kwargs={'itemid': item.id, 'item_rm': item2.id,
+                                                                            'faseid': fase_dos.id,
+                                                                            'proyectoid': proyecto.id, }))
+
+        item = Item.objects.get(id=item.id)
+        item2 = Item.objects.get(id=item2.id)
+        self.assertEquals(item in item2.relaciones.all(), True, "Se elimino la relacion.")
+        self.assertEquals(item2 in item.relaciones.all(), True, "Se elimino la relacion.")
+        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
+        self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
+            fase_dos.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + '%20' + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido a la vista esperada.")
+
     def test_itemRemoveRelaciones_OK3(self):
         user = User.objects.create(username="user", password="user")
         user.set_password("user")
@@ -61,7 +280,7 @@ class TestViews(TestCase):
         lineaBase.items.add(item3)
         lineaBase.save()
 
-        """Simular mediante relacion"""
+        
         Relacion.objects.create(item_from=item, item_to=item2, tipo="padre", fase_item_to=fase)
         Relacion.objects.create(item_from=item2, item_to=item, tipo="hijo", fase_item_to=fase)
         Relacion.objects.create(item_from=item3, item_to=item, tipo="antecesor", fase_item_to=fase)
@@ -79,7 +298,8 @@ class TestViews(TestCase):
         self.assertEquals(item2 in item.relaciones.all(), False, "No se elimino la relacion.")
         self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
         self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
-            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/', status_code=302, fetch_redirect_response=False,
+            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + '%20' + '/',
+                             status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido a la vista esperada.")
 
     def test_itemRemoveRelaciones_OK(self):
@@ -146,7 +366,8 @@ class TestViews(TestCase):
         self.assertEquals(item2 in item.relaciones.all(), False, "No se elimino la relacion.")
         self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
         self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
-            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/', status_code=302, fetch_redirect_response=False,
+            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + '%20' + '/',
+                             status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido a la vista esperada.")
 
     def test_itemRemoveRelaciones_OK2(self):
@@ -198,7 +419,7 @@ class TestViews(TestCase):
         lineaBase.items.add(item4)
         lineaBase.save()
 
-        """Simular mediante relacion"""
+        
         Relacion.objects.create(item_from=item, item_to=item2, tipo="padre", fase_item_to=fase)
         Relacion.objects.create(item_from=item2, item_to=item, tipo="hijo", fase_item_to=fase)
         Relacion.objects.create(item_from=item3, item_to=item, tipo="padre", fase_item_to=fase)
@@ -216,140 +437,13 @@ class TestViews(TestCase):
         self.assertEquals(item2 in item.relaciones.all(), False, "No se elimino la relacion.")
         self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
         self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
-            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/', status_code=302, fetch_redirect_response=False,
+            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + '%20' + '/',
+                             status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido a la vista esperada.")
 
     
 
-    def test_itemRemoveRelaciones_FAIL1(self):
-        user = User.objects.create(username="user", password="user")
-        user.set_password("user")
-        user.save()
-        proyecto = Proyecto.objects.create(nombre="ProyectoX", descripcion="descripcion", fecha_inicio="10/10/2010",
-                                           fecha_fin="10/12/2010", gerente=user)
-        proyecto.estado = "inicializado"
-        proyecto.save()
-        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
-        proyecto.fases.add(fase)
-        proyecto.save()
-        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="cerrada", creador=user)
-        fase.lineasBase.add(lineaBase)
-        fase.save()
-        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
-        tipo.campo_extra.append("CampoExtra")
-        tipo.campo_extra.append("CampoExtra2")
-        tipo.save()
-        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
-                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , _history_date=datetime.now(), )
-        item.estado = "en linea base"
-        item.save()
-        item2 = Item.objects.create(tipoItem=tipo, nombre="Item2", fecha="10/10/2010", observacion="Item1Obs",
-                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , _history_date=datetime.now(), )
-        item2.estado = "en linea base"
-        item2.save()
-        item3 = Item.objects.create(tipoItem=tipo, nombre="Item3", fecha="10/10/2010", observacion="Item1Obs",
-                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                    , _history_date=datetime.now(), )
-        item3.estado = "en linea base"
-        item3.save()
-        item4 = Item.objects.create(tipoItem=tipo, nombre="Item4", fecha="10/10/2010", observacion="Item1Obs",
-                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                    , _history_date=datetime.now(), )
-        item4.estado = "en linea base"
-        item4.save()
-        fase.items.add(item)
-        fase.save()
-        fase.items.add(item2)
-        fase.save()
-        fase.items.add(item3)
-        fase.save()
-        fase.items.add(item4)
-        fase.save()
-
-        Relacion.objects.create(item_from=item, item_to=item2, tipo="padre", fase_item_to=fase)
-        Relacion.objects.create(item_from=item2, item_to=item, tipo="hijo", fase_item_to=fase)
-        Relacion.objects.create(item_from=item4, item_to=item2, tipo="padre", fase_item_to=fase)
-        Relacion.objects.create(item_from=item2, item_to=item4, tipo="hijo", fase_item_to=fase)
-
-        self.client.login(username='user', password='user')
-        response = self.client.get(reverse('itemRelacionesRemover', kwargs={'itemid': item.id, 'item_rm': item2.id,
-                                                                            'faseid': fase.id, 'proyectoid': proyecto.id, }))
-
-        item = Item.objects.get(id=item.id)
-        item2 = Item.objects.get(id=item2.id)
-        self.assertEquals(item in item2.relaciones.all(), True, "Se elimino la relacion.")
-        self.assertEquals(item2 in item.relaciones.all(), True, "Se elimino la relacion.")
-        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
-        self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
-            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/', status_code=302, fetch_redirect_response=False,
-                             msg_prefix="No se ha redirigido a la vista esperada.")
-
-    def test_itemRemoveRelaciones_FAIL2(self):
-        user = User.objects.create(username="user", password="user")
-        user.set_password("user")
-        user.save()
-        proyecto = Proyecto.objects.create(nombre="ProyectoX", descripcion="descripcion", fecha_inicio="10/10/2010",
-                                           fecha_fin="10/12/2010", gerente=user)
-        proyecto.estado = "inicializado"
-        proyecto.save()
-        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
-        proyecto.fases.add(fase)
-        proyecto.save()
-        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="cerrada", creador=user)
-        fase.lineasBase.add(lineaBase)
-        fase.save()
-        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
-        tipo.campo_extra.append("CampoExtra")
-        tipo.campo_extra.append("CampoExtra2")
-        tipo.save()
-        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
-                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , _history_date=datetime.now(), )
-        item.estado = "en linea base"
-        item.save()
-        item2 = Item.objects.create(tipoItem=tipo, nombre="Item2", fecha="10/10/2010", observacion="Item1Obs",
-                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , _history_date=datetime.now(), )
-        item2.estado = "en linea base"
-        item2.save()
-        item3 = Item.objects.create(tipoItem=tipo, nombre="Item3", fecha="10/10/2010", observacion="Item1Obs",
-                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                    , _history_date=datetime.now(), )
-        item3.estado = "en linea base"
-        item3.save()
-        item4 = Item.objects.create(tipoItem=tipo, nombre="Item4", fecha="10/10/2010", observacion="Item1Obs",
-                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                    , _history_date=datetime.now(), )
-        item4.estado = "en linea base"
-        item4.save()
-        fase.items.add(item)
-        fase.save()
-        fase.items.add(item2)
-        fase.save()
-        fase.items.add(item3)
-        fase.save()
-        fase.items.add(item4)
-        fase.save()
-
-        Relacion.objects.create(item_from=item, item_to=item2, tipo="padre", fase_item_to=fase)
-        Relacion.objects.create(item_from=item2, item_to=item, tipo="hijo", fase_item_to=fase)
-        Relacion.objects.create(item_from=item3, item_to=item, tipo="padre", fase_item_to=fase)
-        Relacion.objects.create(item_from=item, item_to=item3, tipo="hijo", fase_item_to=fase)
-
-        self.client.login(username='user', password='user')
-        response = self.client.get(reverse('itemRelacionesRemover', kwargs={'itemid': item.id, 'item_rm': item2.id,
-                                                                            'faseid': fase.id, 'proyectoid': proyecto.id, }))
-
-        item = Item.objects.get(id=item.id)
-        item2 = Item.objects.get(id=item2.id)
-        self.assertEquals(item in item2.relaciones.all(), True, "Se elimino la relacion.")
-        self.assertEquals(item2 in item.relaciones.all(), True, "Se elimino la relacion.")
-        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
-        self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
-            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/', status_code=302, fetch_redirect_response=False,
-                             msg_prefix="No se ha redirigido a la vista esperada.")
+  
 
     def test_cerrarFase_OK(self):
         user = User.objects.create(username="user", password="user")
@@ -650,9 +744,8 @@ class TestViews(TestCase):
             self.assertEquals(a[cont], doc[cont],
                               "El archivo " + str(cont + 1) + " del item es incorrecto.")
             cont = cont + 1
-
         self.assertEquals(response.status_code, 302, "No se ha redirigido.")
-        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
+        self.assertRedirects(response, '/fase/FaseProyectoInicializado/faseid=' + str(fase.id) +'/proyectoid=' + str(proyecto.id) + '/',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido al url esperado.")
 
@@ -777,57 +870,7 @@ class TestViews(TestCase):
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido a la vista esperada.")
 
-    def test_itemRelacionar_POST_FAIL(self):
-        user = User.objects.create(username="user", password="user")
-        user.set_password("user")
-        user.save()
-        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
-                                           fecha_fin="10/12/2010", gerente=user)
-        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
-        proyecto.fases.add(fase)
-        proyecto.save()
-        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
-        tipo.campo_extra.append("CampoExtra")
-        tipo.campo_extra.append("CampoExtra2")
-        tipo.save()
-        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
-                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ],_history_date=datetime.now(),)
-        item.estado = "aprobado"
-        item.save()
-        item2 = Item.objects.create(tipoItem=tipo, nombre="Item2", fecha="10/10/2010", observacion="Item1Obs",
-                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ],_history_date=datetime.now(),)
-        item2.estado = "aprobado"
-        item2.save()
-        item3 = Item.objects.create(tipoItem=tipo, nombre="Item3", fecha="10/10/2010", observacion="Item1Obs",
-                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ],_history_date=datetime.now(),)
-        item2.estado = "aprobado"
-        item2.save()
-        fase.items.add(item)
-        fase.items.add(item2)
-        fase.items.add(item3)
-        fase.save()
-        assign_perm("relacionar_item", user, fase)
 
-        Relacion.objects.create(tipo="padre", item_from=item, item_to=item2,
-                                fase_item_to=fase)
-        Relacion.objects.create(tipo="padre", item_from=item2, item_to=item3,
-                                fase_item_to=fase)
-
-        self.client.login(username='user', password='user')
-        response = self.client.post('/item/addRelacion/', {'itemIdActual': item.id, 'itemIdRelacion': item3.id,
-                                                           'siguiente': 'no',
-                                                           'proyectoid': proyecto.id,
-                                                           'faseid': fase.id, 'itemid': item.id, })
-
-        item = Item.objects.get(id=item.id)
-        item3 = Item.objects.get(id=item3.id)
-        self.assertEquals(item3 in item.relaciones.all(), False, "Se ha establecido la relacion en item origen.")
-        self.assertEquals(item in item3.relaciones.all(), False, "Se ha establecido la relacion en item destino.")
-        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
-        self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
-            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/',
-                             status_code=302, fetch_redirect_response=False,
-                             msg_prefix="No se ha redirigido a la vista esperada.")
 
 
 
@@ -885,32 +928,7 @@ class TestViews(TestCase):
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido a la vista esperada.")
 
-    def test_itemRelacionar_GET_FAIL2(self):
-        user = User.objects.create(username="user", password="user")
-        user.set_password("user")
-        user.save()
-        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
-                                           fecha_fin="10/12/2010", gerente=user)
-        proyecto.estado = "inicializado"
-        proyecto.save()
-        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
-        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
-        tipo.campo_extra.append("CampoExtra")
-        tipo.campo_extra.append("CampoExtra2")
-        tipo.save()
-        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
-                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ],_history_date=datetime.now(),)
-        item.estado = "en desarrollo"
-        item.save()
-        assign_perm("relacionar_item", user, fase)
 
-        self.client.login(username='user', password='user')
-        response = self.client.get('/item/addRelacion/', {'proyectoid': proyecto.id, 'faseid': fase.id, 'itemid': item.id, })
-
-        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna.")
-        self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/',
-                             status_code=302, fetch_redirect_response=False,
-                             msg_prefix="No se ha redirigido a la vista esperada.")
 
 
     def test_itemRelacionar_POST_OK(self):
@@ -950,7 +968,8 @@ class TestViews(TestCase):
         self.assertEquals(item2 in item.relaciones.all(), True, "No se ha establecido la relacion en item origen.")
         self.assertEquals(item in item2.relaciones.all(), True, "No se ha establecido la relacion en item destino.")
         self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
-        self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/',
+        self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
+            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + '%20' + '/',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido a la vista esperada.")
 
@@ -1743,7 +1762,7 @@ class TestViews(TestCase):
         self.assertEquals(fase.items.all().filter(id=item.id).exists(), True, "El item no existe en la fase.")
 
         self.assertEquals(response.status_code, 302, "No se ha redirigido.")
-        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
+        self.assertRedirects(response, '/fase/FaseProyectoInicializado/faseid=' + str(fase.id) +'/proyectoid=' + str(proyecto.id) + '/',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido al url esperado.")
 

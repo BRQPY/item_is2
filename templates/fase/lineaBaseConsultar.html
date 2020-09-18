@@ -2,14 +2,14 @@
 {% load static %}
 
 {% block content %}
-    <form action="/fase/FaseIniciada/config/">
-        <button type="submit" class="waves-effect waves-teal btn-flat">
-            Volver a la configuración de la fase {{ fase.nombre }}
-            <i class="material-icons dark blue-text left">keyboard_return</i>
-        </button>
-        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-        <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-    </form>
+    <form action="/fase/gestionLineaBase/">
+            <button type="submit" class="waves-effect waves-teal btn-flat">
+                Volver a la Gestión de Lineas Base
+                <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+        </form>
     <div class="container">
         <h2 style="text-align: center">{{ lineaBase.nombre }}</h2>
         <div class="card-panel z-depth-4 expense">

@@ -1359,7 +1359,7 @@ def itemDeshabilitar(request):
     return redirect('proyectoView', id=proyectoid)
 
 
-def itemVerRelaciones(request, itemid, faseid, proyectoid):
+def itemVerRelaciones(request, itemid, faseid, proyectoid, mensaje):
     if request.method == 'GET':
 
         proyecto = Proyecto.objects.get(id=proyectoid)
@@ -1451,7 +1451,7 @@ def itemVerRelaciones(request, itemid, faseid, proyectoid):
                                                              'faseAnterior': anterior,
                                                              'faseSiguiente': siguiente, 'varias_fases': varias_fases,
                                                              'puede_relacionarse': puede_relacionarse,
-                                                             'habilitar_Add_relacion': habilitar_Add_relacion})
+                                                             'habilitar_Add_relacion': habilitar_Add_relacion, 'mensaje':mensaje})
 
 
 
@@ -1558,10 +1558,10 @@ def itemRelacionesRemover(request,itemid,item_rm, faseid, proyectoid):
             """Eliminar relacion objeto."""
             relaciones_dos.delete()
             """Redirigir a la vista itemVerRelaciones."""
-            return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid)
+            return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid, mensaje=' ')
 
         """Redirigir a la vista itemVerRelaciones sin romper la relacion."""
-        return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid)
+        return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid, mensaje=' ')
 
 
 def itemAddRelacion(request):
@@ -1592,7 +1592,7 @@ def itemAddRelacion(request):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
         if item.estado != "aprobado" and item.estado != "en linea base":
-            return redirect('itemVerRelaciones', itemid=itemid, faseid=faseid, proyectoid=proyectoid)
+            return redirect('itemVerRelaciones', itemid=itemid, faseid=faseid, proyectoid=proyectoid, mensaje=' ')
 
         "Todos los id de las relaciones del item."
         relaciones = item.relaciones.all()
@@ -1718,9 +1718,11 @@ def itemAddRelacion(request):
             relaciones_uno.delete()
             relaciones_dos = Relacion.objects.get(item_from=itemRelacion, item_to=itemActual)
             relaciones_dos.delete(),
-            return redirect('itemVerRelaciones', itemid=itemIdActual, faseid=faseid, proyectoid=proyectoid)
+            return redirect('itemVerRelaciones', itemid=itemIdActual, faseid=faseid, proyectoid=proyectoid,
+                            mensaje="Error! No se puede relacionar porque genera un ciclo.")
         """SINO MANTENER RELACIONES Y REDIRIGIR A LA VISTA DE RELACIONES."""
-        return redirect('itemVerRelaciones', itemid=itemActual.id, faseid=faseid, proyectoid=proyectoid)
+        return redirect('itemVerRelaciones', itemid=itemActual.id, faseid=faseid, proyectoid=proyectoid,
+                        mensaje=' ')
 
 """Funcion para agregar Edge"""
 def addEdge(adj: dict, u, v):
@@ -2140,7 +2142,7 @@ def itemHistorial(request):
         fase = Fase.objects.get(id=faseid)
         "Creacion de una lista con los historiales de cambios del item"
         lista_historial = []
-        lista_historial = item.history.all().order_by('id')
+        lista_historial = item.history.all()
         lista_historial = list(lista_historial)
         lista_historial.pop()
         prueba = {}
@@ -2148,7 +2150,6 @@ def itemHistorial(request):
         p2 = zip(item.tipoItem.campo_extra, item.campo_extra_valores)
         for p, k in p2:
             prueba[p] = k
-
         return render(request, 'item/historialitem.html',
                       {'faseid': faseid, 'proyectoid': proyectoid,
                        'item': item, 'lista': lista_historial,

@@ -932,7 +932,18 @@ def proyectoRolCrear(request):
                 """Permiso Proyecto ID=18 corresponde a Solicitar Rotura de Linea Base"""
                 permiso = Permission.objects.get(codename="solicitar_roturaLineaBase")
                 grupo.permissions.add(permiso)
-
+            elif int(p) == 19:
+                """Permiso Proyecto ID=19 corresponde a Cerrar Fase"""
+                permiso = Permission.objects.get(codename="cerrar_fase")
+                grupo.permissions.add(permiso)
+            elif int(p) == 20:
+                """Permiso Proyecto ID=19 corresponde a Modificar Linea Base"""
+                permiso = Permission.objects.get(codename="modify_lineaBase")
+                grupo.permissions.add(permiso)
+            elif int(p) == 21:
+                """Permiso Proyecto ID=19 corresponde a Ver Linea Base"""
+                permiso = Permission.objects.get(codename="ver_lineaBase")
+                grupo.permissions.add(permiso)
             if 5 < int(p) < 16:
                 """Garantizar la presencia del permiso Ver Item"""
                 permiso = Permission.objects.get(codename="ver_item")
