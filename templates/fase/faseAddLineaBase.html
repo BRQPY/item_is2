@@ -2,9 +2,9 @@
 {% load static %}
 
 {% block content %}
-    <form action="/fase/FaseIniciada/config/">
+    <form action="/fase/gestionLineaBase/">
         <button type="submit" class="waves-effect waves-teal btn-flat">
-            Volver a la configuración de la fase {{ fase.nombre }}
+            Volver a la Gestión de Lineas Base
             <i class="material-icons dark blue-text left">keyboard_return</i>
         </button>
         <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
