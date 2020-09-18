@@ -96,6 +96,7 @@ def faseCrear(request):
         descripcion = request.POST.get('descripcion')
         """Creacion de la fase con los datos proveidos por el usuario."""
         fase = Fase.objects.create(nombre=nombre, descripcion=descripcion, estado="abierta" )
+
         """Agregar la fase creada al proyecto correspondiente."""
         proyecto.fases.add(fase)
         """Guardar"""
@@ -207,7 +208,6 @@ def faseModificar(request):
     if request.method == 'GET':
         """ID del proyecto"""
         proyectoid = request.GET.get('proyectoid')
-        print(proyectoid)
         """Proyecto en el cual se encuentra la fase."""
         proyecto = Proyecto.objects.get(id=proyectoid)
         """ID de la fase correspondiente"""
@@ -227,10 +227,9 @@ def faseModificar(request):
              no accede al formulario de modificacion de fase 
              y redirige a gestion de Fase.
              """
-            return render(request, 'fase/gestionFase.html', {'proyectoid': proyectoid, 'faseid': faseid,
+            return render(request, 'home.html', {'proyectoid': proyectoid, 'faseid': faseid,
                                                              'mensaje': "No se puede modificar la fase, el proyecto"
                                                                         " no se encuentra en estado pendiente."})
-        print(fase.estado)
         if fase.estado == "deshabilitada":
             return redirect('proyectoFase', id=proyectoid)
         """Template a renderizar: faseModificar con parametro -> fase, proyectoid"""
@@ -311,7 +310,7 @@ def faseDeshabilitar(request):
         no accede al formulario de modificacion de fase y 
         redirige a gestion de Fase.
         """
-        return render(request, 'fase/gestionFase.html', {'proyectoid': proyectoid, 'faseid': faseid,
+        return render(request, 'home.html', {'proyectoid': proyectoid, 'faseid': faseid,
                                                          'mensaje': "No se puede deshabilitar la fase,"
                                                                     " el proyecto no se encuentra en estado pendiente."})
 
@@ -1311,7 +1310,7 @@ def itemDeshabilitar(request):
         vuelve a gestion de item mostrando un mensaje de error.
         Template a renderizar gestionItem.html con parametros -> proyectoid, faseid, itemid y mensaje de error.
         """
-        return render(request, 'item/gestionItem.html',
+        return render(request, 'home.html',
                       {'proyectoid': proyectoid, 'faseid': faseid, 'itemid': itemid, 'mensaje': mensaje, })
 
     """VERIFICAR SI ES POSIBLE DESHABILITAR EL ITEM TENIENDO EN CUENTA SUS RELACIONES."""
@@ -1531,10 +1530,9 @@ def itemRelacionesRemover(request,itemid,item_rm, faseid, proyectoid):
                 """Si el estado de la linea base es cerrada."""
                 if lineaBaseItem.estado == "cerrada":
                     """Setear bandera en true."""
-                    ok_remover_final = True
+                    ok_remover_inicio = True
                     """Romper ciclo."""
                     break
-
         """Si ambas banderas son true, se rompe la relacion."""
         if ok_remover_inicio and ok_remover_final:
             """Obtener relacion objeto."""
@@ -2213,16 +2211,13 @@ def cerrarFase(request, proyectoid, faseid):
         proyecto = Proyecto.objects.get(id=proyectoid)
 
         cerrar = True
-
         if not (request.user.has_perm("cerrar_fase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
         """Se obtinen los items que no se encuentren en estado deshabilitado"""
         itemsFase = fase.items.exclude(estado="deshabilitado")
-
         for i in itemsFase:
             if i.estado == "en linea base":
-
                 lineaBaseItem = LineaBase.objects.exclude(estado="rota").get(items__id=i.id)
                 if lineaBaseItem.estado != "cerrada":
                     cerrar = False
@@ -2230,6 +2225,7 @@ def cerrarFase(request, proyectoid, faseid):
             else:
                 cerrar = False
                 break
+
         """Para aprobar el item es necesario identificar que tenga alguna relacion con un antecesor
                     que se encuentre en una linea base cerrada, o bien con un padre(o hijo) que este aprobado."""
         fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
