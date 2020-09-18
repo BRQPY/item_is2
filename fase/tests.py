@@ -749,46 +749,6 @@ class TestViews(TestCase):
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido al url esperado.")
 
-    def test_itemReversionar_GET_OK(self):
-        user = User.objects.create(username="user", password="user")
-        user.set_password("user")
-        user.save()
-        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
-                                           fecha_fin="10/12/2010", gerente=user)
-        proyecto.estado = "inicializado"
-        proyecto.save()
-        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
-        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
-        tipo.campo_extra.append("CampoExtra")
-        tipo.campo_extra.append("CampoExtra2")
-        tipo.save()
-        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
-                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , _history_date=datetime.now(), )
-        item.estado = "en desarrollo"
-        item.save()
-        item.nombre = "Item2"
-        item._history_date = datetime.now()
-        item.save()
-        fecha = datetime.now()
-        for h in item.history.all():
-            if h.nombre == "Item1" and h.estado == "en desarrollo":
-                fecha = h.history_date
-
-
-        assign_perm("reversionar_item", user, fase)
-
-        self.client.login(username='user', password='user')
-        response = self.client.get(reverse('itemRev', kwargs={'proyectoid': proyecto.id, 'faseid': fase.id,
-                                                                      'itemid': item.id, 'history_date': fecha, }))
-
-        item = Item.objects.get(id=item.id)
-        self.assertEquals("Item1", item.nombre, "No se reversiono el item.")
-        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
-        self.assertRedirects(response, '/item/configurar/itemid=' + str(item.id) + '/' + 'faseid=' + str(
-            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/',
-                             status_code=302, fetch_redirect_response=False,
-                             msg_prefix="No se ha redirigido a la vista esperada.")
 
     def test_itemReversionar_GET_FAIL1(self):
         user = User.objects.create(username="user", password="user")
