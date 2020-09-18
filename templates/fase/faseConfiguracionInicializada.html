@@ -33,6 +33,14 @@
             </button>
             <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
             <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+        </form><br><br><br>
+        <form action="{%url 'cerrarFaseView' proyecto.id fase.id  %}"
+              onsubmit="return confirm('Está seguro de cerrar la fase?');"
+        >
+            <button type="submit" class="btn red darken-2 left">
+                Cerrar Fase
+                <i class="material-icons white-text left">lock</i>
+            </button>
         </form>
 
 
@@ -40,8 +48,5 @@
 
                  <i class="material-icons dark blue-text right">autorenew</i>
              </a>
-
-
-            <h1>{{ proyecto.id }}</h1>
     </div>
 {% endblock%}

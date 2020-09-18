@@ -2,105 +2,136 @@
 {% load static %}
 
 {% block content %}
-<style>
-.accordion {
-  background-color: #F2F2F2;
-  color: 	#000000;
-  cursor: pointer;
-  padding: 18px;
-  width: 100%;
-  border: none;
-  text-align: left;
-  outline: none;
-  font-size: 18px;
-  transition: 0.1s;
-}
-.accordion:focus{
-    outline: none;
-    background-color: #F2F2F2;
-}
-.accordion:hover {
-  background-color: #E5E5E5;
-}
+    <style>
+    .accordion {
+      background-color: #F2F2F2;
+      color: 	#000000;
+      cursor: pointer;
+      padding: 18px;
+      width: 100%;
+      border: none;
+      text-align: left;
+      outline: none;
+      font-size: 18px;
+      transition: 0.1s;
+    }
+    .accordion:focus{
+        outline: none;
+        background-color: #F2F2F2;
+    }
+    .accordion:hover {
+      background-color: #E5E5E5;
+    }
 
-.accordion:after {
-  content: '\002B';
-  color: #5AB9EA;
-  font-weight: bold;
-  float: right;
-  margin-left: 5px;
-}
+    .accordion:after {
+      content: '\002B';
+      color: #5AB9EA;
+      font-weight: bold;
+      float: right;
+      margin-left: 5px;
+    }
 
-.active:after {
-  content: "\2212";
-}
+    .active:after {
+      content: "\2212";
+    }
 
-.panel {
-  padding: 0 18px;
-  background-color: white;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.2s ease-out;
-}
+    .panel {
+      padding: 0 18px;
+      background-color: white;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.2s ease-out;
+    }
 
-var counter = 0;
-</style>
+    var counter = 0;
+    </style>
     <form action="/fase/FaseProyectoInicializado/faseid={{ faseid  }}/proyectoid={{ proyectoid }}/">
         <button type="submit" class="waves-effect waves-teal btn-flat">
             Volver a la vista general de items
             <i class="material-icons dark blue-text left">keyboard_return</i>
         </button>
     </form>
-
-   <div class="container">
+    <div class="container">
         <h3 style="text-align: center">{{ item.nombre }}</h3>
         <h5 style="text-align: center" class="grey-text">Historial del item</h5>
         <h8 style="text-align: left" class="grey-text">Haga click en el ícono + para desplegar la informacion sobre la version del item .</h8>
-
-
-       {% for i in lista %}
-
-                <button class="accordion" >
+        {% for i in lista %}
+            <button class="accordion" >
+                <h8>
                     Version {{ i.version }}
-                    <i class="material-icons blue-text left"></i>
-                </button>
-                <div class="panel">
-                    <section class="DescripcionProyecto">
-
-                   <p style="font-size:18px; padding-left: 50px">
-                      <div class="col s12 md6 xl3">
-                        <div class="card-panel">
-                            <b>Nombre:</b>  {{ i.nombre }}<br>
-                            <b>Estado:</b>   {{i.estado}}<br>
-                            <b>Costo:</b>   {{ i.costo }}<br>
-                            <b>Observacion:</b>   {{ i.observacion }}<br>
-                            <b>Fecha:</b>   {{ i.fecha }}<br>
-
-                                {%for key, value in campos.items %}
-                                        <b>{{key}}:</b>
-                                            {{value}}
-                                    <p> </p>
-                                {%endfor%}<br>
-
-
-                            <b>Fecha de Modificacion:</b>   {{ i.history_date}}<br>
-                            <b>Archivos</b>
-                            <div>
-                                {% for a in i.archivos %}
-                                    {{ a }}
-                                {% endfor %}
+                    ({{ i.history_date}})
+                    <i class="material-icons blue-text left">update</i>
+                </h8>
+                <i class="material-icons blue-text left"></i>
+            </button>
+            <div class="panel">
+                <section class="DescripcionProyecto">
+                    <p style="font-size:18px; padding-left: 50px">
+                        <div class="col s12 md6 xl3">
+                            <div class="card-panel">
+                                <div class="row">
+                                    <div class="col l4 left">
+                                        <b>Nombre:</b>  {{ i.nombre }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col l4 left">
+                                        <b>Observacion:</b>   {{ i.observacion }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col l4 left">
+                                        <b>Estado:</b> {{i.estado}}
+                                    </div>
+                                    <div class="col l4 left">
+                                        <b>Costo:</b>  {{ i.costo }}h
+                                    </div>
+                                    <div class="col l4 left">
+                                        <b>Fecha:</b>  {{ i.fecha }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    {%for key, value in campos.items %}
+                                            <div class="col l4 left">
+                                                <b>{{key}}:</b>  {{value}}
+                                            </div>
+                                    {%endfor%}
+                                </div>
+                                <div class="row">
+                                    <div class="col l4 left">
+                                        <b>Archivos cargados dentro del ítem:</b>
+                                    </div>
+                                </div>
+                                {% if i.archivos %}
+                                    {% for a in i.archivos %}
+                                        <div class="row">
+                                            <div class="col l4 left">
+                                                <i class="material-icons dark black-text left">insert_drive_file</i>
+                                                {{ a }}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <h8>El ítem no cuenta con archivos.</h8>
+                                {% endif %}
                             </div>
                         </div>
-                        <a href="{%url 'itemRev'  proyectoid faseid i.id i.history_date %}">
-                            <i class="material-icons dark blue-text right">autorenew</i>
-                        </a>
-                       </div>
-                   </p>
-
-                     <br><br>
-               </section>
-                 </div>
-
+                        {% if item.estado == "en desarrollo" %}
+                            <form action="{%url 'itemRev'  proyectoid faseid i.id i.history_date %}"
+                                  onsubmit="return confirm('Está seguro de volver a esta versión del ítem?');"
+                            >
+                                <button
+                                        type="submit" class="btn btn-small blue darken-5 right"
+                                        title="Volver a ésta versión del ítem"
+                                >
+                                    Reversionar
+                                    <i class="material-icons white-text left">autorenew</i>
+                                </button><br>
+                            </form>
+                        {% endif %}
+                    </p>
+                </section>
+            </div>
        {% endfor %}
    </div>
 

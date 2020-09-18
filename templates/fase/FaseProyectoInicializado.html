@@ -14,42 +14,39 @@
             Fase: {{ fase.nombre }}
         </h5>
         {% if  fase.estado != "cerrada" %}
-            <a href="{%url 'faseConfinicializada' proyecto.id fase.id  %}">
-
-                 <i class="material-icons dark blue-text right">autorenew</i>
-             </a>
+            <form action="{%url 'faseConfinicializada' proyecto.id fase.id  %}" >
+                <button type="submit" class="btn btn-small blue darken-3 right">
+                    Configurar Fase
+                    <i class="material-icons white-text left">settings</i>
+                </button>
+            </form>
         {% endif %}
 
     </div>
     <div class="container">
          <br><h5>Lísta de Ítems</h5>
-<<<<<<< HEAD
-        {% if tipos %}
-=======
+
         {% if  fase.estado != "cerrada" %}
->>>>>>> 959e7f9829db1960a83be116943d7be16792d35a
-            <form action="/item/itemCrear/">
-                <button type="submit" class="btn btn-small blue darken-3 right">
+            {% if tipos %}
+                <form action="/item/itemCrear/">
+                    <button type="submit" class="btn btn-small blue darken-3 right">
+                        Crear nuevo ítem
+                        <i class="material-icons white-text left">add_circle</i>
+                    </button>
+                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                    <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                </form>
+            {% else %}
+                <button
+                    title="La fase no cuenta con Tipos de ítems. Ve a la Configuración de Fase para agregarlos y poder crear ítems."
+                    style="cursor: default"
+                    class="btn btn-small #eeeeee grey lighten-3 black-text right"
+                >
                     Crear nuevo ítem
                     <i class="material-icons white-text left">add_circle</i>
-                </button>
-                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-            </form>
-<<<<<<< HEAD
-        {% else %}
-            <button
-                title="La fase no cuenta con Tipos de ítems. Ve a la Configuración de Fase para agregarlos y poder crear ítems."
-                style="cursor: default"
-                class="btn btn-small #eeeeee grey lighten-3 black-text right"
-            >
-                Crear nuevo ítem
-                <i class="material-icons white-text left">add_circle</i>
-            </button><br>
+                </button><br>
+            {% endif %}
         {% endif %}
-=======
-       {% endif %}
->>>>>>> 959e7f9829db1960a83be116943d7be16792d35a
     </div><br>
     <div class="container">
         <section class="section section-expenses">
@@ -63,14 +60,16 @@
                                 <div class="col l4 left">
                                     <b>{{ i.nombre }}</b>
                                 </div>
-                                <div class="col l4 right">
-                                    <a href="{%url 'itemConfigurar' i.id fase.id proyecto.id%}"
-                                       title="Ver y/o modificar datos del ítem, relacionar, reversionar."
-                                    >
-                                        Gestionar Ítem
-                                        <i class="material-icons dark blue-text left">settings</i>
-                                    </a>
-                                </div>
+                                {% if  fase.estado != "cerrada" %}
+                                    <div class="col l4 right">
+                                        <a href="{%url 'itemConfigurar' i.id fase.id proyecto.id%}"
+                                           title="Ver y/o modificar datos del ítem, relacionar, reversionar."
+                                        >
+                                            Gestionar Ítem
+                                            <i class="material-icons dark blue-text left">settings</i>
+                                        </a>
+                                    </div>
+                                {% endif %}
                             </div>
                             <div class="row">
                                 <div class="col 1">

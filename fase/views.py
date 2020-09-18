@@ -95,8 +95,7 @@ def faseCrear(request):
         """Descripcion de la Fase"""
         descripcion = request.POST.get('descripcion')
         """Creacion de la fase con los datos proveidos por el usuario."""
-        fase = Fase.objects.create(nombre=nombre, descripcion=descripcion, estado="abierta",
-                                   _history_date=datetime.now(), )
+        fase = Fase.objects.create(nombre=nombre, descripcion=descripcion, estado="abierta" )
         """Agregar la fase creada al proyecto correspondiente."""
         proyecto.fases.add(fase)
         """Guardar"""
@@ -1003,15 +1002,16 @@ def itemModificar(request):
         Verificar que el estado del item se 
         encuentre en desarrollo, permitiendo modificaciones.
         """
-        if item.estado == "pendiente de aprobacion" or item.estado == "aprobado" or item.estado == "en linea base":
-            mensaje = "El estado actual del item no permite la modificacion del mismo."
-            """
-            En caso contrario, no permite la modificacion del item y 
-            vuelve a gestion de Item con mensaje de error.
-            Template a renderizar: gestionItem.html con 
-            parametros -> proyectoid, faseid, itemid y mensaje de error.
-            """
-            return redirect('proyectoView', id=proyectoid)
+
+        #if item.estado == "pendiente de aprobacion" or item.estado == "aprobado" or item.estado == "en linea base":
+            #mensaje = "El estado actual del item no permite la modificacion del mismo."
+        """
+        En caso contrario, no permite la modificacion del item y 
+        vuelve a gestion de Item con mensaje de error.
+        Template a renderizar: gestionItem.html con 
+        parametros -> proyectoid, faseid, itemid y mensaje de error.
+        """
+            #return redirect('proyectoView', id=proyectoid)
 
         """
         Template a renderizar: itemModificar 
@@ -1019,7 +1019,10 @@ def itemModificar(request):
         """
         return render(request, 'item/itemModificar.html',
                       {'faseid': faseid, 'proyectoid': proyectoid, 'item': item,
-                       'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores)})
+                       'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
+                       'archivos': list(item.archivos),'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
+                       'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
+                       'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ], })
 
     """POST request, captura la informacion para actualizar los datos del item"""
     """Captura toda la informacion proveida por el usuario."""
@@ -1260,7 +1263,7 @@ def itemCambiarEstado(request):
     permiso para establecer item como parobado, choices
     con los distintos estados del item y el mensaje correspondiente.
     """
-    return render(request, 'item/item.html',
+    return render(request, 'item/itemModificar.html',
                   {'faseid': dato['faseid'], 'proyectoid': dato['proyectoid'], 'item': item,
                    'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
                    'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
@@ -1616,7 +1619,8 @@ def itemAddRelacion(request):
                         actual = True
 
                 """Si fase siguiente no es None."""
-                if siguiente is not None: """Obtener items fase siguiente"""
+                if siguiente is not None:
+                    """Obtener items fase siguiente"""
                     itemsFaseSiguiente = siguiente.items.exclude(Q(estado="deshabilitado") | Q(id__in=relaciones)).order_by('id')
             else:
                 """SI linea base no esta cerrada no cargar items de la fase siguiente."""
@@ -1658,6 +1662,7 @@ def itemAddRelacion(request):
         for fp in fasesProyecto:
             """Obtener items de fase."""
             items = fp.items.all()
+            print(items)
             """Recorrer items."""
             for i in items:
                 """Si el item corresponde al item_to"""
@@ -1702,7 +1707,6 @@ def itemAddRelacion(request):
             relaciones_uno.delete()
             relaciones_dos = Relacion.objects.get(item_from=itemRelacion, item_to=itemActual)
             relaciones_dos.delete(),
-
             return redirect('itemVerRelaciones', itemid=itemIdActual, faseid=faseid, proyectoid=proyectoid)
         """SINO MANTENER RELACIONES Y REDIRIGIR A LA VISTA DE RELACIONES."""
         return redirect('itemVerRelaciones', itemid=itemActual.id, faseid=faseid, proyectoid=proyectoid)
@@ -2175,9 +2179,9 @@ def itemReversionar(request, proyectoid, faseid, itemid, history_date):
             "Asigna el numero de version al item reversionado"
             item.version = num.version + 1
             item.save()
-            return redirect('itemView', faseid=faseid, proyectoid=proyectoid, itemid=itemid)
+            return redirect('itemConfigurar',itemid=itemid, faseid=faseid, proyectoid=proyectoid )
         else:
-            return redirect('itemView', faseid=faseid, proyectoid=proyectoid, itemid=itemid)
+            return redirect('itemConfigurar',itemid=itemid, faseid=faseid, proyectoid=proyectoid )
 
 
 def downloadFile(request, filename, itemid, faseid, proyectoid):

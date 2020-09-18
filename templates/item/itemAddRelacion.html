@@ -2,9 +2,20 @@
 {% load static %}
 
 {% block content %}
+    <style>
+        .hide {
+          display: none;
+        }
+    </style>
+    <form action="/item/relaciones/ver/itemid={{ item.id }}/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/">
+        <button type="submit" class="waves-effect waves-teal btn-flat">
+            Volver a la vista de relaciones del item
+            <i class="material-icons dark blue-text left">keyboard_return</i>
+        </button>
+    </form>
     <div class="container">
         <h4 style="text-align: center">Establecer relaciones para el item {{ item.nombre }}</h4>
-        <h5 style="text-align: left">Seleccione los items a relacionar</h5>
+        <h6 style="text-align: left">Seleccione los items a relacionar</h6>
         <form action="/item/addRelacion/" method="post">
             {% csrf_token %}
             <div class="form-check">
@@ -13,7 +24,7 @@
                 {% if itemsFaseActual %}
                     {% for i in itemsFaseActual %}
                         <label>
-                            <input  type="radio" class="filled-in"  value={{i.id}} id="username" name="itemIdRelacion"/>
+                            <input  type="radio" class="filled-in"  value={{i.id}} id="username" name="itemIdRelacion" onclick="myFunction()"/>
                              <span style="color:black">{{i.nombre}}</span>
                         </label>
                     {% endfor %}
@@ -26,7 +37,7 @@
                      {% if itemsFaseSiguiente %}
                         {% for i in itemsFaseSiguiente %}
                             <label>
-                                <input  type="radio" class="filled-in"  value={{i.id}} id="username" name="itemIdRelacion"/>
+                                <input  type="radio" class="filled-in"  value={{i.id}} id="username" name="itemIdRelacion" onclick="myFunction()"/>
                                 <span style="color:black">{{i.nombre}}</span>
                             </label>
                         {% endfor %}
@@ -44,12 +55,22 @@
                 <input  type="hidden" value={{"no"}} id="faseSiguiente" name="siguiente">
             {% endif %}
 
-
-            <button type="submit" class="btn-small blue darken-2 right">
+            <p id="text" style="display:none">
+            <button type="submit" name="submit_prog" class="btn-small blue darken-2 right">
                 Añadir relacion
                 <i class="material-icons white-text left">add_circle</i>
-            </button>
+            </button></p>
         </form>
     </div>
-
+    <script>
+    function myFunction() {
+      var checkBox = document.getElementById("username");
+      var text = document.getElementById("text");
+      if (checkBox.checked == true){
+        text.style.display = "block";
+      } else {
+         text.style.display = "none";
+      }
+    }
+    </script>
 {% endblock%}

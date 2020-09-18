@@ -36,15 +36,26 @@
                 </div>
                 <div style="position: absolute; right: 0; top: 0; text-align: left">
                     {% if proyecto.estado != "cancelado" %}
-                        <form action="/item/modify/">
-                            <button type="submit" class="btn-small blue darken-2 right">
+                        {% if item.estado == "en linea base" %}
+                            <button
+                                title="El ítem no puede modificarse porque forma parte de una Línea Base."
+                                style="cursor: default"
+                                class="btn btn-small #eeeeee grey lighten-3 black-text right"
+                            >
                                 Modificar datos y estado del Ítem
-                               <i class="material-icons white-text left">edit</i>
-                            </button>
-                            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-                            <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
-                        </form>
+                                <i class="material-icons white-text left">add_circle</i>
+                            </button><br>
+                        {% else %}
+                            <form action="/item/modify/">
+                                <button type="submit" class="btn-small blue darken-2 right">
+                                    Modificar datos y estado del Ítem
+                                   <i class="material-icons white-text left">edit</i>
+                                </button>
+                                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                                <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+                            </form>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div><br>
