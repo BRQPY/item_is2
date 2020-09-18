@@ -109,7 +109,7 @@ urlpatterns = [
          viewsFase.FaseRemoveUser, name="faseRemoverUser"),
     path('fase/FaseProyectoInicializado/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',
          viewsFase.faseVerProyectoInicializado, name="faseViewInicializado"),
-    path('fase/FaseIniciada/config/', viewsFase.FaseConfigInicializada),
+    path('fase/FaseIniciada/config/proyectoid=<str:proyectoid>/faseid=<str:faseid>/', viewsFase.FaseConfigInicializada, name="faseConfinicializada"),
     path('fase/addUser/', viewsFase.FaseAddUser),
     path('fase/gestionTipoItem/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', viewsFase.FaseGestionTipoItem,
          name="faseTipoItem"),
@@ -138,4 +138,5 @@ urlpatterns = [
     path('item/relaciones/ver/itemid=<str:itemid>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', viewsFase.itemVerRelaciones, name="itemVerRelaciones"),
     path('item/relaciones/remover/itemid=<str:itemid>/item_rm=<str:item_rm>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',viewsFase.itemRelacionesRemover, name="itemRelacionesRemover"),
     path('item/downloadFile/filename=<str:filename>/', viewsFase.downloadFile, name="download"),
+    path('fase/cerrarFase/proyectoid=<str:proyectoid>/faseid=<str:faseid>/',viewsFase.cerrarFase, name="cerrarFaseView"),
     ]

@@ -9,6 +9,10 @@ from datetime import datetime
 
 from django.db.models import Q
 from collections import deque
+from django.conf import settings
+from django.contrib import messages
+from django.template.loader import get_template
+from django.core.mail import  EmailMultiAlternatives
 
 
 def gestionFase(request):
@@ -327,12 +331,13 @@ def faseDeshabilitar(request):
                                                                                      reverse=False), })
 
 
-def FaseConfigInicializada(request):
+def FaseConfigInicializada(request, proyectoid, faseid):
     """Fase a visualizar."""
-    faseid = request.GET.get('faseid')
-    proyectoid = request.GET.get('proyectoid')
+
+
     """Proyecto en el cual crear la fase."""
     proyecto = Proyecto.objects.get(id=proyectoid)
+
     fase = Fase.objects.get(id=faseid)
     """Verificar permiso necesario en el proyecto correspondiente"""
     if not (request.user.has_perm("view_fase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
@@ -1135,6 +1140,14 @@ def itemCambiarEstado(request):
                 """Al no contar con los permisos, niega el acceso, redirigiendo."""
                 return redirect('/permissionError/')
 
+            "Envio de correo a los usuarios que cuentan con el permiso de aprobar item"
+            fuser= FaseUser.objects.filter(fase=fase)
+            for u in fuser:
+                if u.user.has_perm("aprove_item",fase):
+                    mail= u.user.email
+                    name= u.user.username
+                    sendEmailView(mail,name,item.nombre,fase.nombre)
+
         """Si el nuevo estado es en desarrollo."""
         if dato['estado'] == "en desarrollo":
             """Verificar que el usuario cuente con los permisos para asignar ese estado."""
@@ -1682,6 +1695,7 @@ def faseAddLineaBase(request):
         for i in items:
             item = Item.objects.get(id=i)
             item.estado = "en linea base"
+            item._history_date=datetime.now()
             item.save()
             lineaBase.items.add(item)
 
@@ -1748,7 +1762,7 @@ def lineaBaseAddItem(request):
         proyecto = Proyecto.objects.get(id=proyectoid)
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
         if not (request.user.has_perm("modify_lineaBase", fase)) and not (
-        request.user.has_perm("is_gerente", proyecto)):
+                request.user.has_perm("is_gerente", proyecto)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
 
@@ -1838,17 +1852,16 @@ def itemHistorial(request):
         itemid = request.GET.get('itemid')
         item = Item.objects.get(id=itemid)
         fase = Fase.objects.get(id=faseid)
+        "Creacion de una lista con los historiales de cambios del item"
         lista_historial = []
         lista_historial = item.history.all().order_by('id')
         lista_historial = list(lista_historial)
         lista_historial.pop()
-        prueba={}
-        p2=zip(item.tipoItem.campo_extra,item.campo_extra_valores)
-        for p,k in p2:
-            prueba[p]=k
-
-
-
+        prueba = {}
+        "Obtiene los campos extras del item con sus respectivos valores"
+        p2 = zip(item.tipoItem.campo_extra, item.campo_extra_valores)
+        for p, k in p2:
+            prueba[p] = k
 
         return render(request, 'item/historialitem.html',
                       {'faseid': faseid, 'proyectoid': proyectoid,
@@ -1880,15 +1893,15 @@ def itemReversionar(request, proyectoid, faseid, itemid, history_date):
 
         """ Se podra reversionar el item si este se encuentra en estado de desarrollo"""
         if (item.estado == 'en desarrollo'):
-            """ Obtiene la version del item seleccionada por el usuario"""
 
+            """ Obtiene la version del item seleccionada por el usuario"""
             rever = item.history.as_of(history_date)
             """Obtiene el numero de la ultima version para incrementar el contador de versiones"""
-
             num = Item.objects.last()
             """ Reversiona el item """
             item = rever
             item._history_date = datetime.now()
+            "Asigna el numero de version al item reversionado"
             item.version = num.version + 1
             item.save()
             return redirect('itemView', faseid=faseid, proyectoid=proyectoid, itemid=itemid)
@@ -1902,3 +1915,96 @@ def downloadFile(request, filename):
     s3 = boto3.client('s3')
     s3.download_file('archivositem', filename, path + filename)
     return render(request, "home.html")
+
+
+def cerrarFase(request, proyectoid, faseid):
+    """
+          **cerrarFase:**
+            Vista utilizada para cerrar una Fase.
+            Solicita que el usuario que realiza el request cuente
+            con el permiso para cerrar la fase correspondiente
+            y que (indirectamente) haya iniciado sesion
+        """
+
+    if request.method == 'GET':
+        """Fase que se desea cerrar."""
+        fase = Fase.objects.get(id=faseid)
+        """Proyecto en el cual se encuentra la fase."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+
+        cerrar = True
+
+        if not (request.user.has_perm("cerrar_fase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+        """Se obtinen los items que no se encuentren en estado deshabilitado"""
+        itemsFase = fase.items.exclude(estado="deshabilitado")
+
+        for i in itemsFase:
+            if i.estado == "en linea base":
+
+                lineaBaseItem = LineaBase.objects.exclude(estado="rota").get(items__id=i.id)
+                if lineaBaseItem.estado != "cerrada":
+                    cerrar = False
+                    break
+            else:
+                cerrar = False
+                break
+        """Para aprobar el item es necesario identificar que tenga alguna relacion con un antecesor
+                    que se encuentre en una linea base cerrada, o bien con un padre(o hijo) que este aprobado."""
+        fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+        cont = 0
+        esPrimeraFase = False
+        for fp in fasesProyecto:
+            cont = cont + 1
+            if fp == fase:
+                if cont == 1:
+                    esPrimeraFase = True
+                    break
+        "Solo verificar si son items posteriores a la primera fase."
+        bandera = False
+
+        if esPrimeraFase == False:
+
+            for i in itemsFase:
+                relaciones = i.relaciones.all()
+
+                for r in relaciones:
+                    relacion = Relacion.objects.get(item_from=i, item_to=r)
+
+                    if relacion.tipo == "sucesor":
+                        bandera = True
+                        break
+
+        if esPrimeraFase == False:
+
+            if cerrar == True and bandera == True:
+                fase.estado = "cerrada"
+                fase.save()
+                return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
+
+            return redirect('faseConfinicializada', proyectoid=proyectoid,faseid=faseid)
+
+        if cerrar == True:
+            fase.estado = "cerrada"
+            fase.save()
+            return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
+
+        return redirect('faseConfinicializada',  proyectoid=proyectoid, faseid=faseid)
+
+
+def sendEmailView(mail,name,item,fase):
+
+    context = {'name': name, 'item':item, 'fase':fase}
+
+    template = get_template('fase/correoSolicitudAprobacion.html')
+    content = template.render(context)
+
+    email = EmailMultiAlternatives(
+        'Solicitud de aprobacion de Item',
+        'item',
+        settings.EMAIL_HOST_USER,
+        [mail]
+    )
+    email.attach_alternative(content, 'text/html')
+    email.send()

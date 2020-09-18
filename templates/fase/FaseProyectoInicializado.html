@@ -13,26 +13,26 @@
         <h5 style="text-align: left" >
             Fase: {{ fase.nombre }}
         </h5>
-        <form action="/fase/FaseIniciada/config/">
-            <button type="submit" class="btn btn-small blue darken-3 right">
-                Configuración de Fase
-                <i class="material-icons white-text left">settings</i>
-            </button><br>
-            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-        </form>
+        {% if  fase.estado != "cerrada" %}
+            <a href="{%url 'faseConfinicializada' proyecto.id fase.id  %}">
+
+                 <i class="material-icons dark blue-text right">autorenew</i>
+             </a>
+        {% endif %}
 
     </div>
     <div class="container">
          <br><h5>Lísta de Ítems</h5>
-        <form action="/item/itemCrear/">
-            <button type="submit" class="btn btn-small blue darken-3 right">
-                Crear nuevo ítem
-                <i class="material-icons white-text left">add_circle</i>
-            </button>
-            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-        </form>
+        {% if  fase.estado != "cerrada" %}
+            <form action="/item/itemCrear/">
+                <button type="submit" class="btn btn-small blue darken-3 right">
+                    Crear nuevo ítem
+                    <i class="material-icons white-text left">add_circle</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+            </form>
+       {% endif %}
     </div><br>
     <div class="container">
         <section class="section section-expenses">
