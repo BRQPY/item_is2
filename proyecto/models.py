@@ -12,6 +12,7 @@ class TipodeItem(models.Model):
 class CampoExtra(models.Model):
     titulo = models.CharField(max_length=40)
 
+
 class CampoExtraValores(models.Model):
     campoExtra = models.ForeignKey(CampoExtra, on_delete=models.CASCADE, default=None, related_name="campoExtra")
     valor =  models.CharField(max_length=40)
@@ -27,7 +28,6 @@ class Item(models.Model):
     # relaciones_items = ArrayField(models.CharField(max_length=200), default=list, blank=True)
     costo = models.IntegerField(default=0, blank=True)
     relaciones = models.ManyToManyField('self', default=None, through='Relacion', symmetrical=False)
-    dateCreacion = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     version = models.IntegerField(default=0, editable=False)
     # archivos = models.ManyToManyField(Files,default=None)
     archivos = ArrayField(models.CharField(max_length=40), default=list, blank=True)
@@ -62,7 +62,6 @@ class Fase(models.Model):
     estado = models.CharField(max_length=40, default=None)
     items = models.ManyToManyField(Item, default=None)
     tipoItem = models.ManyToManyField(TipodeItem, default=None)
-
     lineasBase = models.ManyToManyField(LineaBase, default=None)
 
     class Meta:
@@ -88,13 +87,9 @@ class Fase(models.Model):
             ("cerrar_fase", "cerrar fase"),
         )
 
-
-
-
 class FaseUser(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     fase = models.ForeignKey(Fase, on_delete=models.CASCADE, default=None)
-
 
 
 class Relacion(models.Model):
@@ -102,23 +97,12 @@ class Relacion(models.Model):
     fase_item_to = models.ForeignKey(Fase, default=None, on_delete=models.CASCADE)
     item_from = models.ForeignKey(Item, default=None, on_delete=models.CASCADE, related_name='item_from')
     item_to = models.ForeignKey(Item, default=None, on_delete=models.CASCADE, related_name='item_to')
-    history = HistoricalRecords()
-    __history_date = None
-
-    @property
-    def _history_date(self):
-        return self.__history_date
-
-    @_history_date.setter
-    def _history_date(self, value):
-        self.__history_date = value
 
 
 class Rol(models.Model):
     nombre = models.CharField(max_length=40, default=None)
     perms = models.ForeignKey(Group, on_delete=models.CASCADE, default=None, null=True)
     faseUser = models.ManyToManyField(FaseUser, default=None)
-    history = HistoricalRecords()
 
 
 class Proyecto(models.Model):
@@ -134,7 +118,6 @@ class Proyecto(models.Model):
     roles = models.ManyToManyField(Rol, default=None)
     fases = models.ManyToManyField(Fase, default=None, through='ProyectoFase')
     tipoItem = models.ManyToManyField(TipodeItem, default=None)
-
 
     class Meta:
         permissions = (
@@ -165,7 +148,6 @@ class Proyecto(models.Model):
         verbose_name = 'Proyecto'
         verbose_name_plural = 'Proyectos'
         ordering = ['nombre']
-
 
 
 class ProyectoFase(models.Model):
