@@ -9,25 +9,24 @@
             </button>
     </form>
 	<div class="container">
-      <section>
-        <h3 style="text-align: center">Crear Ítems</h3>
-        <h5 style="text-align: center" class="grey-text">Seleccione un tipo de ítem</h5>
-        <form action="." method="POST">{% csrf_token %}
-            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-            <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
-            <select id="tipo" name="tipo" class="browser-default">
-            {% for tipo in tipos %}
-                 <option value="{{tipo.id}}">{{tipo.nombreTipo}}</option>
-            {% endfor %}
+        {% if select is None %}
+            <h3 style="text-align: center">Crear Ítems</h3>
+            <h5 style="text-align: center" class="grey-text">Seleccione un tipo de ítem</h5>
+            <form action="." method="POST">{% csrf_token %}
+                <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+                <select id="tipo" name="tipo" class="browser-default">
+                {% for tipo in tipos %}
+                     <option value="{{tipo.id}}">{{tipo.nombreTipo}}</option>
+                {% endfor %}
 
-            </select>
-            <br><button id="but"  type="submit"  class="btn-small blue darken-3 right" name="seleccion" value="Seleccionar Usuario">
-                  Seleccionar
-            </button>
-        <p>
-        </form>
-        {% if select is not None %}
-            <form action="." method="POST" enctype="multipart/form-data">
+                </select>
+                <br><button id="but"  type="submit"  class="btn-small blue darken-3 right" name="seleccion" value="Seleccionar Usuario">
+                      Seleccionar
+                </button>
+            </form>
+        {% else %}
+            <Form action="." method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div>
                     <label for="nombre">Nombre del Item:</label>
@@ -45,10 +44,6 @@
                     <label for="costo">Costo:</label>
                     <input type="number" id="costo" name="costo" required>
                 </div>
-
-                <div id="file"></div>
-                <input type="button" name="add_file" id="add_file" value="Agregar archivo">
-
                 <div>
                     {%for c in select.campo_extra%}
                         <div>
@@ -57,6 +52,15 @@
                         </div>
                     {%endfor%}
                 </div>
+                <div>
+                    <h8>Archivos</h8><br>
+                </div>
+                <div id="file"></div>
+                <button type="button" class="btn-small blue darken-3 left" name="add_file" id="add_file" value="Agregar archivo">
+                    Añadir archivo al ítem
+                    <i class="material-icons white-text left">attach_file</i>
+                </button>
+                <br><br>
                 <button id="boton" type='submit' name="crear" class="btn-small blue darken-3 right" value="Save Data">
                     Crear ítem
                     <i class="material-icons white-text left">add_circle_outline</i>
@@ -64,12 +68,8 @@
                 <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
                 <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
                 <input  type="hidden" id="tipodeitem_id" name="tipodeitem_id" value="{{ select.id }}">
-
             </form>
-
         {% endif %}
-        </p>
-    </section>
 	</div>
     
     <script>

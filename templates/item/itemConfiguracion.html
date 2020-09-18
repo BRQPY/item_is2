@@ -2,17 +2,34 @@
 {% load static %}
 
 {% block content %}
-    <form action="/proyecto/proyectoVer/proyectoid={{proyecto.id}}">
-            <button type="submit" class="waves-effect waves-teal btn-flat">
-                    Volver a Gestión de Proyecto
-                    <i class="material-icons dark blue-text left">keyboard_return</i>
-            </button>
+    <style>
+        * {
+          box-sizing: border-box;
+        }
+
+        /* Create three equal columns that floats next to each other */
+        .column {
+          float: left;
+          width: 33.33%;
+          padding: 10px;
+        }
+        /* Clear floats after the columns */
+        .row_opciones:after {
+          content: "";
+          display: table;
+          clear: both;
+        }
+    </style>
+    <form action="/fase/FaseProyectoInicializado/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}">
+        <button type="submit" class="waves-effect waves-teal btn-flat">
+            Volver a la vista general de la fase
+            <i class="material-icons dark blue-text left">keyboard_return</i>
+        </button>
     </form>
     {{mensaje}}
 	<div class="container">
         <section>
             <h3 style="text-align: center">Item: {{item.nombre}}</h3>
-            <h5 style="text-align: center" class="grey-text">Panel de Configuración del ítem {{item.nombre}}</h5>
             <div style="position: relative;">
                 <div style="position: absolute; left: 0; top: 0; text-align: left">
                     <b><h6 style="text-align: left">Datos del ítem</h6></b>
@@ -54,11 +71,6 @@
                                 {{item.costo}}h
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col l4 left">
-                                <b>Campos Extra definido por usuarios:</b>
-                            </div>
-                        </div>
                         {%for c, c2 in campos%}
                             <div class="row">
                                 <div class="col l4 left">
@@ -67,33 +79,78 @@
                                 </div>
                             </div>
                         {%endfor%}
+                        <div class="row">
+                            <div class="col l4 left">
+                                <b>Archivos cargados dentro del ítem:</b>
+                            </div>
+                        </div>
+                        {% if archivos %}
+                            {% for a in archivos %}
+                                <div class="row">
+                                    <div class="col l4 left">
+                                        <i class="material-icons dark black-text left">insert_drive_file</i>
+                                        {{ a }}
+                                        <a href="{%url 'download' a item.id fase.id proyecto.id %}"
+                                           title="Descargar"
+                                        >
+                                            <i class="material-icons dark blue-text right">file_download</i>
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <h8>El ítem no cuenta con archivos.</h8>
+                        {% endif %}
                     </div>
                 </li>
             </ul>
         </section>
-        <div>
-            {%if proyecto.estado != "cancelado"%}
-                <form action="/item/unable/">
-                    <button type="submit" class="btn red darken-5 left">
-                        Deshabilitar Item
-                       <i class="material-icons white-text left">delete</i>
-                    </button>
-                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                        <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-                        <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
-                 </form>
-                <form action="/item/relaciones/ver/itemid={{ item.id }}/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/">
-                    <button type="submit" class="btn blue darken-5 right"
-                            title="Crear o remover relaciones del ítem {{ item.nombre }}"
-                    >
-                        Gestionar Relaciones del item
-                       <i class="material-icons white-text left">timeline</i>
-                    </button>
-                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                    <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-                    <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
-                 </form>
+    </div>
+    {%if proyecto.estado != "cancelado"%}
+                <div class="row_opciones">
+                    <div class="column">
+                        <form action="/item/unable/"
+                              onsubmit="return confirm('Está seguro de deshabilitar el ítem ?');"
+                        >
+                            <button type="submit" class="btn red darken-5 left"
+                            >
+                                Deshabilitar Item
+                               <i class="material-icons white-text left">delete</i>
+                            </button>
+                            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                            <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+                        </form>
+                    </div>
+                    <div class="column">
+                        <form action="/item/history/">
+                            <button type="submit" class="btn blue darken-5 right"
+                                    title="Gestionar historial de cambios del ítem."
+                            >
+                                Historial  de cambios del ítem
+                               <i class="material-icons white-text left">edit</i>
+                            </button>
+                            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                            <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+                        </form>
+                    </div>
+                    <div class="column">
+                        <form action="/item/relaciones/ver/itemid={{ item.id }}/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/">
+                            <button type="submit" class="btn blue darken-5 right"
+                                    title="Crear o remover relaciones del ítem {{ item.nombre }}"
+                            >
+                                Gestionar Relaciones
+                                <i class="material-icons white-text left">timeline</i>
+                            </button>
+                            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                            <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+                        </form>
+                    </div>
+                </div>
+
+
             {%endif%}
-	    </div>
 
 {% endblock%}

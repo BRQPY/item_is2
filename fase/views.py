@@ -131,8 +131,9 @@ def faseVerProyectoInicializado(request, faseid, proyectoid):
         proyecto = Proyecto.objects.get(id=proyectoid)
         fase = Fase.objects.get(id=faseid)
         items = fase.items.exclude(estado="deshabilitado").order_by('id')
+        tipos = fase.tipoItem.all()
         return render(request, 'fase/FaseProyectoInicializado.html', {'proyecto': proyecto, 'fase': fase,
-                                                                      'items': items,
+                                                                      'items': items, 'tipos':tipos,
                                                                       })
 
 
@@ -641,7 +642,6 @@ def FaseGestionTipoItem(request, faseid, proyectoid):
         for t in tipos:
             for i in itemsFase:
                 if i.tipoItem == t and i.estado != "deshabilitado":
-                    print(t.nombreTipo)
                     tipos_removible.remove(t)
                     tipos_no_removible.append(t)
                     break
@@ -955,7 +955,7 @@ def itemConfigurar(request, itemid, faseid, proyectoid):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
 
-        return render(request, "item/itemConfiguracion.html", {'fase': fase, 'item': item, 'proyecto': proyecto,
+        return render(request, "item/itemConfiguracion.html", {'fase': fase, 'item': item, 'proyecto': proyecto, 'archivos': list(item.archivos),
                                                                'campos': zip(item.tipoItem.campo_extra,
                                                                              item.campo_extra_valores), })
 
@@ -1896,9 +1896,13 @@ def itemReversionar(request, proyectoid, faseid, itemid, history_date):
             return redirect('itemView', faseid=faseid, proyectoid=proyectoid, itemid=itemid)
 
 
-def downloadFile(request, filename):
-    path = '/var/www/item/item_is2/descargas/'
-
-    s3 = boto3.client('s3')
+def downloadFile(request, filename, itemid, faseid, proyectoid):
+    path = '/var/www/item/descargas/'
+    s3 = boto3.client('s3',
+                        aws_access_key_id='AKIAUWIIW4ARQQQA4TLN',
+                        aws_secret_access_key='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' )
+    #s3 = boto3.resource('s3',
+     #                   aws_access_key_id='AKIAUWIIW4ARQQQA4TLN',
+      #                  aws_secret_access_key='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')
     s3.download_file('archivositem', filename, path + filename)
-    return render(request, "home.html")
+    return redirect('itemConfigurar', itemid= itemid, faseid= faseid, proyectoid= proyectoid)

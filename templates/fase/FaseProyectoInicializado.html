@@ -25,14 +25,25 @@
     </div>
     <div class="container">
          <br><h5>Lísta de Ítems</h5>
-        <form action="/item/itemCrear/">
-            <button type="submit" class="btn btn-small blue darken-3 right">
+        {% if tipos %}
+            <form action="/item/itemCrear/">
+                <button type="submit" class="btn btn-small blue darken-3 right">
+                    Crear nuevo ítem
+                    <i class="material-icons white-text left">add_circle</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+            </form>
+        {% else %}
+            <button
+                title="La fase no cuenta con Tipos de ítems. Ve a la Configuración de Fase para agregarlos y poder crear ítems."
+                style="cursor: default"
+                class="btn btn-small #eeeeee grey lighten-3 black-text right"
+            >
                 Crear nuevo ítem
                 <i class="material-icons white-text left">add_circle</i>
-            </button>
-            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-        </form>
+            </button><br>
+        {% endif %}
     </div><br>
     <div class="container">
         <section class="section section-expenses">
@@ -46,24 +57,12 @@
                                 <div class="col l4 left">
                                     <b>{{ i.nombre }}</b>
                                 </div>
-                                <div class="col l2 right">
-                                    <a href="{%url 'itemView' i.id fase.id proyecto.id%}">
-                                        Remover Ítem
-                                        <i class="material-icons dark red-text left">delete</i>
-                                    </a>
-                                </div>
                                 <div class="col l4 right">
                                     <a href="{%url 'itemConfigurar' i.id fase.id proyecto.id%}"
-                                       title="Permite establer relaciones, modificar su información, cambiar su estado"
+                                       title="Ver y/o modificar datos del ítem, relacionar, reversionar."
                                     >
-                                        Configurar Ítem
-                                        <i class="material-icons dark blue-text left">edit</i>
-                                    </a>
-                                </div>
-                                <div class="col l2 right">
-                                    <a href="{%url 'itemView' i.id fase.id proyecto.id%}">
-                                        Consultar Ítem
-                                        <i class="material-icons dark blue-text left">info_outline</i>
+                                        Gestionar Ítem
+                                        <i class="material-icons dark blue-text left">settings</i>
                                     </a>
                                 </div>
                             </div>
