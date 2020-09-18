@@ -31,7 +31,7 @@ class Item(models.Model):
     version = models.IntegerField(default=0, editable=False)
     # archivos = models.ManyToManyField(Files,default=None)
     archivos = ArrayField(models.CharField(max_length=40), default=list, blank=True)
-    history = HistoricalRecords(excluded_fields=['relaciones'])
+    history = HistoricalRecords()
 
     __history_date = None
 
