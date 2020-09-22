@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>urls.py</title>
+  <link rel="stylesheet" href="../pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>urls.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      <p>prueba URL Configuration</p>
+<p>The <code>urlpatterns</code> list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/3.0/topics/http/urls/
+Examples:
+Function views
+    1. Add an import:  from my_app import views
+    2. Add a URL to urlpatterns:  path(&lsquo;&rsquo;, views.home, name=&rsquo;home&rsquo;)
+Class-based views
+    1. Add an import:  from other_app.views import Home
+    2. Add a URL to urlpatterns:  path(&lsquo;&rsquo;, Home.as_view(), name=&rsquo;home&rsquo;)
+Including another URLconf
+    1. Import the include() function: from django.urls import include, path
+    2. Add a URL to urlpatterns:  path(&lsquo;blog/&rsquo;, include(&lsquo;blog.urls&rsquo;))</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">django.conf.urls</span> <span class="kn">import</span> <span class="n">url</span><span class="p">,</span> <span class="n">include</span>
+<span class="kn">from</span> <span class="nn">django.urls</span> <span class="kn">import</span> <span class="n">path</span>
+<span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">admin</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponse</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">Permission</span><span class="p">,</span> <span class="n">Group</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">User</span>
+<span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">render</span>
+<span class="kn">from</span> <span class="nn">proyecto.models</span> <span class="kn">import</span> <span class="n">Proyecto</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.decorators</span> <span class="kn">import</span> <span class="n">login_required</span>
+<span class="kn">from</span> <span class="nn">proyecto</span> <span class="kn">import</span> <span class="n">views</span>
+<span class="kn">from</span> <span class="nn">fase</span> <span class="kn">import</span> <span class="n">views</span> <span class="k">as</span> <span class="n">viewsFase</span>
+<span class="kn">from</span> <span class="nn">gestionUser</span> <span class="kn">import</span> <span class="n">views</span> <span class="k">as</span> <span class="n">viewsGestionUser</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.conf.urls.static</span> <span class="kn">import</span> <span class="n">static</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@login_required</span>
+<span class="k">def</span> <span class="nf">homeView</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">usuario</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">usuario</span><span class="o">.</span><span class="n">has_perm</span><span class="p">(</span><span class="s2">&quot;perms.view_menu&quot;</span><span class="p">):</span>
+        <span class="n">proyectos</span> <span class="o">=</span> <span class="n">Proyecto</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">usuarios__id</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">cant</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">proyectos</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">estado</span> <span class="o">==</span> <span class="s2">&quot;deshabilitado&quot;</span><span class="p">:</span>
+                <span class="n">cant</span> <span class="o">=</span> <span class="o">+</span><span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;home.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;proyectos&#39;</span><span class="p">:</span> <span class="n">proyectos</span><span class="p">,</span> <span class="s1">&#39;cant&#39;</span><span class="p">:</span> <span class="n">cant</span><span class="p">,</span> <span class="p">})</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;wrong.html&quot;</span><span class="p">)</span>
+
+
+<span class="nd">@login_required</span><span class="p">(</span><span class="n">login_url</span><span class="o">=</span><span class="s1">&#39;/home/&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">permissionErrorView</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;permissionError.html&#39;</span><span class="p">)</span>
+
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
+    <span class="n">urlpatterns</span> <span class="o">+=</span> <span class="n">static</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">STATIC_URL</span><span class="p">,</span> <span class="n">document_root</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">STATIC_ROOT</span><span class="p">)</span>
+    <span class="n">urlpatterns</span> <span class="o">+=</span> <span class="n">static</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">MEDIA_URL</span><span class="p">,</span> <span class="n">document_root</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">MEDIA_ROOT</span><span class="p">)</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;admin/&#39;</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">urls</span><span class="p">),</span>
+    <span class="n">url</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^accounts/&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="s1">&#39;allauth.urls&#39;</span><span class="p">)),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;permissionError/&#39;</span><span class="p">,</span> <span class="n">permissionErrorView</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;home/&#39;</span><span class="p">,</span> <span class="n">homeView</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;home&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;gestionUser/&#39;</span><span class="p">,</span> <span class="n">viewsGestionUser</span><span class="o">.</span><span class="n">gestionUserView</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;gestionUserView&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;gestionUser/conf/&#39;</span><span class="p">,</span> <span class="n">viewsGestionUser</span><span class="o">.</span><span class="n">confUserView</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;confUserView&#39;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;gestionUser/permisos/&#39;</span><span class="p">,</span> <span class="n">viewsGestionUser</span><span class="o">.</span><span class="n">gestionPermsView</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;gestionPermsView&#39;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;gestionUser/permisos/agregar/&#39;</span><span class="p">,</span> <span class="n">viewsGestionUser</span><span class="o">.</span><span class="n">addPermsView</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;gestionUser/permisos/remover/&#39;</span><span class="p">,</span> <span class="n">viewsGestionUser</span><span class="o">.</span><span class="n">removePermsView</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;gestionUser/ver/&#39;</span><span class="p">,</span> <span class="n">viewsGestionUser</span><span class="o">.</span><span class="n">verUserView</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;verUserView&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;gestionUser/deshabilitar/&#39;</span><span class="p">,</span> <span class="n">viewsGestionUser</span><span class="o">.</span><span class="n">unableUserView</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;gestionUser/habilitar/&#39;</span><span class="p">,</span> <span class="n">viewsGestionUser</span><span class="o">.</span><span class="n">enableUserView</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;gestionUser/modify/&#39;</span><span class="p">,</span> <span class="n">viewsGestionUser</span><span class="o">.</span><span class="n">changeUserView</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/proyectoCrear/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">proyectoCrear</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/proyectoInicializar/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">proyectoInicializar</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/proyectoCancelar/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">proyectoCancelar</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/proyectoVer/proyectoid=&lt;str:id&gt;/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">proyectoView</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;proyectoView&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/proyectoFase/proyectoid=&lt;str:id&gt;/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">proyectoFase</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;proyectoFase&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/gestionProyecto/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">gestionProyecto</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/modify/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">proyectoModificar</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/unable/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">proyectoDeshabilitar</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/proyectoUser/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">proyectoUser</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/proyectoUser/add/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">proyectoUserAdd</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/proyectoUser/remove/proyectoid=&lt;str:proyectoid&gt;/userid=&lt;str:userid&gt;&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">proyectoUserRemove</span><span class="p">,</span>
+         <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ProyectoUserRemove&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/proyectoComite/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">proyectoComite</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/proyectoComite/add/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">proyectoComiteAdd</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/proyectoComite/remove/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">proyectoComiteRemove</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/proyectoRol/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">proyectoRol</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/proyectoRol/create/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">proyectoRolCrear</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/proyectoRol/modify/proyectoid=&lt;str:proyectoid&gt;/rolid=&lt;str:rolid&gt;/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">proyectoRolModificar</span><span class="p">,</span>
+         <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ProyectoRolModify&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/proyectoRol/delete/proyectoid=&lt;str:proyectoid&gt;/rolid=&lt;str:rolid&gt;/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">proyectoRolEliminar</span><span class="p">,</span>
+         <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ProyectoRolRemove&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/faseVer/faseid=&lt;str:faseid&gt;/proyectoid=&lt;str:proyectoid&gt;/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">faseView</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;faseView&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/proyectoTipodeItem/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">gestionar_tipo_de_item</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;gestionTipoItem&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/creartipo/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">crear_tipo_form</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;creartipo&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/modifdeItem/proyectoid=&lt;str:proyectoid&gt;/tipoid=&lt;str:tipoid&gt;/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">modificar_tipo_de_item</span><span class="p">,</span>
+         <span class="n">name</span><span class="o">=</span><span class="s2">&quot;modificartipo&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/importTdeItem/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">importar_tipo_de_item</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;importartipo&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;proyecto/proyectoremoverTdeItem/proyectoid=&lt;str:proyectoid&gt;/tipoid=&lt;str:tipoid&gt;/&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">remover_tipo_de_item</span><span class="p">,</span>
+         <span class="n">name</span><span class="o">=</span><span class="s2">&quot;removertipo&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/faseCrear/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">faseCrear</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/faseUsers/faseid=&lt;str:faseid&gt;/proyectoid=&lt;str:proyectoid&gt;/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">faseUsers</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;faseUsers&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/gestionFase/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">gestionFase</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/modify/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">faseModificar</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/unable/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">faseDeshabilitar</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/asignarRol/proyectoid=&lt;str:proyectoid&gt;/faseid=&lt;str:faseid&gt;/userid=&lt;str:userid&gt;&#39;</span><span class="p">,</span>
+         <span class="n">viewsFase</span><span class="o">.</span><span class="n">faseRolAsignar</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;faseRolAsignar&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/removerRol/proyectoid=&lt;str:proyectoid&gt;/faseid=&lt;str:faseid&gt;/userid=&lt;str:userid&gt;&#39;</span><span class="p">,</span>
+         <span class="n">viewsFase</span><span class="o">.</span><span class="n">faseRolRemover</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;faseRolRemover&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/removerUser/proyectoid=&lt;str:proyectoid&gt;/faseid=&lt;str:faseid&gt;/userid=&lt;str:userid&gt;&#39;</span><span class="p">,</span>
+         <span class="n">viewsFase</span><span class="o">.</span><span class="n">FaseRemoveUser</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;faseRemoverUser&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/FaseProyectoInicializado/faseid=&lt;str:faseid&gt;/proyectoid=&lt;str:proyectoid&gt;/&#39;</span><span class="p">,</span>
+         <span class="n">viewsFase</span><span class="o">.</span><span class="n">faseVerProyectoInicializado</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;faseViewInicializado&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/FaseIniciada/config/proyectoid=&lt;str:proyectoid&gt;/faseid=&lt;str:faseid&gt;/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">FaseConfigInicializada</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;faseConfinicializada&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/addUser/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">FaseAddUser</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/gestionTipoItem/faseid=&lt;str:faseid&gt;/proyectoid=&lt;str:proyectoid&gt;/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">FaseGestionTipoItem</span><span class="p">,</span>
+         <span class="n">name</span><span class="o">=</span><span class="s2">&quot;faseTipoItem&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/addTipoItem/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">FaseAddTipoItem</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/ConfigLineaBase/proyectoid=&lt;str:proyectoid&gt;/faseid=&lt;str:faseid&gt;/lineaBaseid=&lt;str:lineaBaseid&gt;&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">faseConfigLineaBase</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;faseConfigLineaBase&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/gestionLineaBase/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">faseGestionLineaBase</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/consultarLineaBase/proyectoid=&lt;str:proyectoid&gt;/faseid=&lt;str:faseid&gt;/lineaBaseid=&lt;str:lineaBaseid&gt;/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">consultarLineaBase</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;consultarLineaBase&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/addLineaBase/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">faseAddLineaBase</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/lineaBaseAddItem/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">lineaBaseAddItem</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/lineaBaseRemoveItem/proyectoid=&lt;str:proyectoid&gt;/faseid=&lt;str:faseid&gt;/lineaBaseid=&lt;str:lineaBaseid&gt;/itemid=&lt;str:itemid&gt;/&#39;</span><span class="p">,</span>
+         <span class="n">viewsFase</span><span class="o">.</span><span class="n">lineaBaseRemoveItem</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;lineaBaseRemoveItem&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/cerrarLineaBase/proyectoid=&lt;str:proyectoid&gt;/faseid=&lt;str:faseid&gt;/lineaBaseid=&lt;str:lineaBaseid&gt;/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">faseCerrarLineaBase</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;lineaBaseCerrar&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/RemoveTipoItem/proyectoid=&lt;str:proyectoid&gt;/faseid=&lt;str:faseid&gt;/tipoid=&lt;str:tipoid&gt;&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">FaseRemoveTipoItem</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;faseRemoveTipo&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/fasesDeshabilitadas/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">fasesDeshabilitadas</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;item/gestionItem/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">gestionItem</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;item/configurar/itemid=&lt;str:itemid&gt;/faseid=&lt;str:faseid&gt;/proyectoid=&lt;str:proyectoid&gt;/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">itemConfigurar</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;itemConfigurar&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;item/itemVer/itemid=&lt;int:itemid&gt;/faseid=&lt;int:faseid&gt;/proyectoid=&lt;int:proyectoid&gt;/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">itemView</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;itemView&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;item/itemCrear/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">itemCrear</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;item/modify/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">itemModificar</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;item/itemCambiarEstado/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">itemCambiarEstado</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;item/unable/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">itemDeshabilitar</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;item/relaciones/ver/itemid=&lt;str:itemid&gt;/faseid=&lt;str:faseid&gt;/proyectoid=&lt;str:proyectoid&gt;/mensaje=&lt;str:mensaje&gt;/&#39;</span><span class="p">,</span><span class="n">viewsFase</span><span class="o">.</span><span class="n">itemVerRelaciones</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;itemVerRelaciones&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;item/relaciones/remover/itemid=&lt;str:itemid&gt;/item_rm=&lt;str:item_rm&gt;/faseid=&lt;str:faseid&gt;/proyectoid=&lt;str:proyectoid&gt;/&#39;</span><span class="p">,</span><span class="n">viewsFase</span><span class="o">.</span><span class="n">itemRelacionesRemover</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;itemRelacionesRemover&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;item/addRelacion/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">itemAddRelacion</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;item/history/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">itemHistorial</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;itemHistorial&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;item/history/reversionar/proyecto&lt;int:proyectoid&gt;/faseid&lt;int:faseid&gt;/itemid&lt;int:itemid&gt;/history_data&lt;str:history_date&gt;/&#39;</span><span class="p">,</span><span class="n">viewsFase</span><span class="o">.</span><span class="n">itemReversionar</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;itemRev&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;item/relaciones/ver/itemid=&lt;str:itemid&gt;/faseid=&lt;str:faseid&gt;/proyectoid=&lt;str:proyectoid&gt;/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">itemVerRelaciones</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;itemVerRelaciones&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;item/relaciones/remover/itemid=&lt;str:itemid&gt;/item_rm=&lt;str:item_rm&gt;/faseid=&lt;str:faseid&gt;/proyectoid=&lt;str:proyectoid&gt;/&#39;</span><span class="p">,</span><span class="n">viewsFase</span><span class="o">.</span><span class="n">itemRelacionesRemover</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;itemRelacionesRemover&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;item/downloadFile/filename=&lt;str:filename&gt;/itemid=&lt;str:itemid&gt;/faseid=&lt;str:faseid&gt;/proyectoid=&lt;str:proyectoid&gt;/&#39;</span><span class="p">,</span> <span class="n">viewsFase</span><span class="o">.</span><span class="n">downloadFile</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;download&quot;</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s1">&#39;fase/cerrarFase/proyectoid=&lt;str:proyectoid&gt;/faseid=&lt;str:faseid&gt;/&#39;</span><span class="p">,</span><span class="n">viewsFase</span><span class="o">.</span><span class="n">cerrarFase</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;cerrarFaseView&quot;</span><span class="p">),</span>
+    <span class="p">]</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>

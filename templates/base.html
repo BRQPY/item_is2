@@ -2,108 +2,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>iTem
-    </title>
-    <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
-  <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Document</title>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" media="all">
-  <link rel="stylesheet" href="{% static 'css/styles.css' %}" type="text/css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>iTem</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/hover-min.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-   <link rel="stylesheet" href="{% static 'css/hover-min.css' %}">
+    <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
 <style>
-* {box-sizing: border-box;}
+    .header {
+      overflow: hidden;
+      #background-color:#5AB9EA;
+      #background-color:#2E9CCA;
+      #background-color:#1E88E5;
 
-body {
-  margin: 0;
-}
+      background-color:#024e82!important;
+      padding: 0 55px!important;
+    }
 
-.header {
-  overflow: hidden;
-  #background-color:#5AB9EA;
-  #background-color:#2E9CCA;
-  #background-color:#1E88E5;
-
-  background-color:#024e82;
-  padding: 0px 55px;
-}
-
-.header a {
-  float: left;
-  color: whitesmoke;
-  text-align: center;
-  padding: 10px 15px;
-  text-decoration: none;
-  font-size: 20px;
-  line-height: 20px;
-  border-radius: 4px;
-
-
-}
-
-.header a.logo {
-    padding: 10px 20px;
-}
-
-
-
-.header-right {
-  float: right;
-  padding: 20px 0px;
-}
-
-
-@media screen and (max-width: 500px) {
     .header a {
-        float: none;
-        display: block;
-        text-align: left;
-    }
+      float: left;
+      color: white!important;
+      text-align: center;
+      padding: 10px 15px;
+      text-decoration: none;
+      font-size: 20px;
+      line-height: 20px;
+      border-radius: 4px;
 
+
+    }
+    .header a.logo {
+        padding: 10px 20px;
+    }
     .header-right {
-        float: none;
+      float: right!important;
+      padding: 20px 0!important;
     }
-}
-.alert {
-  padding: 15px;
-  background-color: #f44336;
-  color: white;
-  opacity: 1;
-  transition: opacity 0.6s;
-  margin-bottom: 8px;
-}
+    @media screen and (max-width: 500px) {
+        .header a {
+            float: none;
+            display: block;
+            text-align: left;
+        }
 
-.alert.success {background-color: #4CAF50;}
-.alert.info {background-color: #2196F3;}
-.alert.warning {background-color: #ff9800;}
-
-.closebtn {
-  margin-left: 15px;
-  color: white;
-  font-weight: bold;
-  float: right;
-  font-size: 22px;
-  line-height: 20px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.closebtn:hover {
-  color: black;
-}
+        .header-right {
+            float: none;
+        }
+    }
 </style>
-
 </head>
-<body>
+
+<body style="background-color:whitesmoke;">
 
 <div class="header">
       <a href="/home/" class="logo" >
-          <img src="{% static "img/fondotransparente.png" %}" alt="logo"
+          <img src="{% static 'img/fondotransparente.png' %}" alt="logo"
                width=30" height="40">
       </a>
       <div class="header-right" >
@@ -125,11 +84,7 @@ body {
       </div>
 </div>
 
-<div style="padding-left:0px">
-     {% block content %}
-
+    {% block content %}
     {% endblock %}
-</div>
-
 </body>
 </html>

@@ -2,90 +2,111 @@
 {% load static %}
 
 {% block content %}
-    <form action="/proyecto/proyectoVer/proyectoid={{ proyecto.id }}/">
-        <button type="submit" class="waves-effect waves-teal btn-flat">
-            Volver a la vista general del proyecto
-            <i class="material-icons dark blue-text left">keyboard_return</i>
-        </button>
-    </form>
-
-    <div class="container">
-        <h3 style="text-align: center">{{ fase.nombre }}</h3>
-        {% if  fase.estado != "cerrada" %}
-            <form action="{%url 'faseConfinicializada' proyecto.id fase.id  %}" >
-                <button type="submit" class="btn btn-small blue darken-3 right">
-                    Configurar Fase
-                    <i class="material-icons white-text left">settings</i>
-                </button>
-            </form>
-        {% endif %}
-
-    </div>
-    <div class="container">
-         <br><br><br><h5>Lísta de Ítems</h5>
-
-        {% if  fase.estado != "cerrada" %}
-            {% if tipos %}
-                <form action="/item/itemCrear/">
-                    <button type="submit" class="btn btn-small blue darken-3 right">
-                        Crear nuevo ítem
-                        <i class="material-icons white-text left">add_circle</i>
+    <div class="container"><br>
+        <div style="position: relative;">
+            <div style="position: absolute; left: 0; top: 0; text-align: left">
+                <form action="/proyecto/proyectoVer/proyectoid={{ proyecto.id }}/">
+                    <button type="submit" class="waves-effect waves-teal btn-flat">
+                        Volver a la vista del proyecto
+                        <i class="material-icons dark blue-text left">keyboard_return</i>
                     </button>
-                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                    <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
                 </form>
-            {% else %}
-                <button
-                    title="La fase no cuenta con Tipos de ítems. Ve a la Configuración de Fase para agregarlos y poder crear ítems."
-                    style="cursor: default"
-                    class="btn btn-small #eeeeee grey lighten-3 black-text right"
-                >
-                    Crear nuevo ítem
-                    <i class="material-icons white-text left">add_circle</i>
-                </button><br>
-            {% endif %}
-        {% endif %}
+            </div>
+            <div style="position: absolute; right: 0; top: 0; text-align: left">
+                {% if  fase.estado != "cerrada" %}
+                    <form action="{%url 'faseConfinicializada' proyecto.id fase.id  %}" >
+                        <a href='#' onclick='this.parentNode.submit(); return false;' style="color: black" class="hvr-icon-rotate">
+                            Configurar Fase
+                            <i class="material-icons black-text left hvr-icon">settings</i>
+                        </a>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+        <br>
+        <h3 style="text-align: center">{{ fase.nombre }}</h3>
+        <div style="position: relative;">
+            <div style="position: absolute; left: 0; top: 0; text-align: left">
+                <h5>Lista de Ítems</h5>
+            </div>
+            <div style="position: absolute; right: 0; top: 0; text-align: left">
+                {% if  fase.estado != "cerrada" %}
+                    {% if tipos %}
+                        <form action="/item/itemCrear/">
+                            <button type="submit" class="btn blue darken-3 right">
+                                Crear nuevo ítem
+                                <i class="material-icons white-text left">add_circle</i>
+                            </button>
+                            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                        </form>
+                    {% else %}
+                        <button
+                            title="La fase no cuenta con Tipos de ítems. Ve a la Configuración de Fase para agregarlos y poder crear ítems."
+                            style="cursor: default"
+                            class="btn btn-small #eeeeee grey lighten-3 black-text right"
+                        >
+                            Crear nuevo ítem
+                            <i class="material-icons white-text left">add_circle</i>
+                        </button><br>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
     </div><br>
     <div class="container">
         <section class="section section-expenses">
             <ul class="z-depth-1">
                 {% if items %}
-
-                {% for i in items %}
-                    <li>
-                        <div class="card-panel z-depth-4 expense">
-                            <div class="row">
-                                <div class="col l4 left">
-                                    <b>{{ i.nombre }}</b>
-                                </div>
-                                {% if  fase.estado != "cerrada" %}
-                                    <div class="col l4 right">
-                                        <a href="{%url 'itemConfigurar' i.id fase.id proyecto.id%}"
-                                           title="Ver y/o modificar datos del ítem, relacionar, reversionar."
-                                        >
-                                            Gestionar Ítem
-                                            <i class="material-icons dark blue-text left">settings</i>
-                                        </a>
+                    {% for i in items %}
+                        <li>
+                            <div class="card-panel"
+                                    {% if i.estado == "en desarrollo" %}
+                                        style= "border:1px solid #03a9f4;"
+                                    {% endif %}
+                                    {% if i.estado == "pendiente de aprobacion" %}
+                                        style="border:2px solid #fff176;"
+                                    {% endif %}
+                                    {% if i.estado == "aprobado" %}
+                                        style="border:2px solid #1b5e20 ;"
+                                    {% endif %}
+                                    {% if i.estado == "en linea base" %}
+                                        style="border:2.5px solid black ;"
+                                    {% endif %}
+                            >
+                                <div class="row">
+                                    <div class="col l4 left">
+                                        <b>{{ i.nombre }}</b>
                                     </div>
-                                {% endif %}
+                                    {% if  fase.estado != "cerrada" %}
+                                        <div class="col l4 right">
+                                            <a href="{%url 'itemConfigurar' i.id fase.id proyecto.id%}"
+                                               title="Ver y/o modificar datos del ítem, relacionar, reversionar."
+                                            >
+                                                Gestionar Ítem
+                                                <i class="material-icons dark blue-text left">settings</i>
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="row">
+                                    <div class="col 1">
+                                        <b>Estado:</b>
+                                        {{ i.estado}}
+                                    </div>
+                                    <div class="col l4 left">
+                                        <b>Costo en horas:</b>
+                                        {{ i.costo }}h
+                                    </div>
+                                    <div class="col 3">
+                                        <b>Tipo de ítem:</b>
+                                        {{ i.tipoItem.nombreTipo}}
+                                    </div>
+                                </div>
                             </div>
-                            <div class="row">
-                                <div class="col 1">
-                                    <b>Estado:</b>
-                                    {{ i.estado}}
-                                </div>
-                                <div class="col l4 left">
-                                    <b>Costo en horas:</b>
-                                    {{ i.costo }}h
-                                </div>
-                                <div class="col 3">
-                                    <b>Tipo de ítem:</b>
-                                    {{ i.tipoItem.nombreTipo}}
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                {% endfor %}
+                        </li>
+                    {% endfor %}
                 {% else%}
                     Aun no hay items
                 {% endif %}

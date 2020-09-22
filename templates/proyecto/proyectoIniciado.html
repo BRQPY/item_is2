@@ -2,35 +2,48 @@
 {% load static %}
 
 {% block content %}
-    <form action="/home/">
-            <button type="submit" class="waves-effect waves-teal btn-flat">
-                    Volver a Home
-                    <i class="material-icons dark blue-text left">keyboard_return</i>
-            </button>
-    </form>
-    <div class="container">
-        <h3 style="text-align: center">{{ proyecto.nombre }}</h3>
-        <form action="/proyecto/gestionProyecto/">
-           <button type="submit" class="btn blue darken-2 right" >
-               Configurar Proyecto
-               <i class="material-icons white-text left">settings</i>
-            </button>
-            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-        </form>
+    <div class="container"><br>
+        <div style="position: relative;">
+            <div style="position: absolute; left: 0; top: 0; text-align: left">
+                <form action="/home/">
+                        <button type="submit" class="waves-effect waves-teal btn-flat">
+                                Volver a Home
+                                <i class="material-icons dark blue-text left">keyboard_return</i>
+                        </button>
+                </form>
+            </div>
+            <div style="position: absolute; right: 0; top: 0; text-align: left">
+                <form action="/proyecto/gestionProyecto/">
+                    <a href='#' onclick='this.parentNode.submit(); return false;' style="color: black" class="hvr-icon-rotate">
+                        Configurar Proyecto
+                        <i class="material-icons black-text left hvr-icon">settings</i>
+                    </a>
+                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                </form>
+            </div>
+        </div>
         <br><br>
+        <h3 style="text-align: center">{{ proyecto.nombre }}</h3>
         <h5 style="text-align: left" class="bold grey-text">Fases del Proyecto</h5>
-        {%if fases%}
-            {%if fasesUser%}
-                {%for f in fasesUser%}
-                    <a href="{% url 'faseViewInicializado' f.id proyecto.id %}"><h4>{{f.nombre}}</h4></a><br>
-                {%endfor%}
-
+        <div class="row">
+            {%if fases%}
+                {%if fasesUser%}
+                    {%for f in fasesUser%}
+                        <div class="col s4 md4 x8">
+                            <div class="card-panel"style= "border:2px solid #29b6f6;">
+                                <h5>{{f.nombre}}</h5>
+                                <h7><b>Estado:</b> {{f.estado}}</h7><br>
+                                <a href="{% url 'faseViewInicializado' f.id proyecto.id %}" class="btn blue darken-2 ">Ver</a>
+                            </div>
+                        </div>
+                    {%endfor%}
+                {%else%}
+                    Aun no puede visualizar ninguna fase.
+                {%endif%}
             {%else%}
-                Aun no puede visualizar ninguna fase.
+                El proyecto aun no cuenta con fases creadas.
             {%endif%}
-        {%else%}
-            El proyecto aun no cuenta con fases creadas.
-        {%endif%}
+        </div>
         <br><br><br><br>
         {%if proyecto.estado != "cancelado"%}
             <form action="/proyecto/proyectoCancelar/">
