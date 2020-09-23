@@ -11,6 +11,7 @@
     <div class="container">
         <h3 style="text-align: center">{{ proyecto.nombre }}</h3>
         <h5 style="text-align: center" class="grey-text">Panel de Configuración del Proyecto</h5><br>
+
         {%if proyecto.estado != "cancelado"%}
             <form action="/proyecto/modify/">
                 <button type="submit" class="btn-small blue darken-2 left" >

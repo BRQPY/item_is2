@@ -24,7 +24,17 @@
 
               {%if p.estado != "deshabilitado"%}
                     <div class="col s4 md6 xl3">
-                        <div class="card-panel" style="background-color: #F5F5F5">
+                        <div class="card-panel"
+                                {% if p.estado == "pendiente" %}
+                                    style= "border:1px solid #03a9f4;"
+                                {% endif %}
+                                {% if p.estado == "inicializado" %}
+                                    style= "border:1.5px solid #1b5e20;"
+                                {% endif %}
+                                {% if p.estado == "cancelado" %}
+                                    style= "border:1px solid #c62828;"
+                                {% endif %}
+                        >
 
                            <h6><b> {{ p.nombre }}</b></h6>
                            <p><b>Estado:</b> {{ p.estado }}</p>
