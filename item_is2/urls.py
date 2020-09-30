@@ -103,7 +103,7 @@ urlpatterns = [
          viewsFase.faseRolRemover, name="faseRolRemover"),
     path('fase/removerUser/proyectoid=<str:proyectoid>/faseid=<str:faseid>/userid=<str:userid>',
          viewsFase.FaseRemoveUser, name="faseRemoverUser"),
-    path('fase/FaseProyectoInicializado/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',
+    path('fase/FaseProyectoInicializado/faseid=<str:faseid>/proyectoid=<str:proyectoid>/mensaje=<str:mensaje>',
          viewsFase.faseVerProyectoInicializado, name="faseViewInicializado"),
     path('fase/FaseIniciada/config/proyectoid=<str:proyectoid>/faseid=<str:faseid>/', viewsFase.FaseConfigInicializada, name="faseConfinicializada"),
     path('fase/addUser/', viewsFase.FaseAddUser),

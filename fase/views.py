@@ -129,7 +129,7 @@ def faseCrear(request):
         return render(request, 'fase/faseCrear.html', {'proyectoid': proyectoid, })
 
 
-def faseVerProyectoInicializado(request, faseid, proyectoid):
+def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
     if request.method == 'GET':
         """Proyecto en el cual crear la fase."""
         proyecto = Proyecto.objects.get(id=proyectoid)
@@ -153,6 +153,7 @@ def faseVerProyectoInicializado(request, faseid, proyectoid):
                                                                       'items_aprobado': items_aprobado,
                                                                       'items_LB_cerrada':items_LB_cerrada,
                                                                       'items_LB_abierta':items_LB_abierta,
+                                                                      'mensaje':mensaje
                                                                       })
 
 
@@ -2141,10 +2142,9 @@ def faseCerrarLineaBase(request,proyectoid,faseid,lineaBaseid):
         lineaBase.save()
         """Obtener lineas base de fase, exluyendo las rotas (ncesario en el template a renderizar)"""
         lineasBase = fase.lineasBase.exclude(estado="rota")
-
         """Renderizar fase/faseGestionLineaBase.html"""
         return render(request, "fase/faseGestionLineaBase.html",
-                      {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+                      {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase})
 
 
 def itemHistorial(request):
@@ -2293,7 +2293,8 @@ def cerrarFase(request, proyectoid, faseid):
         if cerrar == True:
             fase.estado = "cerrada"
             fase.save()
-            return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
+            mensaje = "Éxito! La fase se cerró correctamente."
+            return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
 
         return redirect('faseConfinicializada',  proyectoid=proyectoid, faseid=faseid)
 

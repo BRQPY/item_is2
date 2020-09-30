@@ -34,6 +34,13 @@
           color: white;
         }
     </style>
+
+            {% if mensaje == "Éxito! La fase se cerró correctamente." %}
+                <div class="exito_mensaje" >
+                  <span class="closebtn">&times;</span>
+                  <strong> {{ mensaje }}</strong>
+                </div>
+            {% endif %}
     <div class="container"><br>
         <div style="position: relative;">
             <div style="position: absolute; left: 0; top: 0; text-align: left">
@@ -329,6 +336,16 @@
             current[0].className = current[0].className.replace(" active", "");
             this.className += " active";
           });
+        }
+        var close = document.getElementsByClassName("closebtn");
+        var i;
+
+        for (i = 0; i < close.length; i++) {
+          close[i].onclick = function(){
+            var div = this.parentElement;
+            div.style.opacity = "0";
+            setTimeout(function(){ div.style.display = "none"; }, 600);
+          }
         }
     </script>
 {% endblock%}
