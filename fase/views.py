@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 
-from proyecto.models import Proyecto, Fase, TipodeItem, Item, FaseUser, User, Rol, Relacion, LineaBase, Files
+from proyecto.models import Proyecto, Fase, TipodeItem, Item, FaseUser, User, Rol, Relacion, LineaBase, Files, RoturaLineaBase, RoturaLineaBaseComprometida
 from guardian.shortcuts import assign_perm, remove_perm
 from proyecto.views import proyectoView, faseView
 import boto3
@@ -2308,6 +2308,7 @@ def sendEmailView(mail,name,item,fase):
     email.send()
 
 
+
 def itemCalculoImpacto(request):
     if request.method == 'GET':
         """ID del proyecto"""
@@ -2444,3 +2445,571 @@ def itemCalculoImpacto(request):
                       {'faseid': faseid, 'proyectoid': proyectoid,
                        'item': itemCalculo,
                        'calculo': calculo, })
+
+def gestionRoturaLineaBase(request,proyectoid,faseid,lineaBaseid):
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        """Obtener linea base."""
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        solicitudes = lineaBase.roturaslineasBase.all()
+        es_comite = False
+        comite_miembros = proyecto.comite.all()
+        if request.user in comite_miembros:
+            es_comite = True
+        return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                'lineaBase': lineaBase, 'solicitudes': solicitudes, 'es_comite': es_comite })
+
+def formRoturaLineaBase(request,proyectoid,faseid,lineaBaseid):
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        """Obtener linea base."""
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        """Obtener items de linea base."""
+        items = lineaBase.items.all()
+        return render(request, "fase/FormularioRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                'lineaBase': lineaBase, 'items':items})
+    if request.method == "POST":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        """Obtener linea base."""
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        items = lineaBase.items.all()
+        descripcion = request.POST.get('descripcion')
+        """Se crea un objeto de tipo Rotura de Linea Base"""
+        solicitud = RoturaLineaBase.objects.create(solicitante=request.user, descripcion_solicitud=descripcion,
+                                                   fecha= datetime.now())
+        """Recupera los items a modificar seleccionados por el usuario"""
+        items_a_modificar = request.POST.getlist('items')
+        for i in items_a_modificar:
+            """Agrega los items a la solicitud"""
+            solicitud.items_implicados.add(Item.objects.get(id=i))
+        """Se guarda el objeto"""
+        solicitud.save()
+        """Se agrega la solicitud a la linea base"""
+        lineaBase.roturaslineasBase.add(solicitud)
+        lineaBase.save()
+        solicitudes = lineaBase.roturaslineasBase.all()
+        es_comite = False
+        comite_miembros = proyecto.comite.all()
+        if request.user in comite_miembros:
+            es_comite = True
+
+        mensaje = "Su solicitud se envió correctamente. El Comité de Control de Cambios decidirá romper o no la Línea Base."
+        # VERIFICAR SI EL USUARIO QUE ENTRA A ESA PAGINA YA EMITIO O NO SU VOTO PARA NO MOSTRARLE ESE TEMPLATE
+        return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                        'lineaBase': lineaBase,
+                                                                        'solicitudes': solicitudes,
+                                                                        'es_comite': es_comite, 'mensaje': mensaje})
+
+def votacionRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        """Obtener linea base."""
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        solicitud = RoturaLineaBase.objects.get(id=solicituid)
+        return render(request, "fase/faseRoturaLineaBaseVotar.html", {'proyecto': proyecto, 'fase': fase,
+                                                                        'lineaBase': lineaBase,
+                                                                        'solicitud': solicitud,})
+
+def AprobarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        """Obtener linea base."""
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        solicitud = RoturaLineaBase.objects.get(id=solicituid)
+        solicitudes = lineaBase.roturaslineasBase.all()
+        es_comite = False
+        comite_miembros = proyecto.comite.all()
+        if request.user in comite_miembros:
+            es_comite = True
+        """Registrar votos"""
+        voto_anotado = False
+        votos_registrados = []
+        votos_registrados = solicitud.votos_registrados.all()
+        votos_registrados = list(votos_registrados)
+        if not request.user in votos_registrados:
+            if solicitud.voto_uno == -1:
+                """Se registra el voto como primer voto y se guarda al usuario que voto"""
+                solicitud.voto_uno = 1
+                solicitud.votos_registrados.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+            """ Si ya se guardo un voto en voto_uno, se prueba en voto_dos"""
+            if solicitud.voto_dos == -1 and not voto_anotado:
+                """Se registra el voto como segundo voto y se guarda al usuario que voto"""
+                solicitud.voto_dos = 1
+                solicitud.votos_registrados.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+            """ Si ya se guardo un voto en voto_uno y voto_dos, se prueba en voto_tres"""
+            if solicitud.voto_tres == -1 and not voto_anotado:
+                """Se registra el voto como segundo voto y se guarda al usuario que voto"""
+                solicitud.voto_tres = 1
+                solicitud.votos_registrados.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+
+            """
+                Luego de registrar los votos, se procede a controlar si se rompe o no la Línea Base. 
+                Si algún voto está en -1, quiere decir que algún miembro del Comité aún no voto.
+                En caso de que todos hayan votado, se suman los valores.
+                Si:
+                    suma == 0, todos rechazaron --> No se rompe la linea base. 
+                    suma == 1, un solo voto por la aprobación, dos rechazos --> No se rompe la linea base. 
+                    suma == 2, dos votos por la aprobación, un rechazo --> Se rompe la linea base.
+                    suma == 3, todos aprobaron --> Se rompe la linea base. 
+            """
+            if solicitud.voto_uno is not -1 and solicitud.voto_dos is not -1 and solicitud.voto_tres is not -1:
+                """Ya votaron los tres miembros"""
+                suma = solicitud.voto_uno + solicitud.voto_dos + solicitud.voto_tres
+                if suma < 2 and suma >= 0:
+                    solicitud.estado = "rechazado"
+                    solicitud.save()
+                    # Acciones de rechazo de solicitud de Rotura Linea Base
+                    mensaje = "Su voto se registro correctamente. Se rechazó la rotura de la Línea Base."
+                    return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                                    'lineaBase': lineaBase,
+                                                                                    'solicitudes': solicitudes,
+                                                                                    'es_comite': es_comite,
+                                                                                    'mensaje': mensaje})
+                if suma >= 2 and suma <= 3:
+                    solicitud.estado = "aprobado"
+                    solicitud.save()
+                    # Acciones de aprobacion de solicitud de Rotura Linea Base
+                    """Establecer a la línea base como rota"""
+                    lineaBase.estado = "rota"
+                    lineaBase.save()
+                    for i in lineaBase.items.all():
+                        i.estado = "en revision"
+                        i._history_date = datetime.now()
+                        """Guardar"""
+                        i.save()
+                        for r in i.relaciones.all():
+                            relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
+                            if not relacionItem:
+                                r.estado = "en revision"
+                                r._history_date = datetime.now()
+                                """Guardar"""
+                                r.save()
+                                esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
+                                if esta_en_LB:
+                                    lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                                    """Si el estado de la linea base es cerrada."""
+                                    if lineaBaseItem.estado == "cerrada":
+                                        lineaBaseItem.estado = "comprometida"
+                                        solicitud = RoturaLineaBaseComprometida.objects.create(comprometida_estado="pendiente")
+                                        solicitud.save()
+                                        lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
+                                        lineaBaseItem.save()
+
+                                    if lineaBaseItem.estado == "abierta":
+                                        lineaBaseItem.items.remove(r)
+                                        lineaBaseItem.save()
+
+
+                    mensaje = "Su voto se registro correctamente. Se aprobo la rotura de la Línea Base."
+                    return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                                    'lineaBase': lineaBase,
+                                                                                    'solicitudes': solicitudes,
+                                                                                    'es_comite': es_comite,
+                                                                                    'mensaje': mensaje})
+
+            else:
+                """Aún no votaron todos los miembros"""
+                # Redirigir a la lista de solicitudes y mostrarle un mensaje de que se registro su voto.
+
+                mensaje = "Su voto se registro correctamente. La rotura se decidirá cuando todos los miembros del Comité emitan su voto."
+                # VERIFICAR SI EL USUARIO QUE ENTRA A ESA PAGINA YA EMITIO O NO SU VOTO PARA NO MOSTRARLE ESE TEMPLATE
+                return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                                'lineaBase': lineaBase,
+                                                                                'solicitudes': solicitudes,
+                                                                                'es_comite': es_comite, 'mensaje': mensaje})
+        else:
+            mensaje = " "
+            # VERIFICAR SI EL USUARIO QUE ENTRA A ESA PAGINA YA EMITIO O NO SU VOTO PARA NO MOSTRARLE ESE TEMPLATE
+            return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                            'lineaBase': lineaBase,
+                                                                            'solicitudes': solicitudes,
+                                                                            'es_comite': es_comite, 'mensaje': mensaje})
+
+def RechazarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        """Obtener linea base."""
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        solicitud = RoturaLineaBase.objects.get(id=solicituid)
+        solicitudes = lineaBase.roturaslineasBase.all()
+        es_comite = False
+        comite_miembros = proyecto.comite.all()
+        if request.user in comite_miembros:
+            es_comite = True
+        """Registrar votos"""
+        voto_anotado = False
+        votos_registrados = []
+        votos_registrados = solicitud.votos_registrados.all()
+        votos_registrados = list(votos_registrados)
+        if not request.user in votos_registrados:
+            if solicitud.voto_uno == -1:
+                """Se registra el voto como primer voto y se guarda al usuario que voto"""
+                solicitud.voto_uno = 0
+                solicitud.votos_registrados.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+            """ Si ya se guardo un voto en voto_uno, se prueba en voto_dos"""
+            if solicitud.voto_dos == -1 and not voto_anotado:
+                """Se registra el voto como segundo voto y se guarda al usuario que voto"""
+                solicitud.voto_dos = 0
+                solicitud.votos_registrados.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+            """ Si ya se guardo un voto en voto_uno y voto_dos, se prueba en voto_tres"""
+            if solicitud.voto_tres == -1 and not voto_anotado:
+                """Se registra el voto como segundo voto y se guarda al usuario que voto"""
+                solicitud.voto_tres = 0
+                solicitud.votos_registrados.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+
+            """
+                Luego de registrar los votos, se procede a controlar si se rompe o no la Línea Base. 
+                Si algún voto está en -1, quiere decir que algún miembro del Comité aún no voto.
+                En caso de que todos hayan votado, se suman los valores.
+                Si:
+                    suma == 0, todos rechazaron --> No se rompe la linea base. 
+                    suma == 1, un solo voto por la aprobación, dos rechazos --> No se rompe la linea base. 
+                    suma == 2, dos votos por la aprobación, un rechazo --> Se rompe la linea base.
+                    suma == 3, todos aprobaron --> Se rompe la linea base. 
+            """
+            if solicitud.voto_uno is not -1 and solicitud.voto_dos is not -1 and solicitud.voto_tres is not -1:
+                """Ya votaron los tres miembros"""
+                suma = solicitud.voto_uno + solicitud.voto_dos + solicitud.voto_tres
+                if suma < 2 and suma >= 0:
+                    solicitud.estado = "rechazado"
+                    solicitud.save()
+                    # Acciones de rechazo de solicitud de Rotura Linea Base
+                    # Se podría enviar correo al solicitante para avisarle que se rechazó su solicitud
+                    mensaje = "Su voto se registro correctamente. Se rechazó la rotura de la Línea Base."
+                    return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                                    'lineaBase': lineaBase,
+                                                                                    'solicitudes': solicitudes,
+                                                                                    'es_comite': es_comite,
+                                                                                    'mensaje': mensaje})
+                if suma >= 2 and suma <= 3:
+                    solicitud.estado = "aprobado"
+                    solicitud.save()
+                    # Acciones de aprobacion de solicitud de Rotura Linea Base
+                    """Establecer a la línea base como rota"""
+                    lineaBase.estado = "rota"
+                    lineaBase.save()
+                    for i in lineaBase.items.all():
+                        i.estado = "en revision"
+                        i._history_date = datetime.now()
+                        """Guardar"""
+                        i.save()
+                        for r in i.relaciones.all():
+                            relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
+                            if not relacionItem:
+                                r.estado = "en revision"
+                                r._history_date = datetime.now()
+                                """Guardar"""
+                                r.save()
+                                esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
+                                if esta_en_LB:
+                                    lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                                    """Si el estado de la linea base es cerrada."""
+                                    if lineaBaseItem.estado == "cerrada":
+                                        lineaBaseItem.estado = "comprometida"
+                                        solicitud = RoturaLineaBaseComprometida.objects.create(comprometida_estado="pendiente")
+                                        solicitud.save()
+                                        lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
+                                        lineaBaseItem.save()
+                                    if lineaBaseItem.estado == "abierta":
+                                        lineaBaseItem.items.remove(r)
+                                        lineaBaseItem.save()
+                    mensaje = "Su voto se registro correctamente. Se aprobo la rotura de la Línea Base."
+                    return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                                    'lineaBase': lineaBase,
+                                                                                    'solicitudes': solicitudes,
+                                                                                    'es_comite': es_comite,
+                                                                                    'mensaje': mensaje})
+
+            else:
+                """Aún no votaron todos los miembros"""
+                # Redirigir a la lista de solicitudes y mostrarle un mensaje de que se registro su voto.
+
+                mensaje = "Su voto se registro correctamente. La rotura se decidirá cuando todos los miembros del Comité emitan su voto."
+                # VERIFICAR SI EL USUARIO QUE ENTRA A ESA PAGINA YA EMITIO O NO SU VOTO PARA NO MOSTRARLE ESE TEMPLATE
+                return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                                'lineaBase': lineaBase,
+                                                                                'solicitudes': solicitudes,
+                                                                                'es_comite': es_comite, 'mensaje': mensaje})
+        else:
+            mensaje = " "
+            # VERIFICAR SI EL USUARIO QUE ENTRA A ESA PAGINA YA EMITIO O NO SU VOTO PARA NO MOSTRARLE ESE TEMPLATE
+            return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                            'lineaBase': lineaBase,
+                                                                            'solicitudes': solicitudes,
+                                                                            'es_comite': es_comite, 'mensaje': mensaje})
+
+def votacionRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid):
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        """Obtener linea base."""
+        items_aprobados = []
+        items_en_revision = []
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        items_lb = lineaBase.items.all()
+        for i in items_lb:
+            if i.estado == "aorobado":
+                items_aprobados.append(i)
+            if i.estado == "en revision":
+                items_en_revision.append(i)
+        solicitud_romper = []
+        solicitud_romper = lineaBase.roturaLineaBaseComprometida.all()
+        solicitud_romper = list(solicitud_romper)
+        solicitud = solicitud_romper.pop()
+        return render(request, "fase/faseRoturaLineaBaseVotarComprometida.html", {'proyecto': proyecto, 'fase': fase,'lineaBase': lineaBase,
+                                                                                  'items_aprobados': items_aprobados,
+                                                                                  'items_en_revision': items_en_revision, 'solicitud':solicitud})
+def AprobarRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid,solicituid):
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        """Obtener linea base."""
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        solicitud = RoturaLineaBaseComprometida.objects.get(id=solicituid)
+        es_comite = False
+        comite_miembros = proyecto.comite.all()
+        if request.user in comite_miembros:
+            es_comite = True
+        """Registrar votos"""
+        voto_anotado = False
+        votos_registrados = []
+        votos_registrados = solicitud.registrados_votos_comprometida.all()
+        votos_registrados = list(votos_registrados)
+        if not request.user in votos_registrados:
+            if solicitud.uno_voto_comprometida == -1:
+                """Se registra el voto como primer voto y se guarda al usuario que voto"""
+                solicitud.uno_voto_comprometida = 1
+                solicitud.registrados_votos_comprometida.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+            """ Si ya se guardo un voto en voto_uno, se prueba en dos_voto_comprometida"""
+            if solicitud.dos_voto_comprometida == -1 and not voto_anotado:
+                """Se registra el voto como segundo voto y se guarda al usuario que voto"""
+                solicitud.dos_voto_comprometida = 1
+                solicitud.registrados_votos_comprometida.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+            """ Si ya se guardo un voto en voto_uno y voto_dos, se prueba en tres_voto_comprometida"""
+            if solicitud.tres_voto_comprometida == -1 and not voto_anotado:
+                """Se registra el voto como segundo voto y se guarda al usuario que voto"""
+                solicitud.tres_voto_comprometida = 1
+                solicitud.registrados_votos_comprometida.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+
+            """
+                Luego de registrar los votos, se procede a controlar si se rompe o no la Línea Base. 
+                Si algún voto está en -1, quiere decir que algún miembro del Comité aún no voto.
+                En caso de que todos hayan votado, se suman los valores.
+                Si:
+                    suma == 0, todos rechazaron --> No se rompe la linea base. 
+                    suma == 1, un solo voto por la aprobación, dos rechazos --> No se rompe la linea base. 
+                    suma == 2, dos votos por la aprobación, un rechazo --> Se rompe la linea base.
+                    suma == 3, todos aprobaron --> Se rompe la linea base. 
+            """
+            if solicitud.uno_voto_comprometida is not -1 and solicitud.dos_voto_comprometida is not -1 and solicitud.tres_voto_comprometida is not -1:
+                """Ya votaron los tres miembros"""
+                suma = solicitud.uno_voto_comprometida + solicitud.dos_voto_comprometida + solicitud.tres_voto_comprometida
+                if suma < 2 and suma >= 0:
+                    solicitud.comprometida_estado = "rechazado"
+                    solicitud.save()
+                    # Acciones de rechazo de solicitud de Rotura Linea Base
+                    mensaje = "Su voto se registro correctamente. Se rechazó la rotura de la Línea Base."
+                    lineasBase = fase.lineasBase.all()
+                    return render(request, "fase/faseGestionLineaBase.html",
+                                  {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+                if suma >= 2 and suma <= 3:
+                    solicitud.comprometida_estado = "aprobado"
+                    solicitud.save()
+                    # Acciones de aprobacion de solicitud de Rotura Linea Base
+                    """Establecer a la línea base como rota"""
+                    lineaBase.estado = "rota"
+                    lineaBase.save()
+                    for i in lineaBase.items.all():
+                        i.estado = "en revision"
+                        i._history_date = datetime.now()
+                        """Guardar"""
+                        i.save()
+                        for r in i.relaciones.all():
+                            relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
+                            if not relacionItem:
+                                r.estado = "en revision"
+                                r._history_date = datetime.now()
+                                """Guardar"""
+                                r.save()
+                                esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
+                                if esta_en_LB:
+                                    lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                                    """Si el estado de la linea base es cerrada."""
+                                    if lineaBaseItem.estado == "cerrada":
+                                        lineaBaseItem.estado = "comprometida"
+                                        solicitud_romper = RoturaLineaBaseComprometida.objects.create(comprometida_estado="pendiente")
+                                        solicitud_romper.save()
+                                        lineaBaseItem.roturaLineaBaseComprometida.add(solicitud_romper)
+                                        lineaBaseItem.save()
+                                    if lineaBaseItem.estado == "abierta":
+                                        lineaBaseItem.items.remove(r)
+                                        lineaBaseItem.save()
+
+                    lineasBase = fase.lineasBase.all()
+                    return render(request, "fase/faseGestionLineaBase.html",
+                                  {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+
+            else:
+                """Aún no votaron todos los miembros"""
+                # Redirigir a la lista de solicitudes y mostrarle un mensaje de que se registro su voto.
+
+                lineasBase = fase.lineasBase.all()
+                return render(request, "fase/faseGestionLineaBase.html",
+                              {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+        else:
+            lineasBase = fase.lineasBase.all()
+            return render(request, "fase/faseGestionLineaBase.html",
+                          {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+
+def RechazarRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid, solicituid):
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        """Obtener linea base."""
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        solicitud = RoturaLineaBase.objects.get(id=solicituid)
+        solicitudes = lineaBase.roturaslineasBase.all()
+        es_comite = False
+        comite_miembros = proyecto.comite.all()
+        if request.user in comite_miembros:
+            es_comite = True
+        """Registrar votos"""
+        voto_anotado = False
+        votos_registrados = []
+        votos_registrados = solicitud.registrados_votos_comprometida.all()
+        votos_registrados = list(votos_registrados)
+        if not request.user in votos_registrados:
+            if solicitud.uno_voto_comprometida == -1:
+                """Se registra el voto como primer voto y se guarda al usuario que voto"""
+                solicitud.uno_voto_comprometida = 0
+                solicitud.registrados_votos_comprometida.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+            """ Si ya se guardo un voto en voto_uno, se prueba en dos_voto_comprometida"""
+            if solicitud.dos_voto_comprometida == -1 and not voto_anotado:
+                """Se registra el voto como segundo voto y se guarda al usuario que voto"""
+                solicitud.dos_voto_comprometida = 0
+                solicitud.registrados_votos_comprometida.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+            """ Si ya se guardo un voto en voto_uno y dos_voto_comprometida, se prueba en tres_voto_comprometida"""
+            if solicitud.tres_voto_comprometida == -1 and not voto_anotado:
+                """Se registra el voto como segundo voto y se guarda al usuario que voto"""
+                solicitud.tres_voto_comprometida = 0
+                solicitud.registrados_votos_comprometida.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+
+            """
+                Luego de registrar los votos, se procede a controlar si se rompe o no la Línea Base. 
+                Si algún voto está en -1, quiere decir que algún miembro del Comité aún no voto.
+                En caso de que todos hayan votado, se suman los valores.
+                Si:
+                    suma == 0, todos rechazaron --> No se rompe la linea base. 
+                    suma == 1, un solo voto por la aprobación, dos rechazos --> No se rompe la linea base. 
+                    suma == 2, dos votos por la aprobación, un rechazo --> Se rompe la linea base.
+                    suma == 3, todos aprobaron --> Se rompe la linea base. 
+            """
+            if solicitud.uno_voto_comprometida is not -1 and solicitud.dos_voto_comprometida is not -1 and solicitud.tres_voto_comprometida is not -1:
+                """Ya votaron los tres miembros"""
+                suma = solicitud.uno_voto_comprometida + solicitud.dos_voto_comprometida + solicitud.tres_voto_comprometida
+                if suma < 2 and suma >= 0:
+                    solicitud.comprometida_estado = "rechazado"
+                    solicitud.save()
+                    # Acciones de rechazo de solicitud de Rotura Linea Base
+                    # Se podría enviar correo al solicitante para avisarle que se rechazó su solicitud
+                    lineasBase = fase.lineasBase.all()
+                    return render(request, "fase/faseGestionLineaBase.html",
+                                  {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+                if suma >= 2 and suma <= 3:
+                    solicitud.comprometida_estado = "aprobado"
+                    solicitud.save()
+                    # Acciones de aprobacion de solicitud de Rotura Linea Base
+                    """Establecer a la línea base como rota"""
+                    lineaBase.estado = "rota"
+                    lineaBase.save()
+                    for i in lineaBase.items.all():
+                        i.estado = "en revision"
+                        i._history_date = datetime.now()
+                        """Guardar"""
+                        i.save()
+                        for r in i.relaciones.all():
+                            relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
+                            if not relacionItem:
+                                r.estado = "en revision"
+                                r._history_date = datetime.now()
+                                """Guardar"""
+                                r.save()
+                                esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
+                                if esta_en_LB:
+                                    lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                                    """Si el estado de la linea base es cerrada."""
+                                    if lineaBaseItem.estado == "cerrada":
+                                        lineaBaseItem.estado = "comprometida"
+                                        solicitud_romper = RoturaLineaBaseComprometida.objects.create(comprometida_estado="pendiente")
+                                        solicitud_romper.save()
+                                        lineaBaseItem.roturaLineaBaseComprometida.add(solicitud_romper)
+                                        lineaBaseItem.save()
+                                    if lineaBaseItem.estado == "abierta":
+                                        lineaBaseItem.items.remove(r)
+                                        lineaBaseItem.save()
+                    mensaje = "Su voto se registro correctamente. Se aprobo la rotura de la Línea Base."
+                    lineasBase = fase.lineasBase.all()
+                    return render(request, "fase/faseGestionLineaBase.html",
+                                  {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+
+            else:
+                """Aún no votaron todos los miembros"""
+                # Redirigir a la lista de solicitudes y mostrarle un mensaje de que se registro su voto.
+
+                mensaje = "Su voto se registro correctamente. La rotura se decidirá cuando todos los miembros del Comité emitan su voto."
+                lineasBase = fase.lineasBase.all()
+                return render(request, "fase/faseGestionLineaBase.html",
+                              {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+        else:
+            mensaje = " "
+            lineasBase = fase.lineasBase.all()
+            return render(request, "fase/faseGestionLineaBase.html",
+                          {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })

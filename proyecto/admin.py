@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Rol, Proyecto, FaseUser, TipodeItem, Fase, Item, Relacion, LineaBase, Files, ProyectoFase
+from .models import Rol, Proyecto, FaseUser, TipodeItem, Fase, Item, Relacion, LineaBase, Files, ProyectoFase, RoturaLineaBase, RoturaLineaBaseComprometida
 from simple_history.admin import SimpleHistoryAdmin
 
 
@@ -37,3 +37,5 @@ admin.site.register(Relacion,ProyectoHistoryRelacion)
 admin.site.register(LineaBase)
 admin.site.register(Item, ProyectoHistoryAdmin)
 admin.site.register(ProyectoFase,ProyectoHistoryProyectoFase)
+admin.site.register(RoturaLineaBase)
+admin.site.register(RoturaLineaBaseComprometida)
