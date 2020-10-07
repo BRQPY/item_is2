@@ -158,6 +158,17 @@
                             <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
                             <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
                         </form>
+                        <form action="/item/calculoImpacto/">
+                            <button type="submit" class="btn blue darken-5 right"
+                                    title="Calculo de Impacto del ítem {{ item.nombre }}"
+                            >
+                                Calculo de Impacto
+                                <i class="material-icons white-text left">timeline</i>
+                            </button>
+                            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                            <input  type="hidden" value={{item.id}} id="itemIdCalculo" name="itemIdCalculo">
+                        </form>
                     </div>
                 </div>
 

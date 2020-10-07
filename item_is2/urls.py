@@ -140,4 +140,5 @@ urlpatterns = [
     path('item/relaciones/remover/itemid=<str:itemid>/item_rm=<str:item_rm>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',viewsFase.itemRelacionesRemover, name="itemRelacionesRemover"),
     path('item/downloadFile/filename=<str:filename>/itemid=<str:itemid>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', viewsFase.downloadFile, name="download"),
     path('fase/cerrarFase/proyectoid=<str:proyectoid>/faseid=<str:faseid>/',viewsFase.cerrarFase, name="cerrarFaseView"),
+    path('item/calculoImpacto/',viewsFase.itemCalculoImpacto),
     ]
