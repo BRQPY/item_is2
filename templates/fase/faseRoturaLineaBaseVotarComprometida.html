@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <form action="{%url 'faseConfinicializada' proyecto.id fase.id  %}">
+        <button type="submit" class="waves-effect waves-teal btn-flat">
+            Volver a la configuración de la fase {{ fase.nombre }}
+            <i class="material-icons dark blue-text left">keyboard_return</i>
+        </button>
+        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+    </form>
+    <div class="container">
+        <h4 style="text-align: center"> Rotura de Línea Base</h4>
+        <h5 style="text-align: center"> La Línea Base "{{ lineaBase.nombre }}" se encuentra comprometida</h5>
+        <div class="col s12 md6 x8">
+            <ul class="z-depth-1">
+                <li>
+                    <div class="card-panel z-depth-4 expense">
+                        <div class="row">
+                            <div class="col 14 left">
+                                <b>Nombre:</b>
+                                {{ lineaBase.nombre }}
+                            </div>
+                            <div class="col 14 left">
+                                <b>Estado:</b>
+                                {{ lineaBase.estado }}
+                            </div>
+                            <div class="col 14 left">
+                                <b>Creador:</b>
+                                {{ lineaBase.creador }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col 14 left">
+                                <b>Items aprobados:</b>
+                                {% for i in items_aprobados %}
+                                    {{ i.nombre }}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="row">
+                                <div class="col 14 left">
+                                    <b>Items en revision:</b>
+                                    {% for i in items_en_revision %}
+                                        {{ i.nombre }}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                </li>
+            </ul>
+        </div>
+        <form action="/fase/roturaLineaBase/comprometida/votacion/aprobado/proyectoid={{ proyecto.id }}/faseid= {{ fase.id }}/lineaBaseid={{ lineaBase.id }}/solicituid={{ solicitud.id }}/">
+            <button type="submit" class="btn btn-small green darken-1 right">
+                Aprobar Rotura de Línea Base
+                <i class="material-icons white-text left">check</i>
+            </button>
+        </form>
+        <form action="/fase/roturaLineaBase/comprometida/votacion/rechazado/proyectoid={{ proyecto.id }}/faseid= {{ fase.id }}/lineaBaseid={{ lineaBase.id }}/solicituid={{ solicitud.id }}/">
+            <button type="submit" class="btn btn-small red darken-1 left">
+                Rechazar Rotura de Línea Base
+                <i class="material-icons white-text left">close</i>
+            </button>
+        </form>
+    </div>
+
+
+{% endblock%}

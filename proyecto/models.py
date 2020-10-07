@@ -47,13 +47,32 @@ class Item(models.Model):
 class Files(models.Model):
     file = models.FileField(null=True, blank=True, default=None)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, default=None)
+class RoturaLineaBase(models.Model):
+    solicitante = models.ForeignKey(User, on_delete=models.CASCADE, default=None, null=True, related_name="solicitante")
+    descripcion_solicitud = models.CharField(max_length=200, null=False, default=None)
+    items_implicados = models.ManyToManyField(Item, default=None, related_name="items_implicados")
+    voto_uno = models.SmallIntegerField(null=False, default=-1)
+    voto_dos = models.SmallIntegerField(null=False, default=-1)
+    voto_tres = models.SmallIntegerField(null=False, default=-1)
+    votos_registrados = models.ManyToManyField(User, default=None, related_name="votantes")
+    fecha = models.CharField(max_length=40, null=False, default=None)
+    estado = models.CharField(max_length=40, null=False, default="pendiente")
 
+class RoturaLineaBaseComprometida(models.Model):
+    uno_voto_comprometida = models.SmallIntegerField(null=False, default=-1)
+    dos_voto_comprometida  = models.SmallIntegerField(null=False, default=-1)
+    tres_voto_comprometida  = models.SmallIntegerField(null=False, default=-1)
+    registrados_votos_comprometida  = models.ManyToManyField(User, default=None, related_name="comprometidavotantes")
+    comprometida_estado  = models.CharField(max_length=40, null=False, default="pendiente")
 
 class LineaBase(models.Model):
     nombre = models.CharField(max_length=40, null=False, default=None)
     items = models.ManyToManyField(Item, default=None)
     estado = models.CharField(max_length=40, default=None)
     creador = models.ForeignKey(User, on_delete=models.CASCADE, default=None, null=True)
+    roturaslineasBase = models.ManyToManyField(RoturaLineaBase, default=None, blank= True)
+    roturaLineaBaseComprometida = models.ManyToManyField(RoturaLineaBaseComprometida,default=None, blank= True, related_name="comprometida")
+
 
 
 class Fase(models.Model):
@@ -63,7 +82,6 @@ class Fase(models.Model):
     items = models.ManyToManyField(Item, default=None)
     tipoItem = models.ManyToManyField(TipodeItem, default=None)
     lineasBase = models.ManyToManyField(LineaBase, default=None)
-
     class Meta:
         permissions = (
             ("create_item", "Can create item"),

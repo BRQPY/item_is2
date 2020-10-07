@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    {% if mensaje == "Su solicitud se envió correctamente. El Comité de Control de Cambios decidirá romper o no la Línea Base."%}
+        <div class="alert success">
+          <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "Su voto se registro correctamente. La rotura se decidirá cuando todos los miembros del Comité emitan su voto."%}
+        <div class="alert success">
+          <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "Su voto se registro correctamente. Se rechazó la rotura de la Línea Base."%}
+        <div class="alert success">
+          <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "Su voto se registro correctamente. Se aprobo la rotura de la Línea Base."%}
+        <div class="alert success">
+          <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    <form action="{%url 'faseConfinicializada' proyecto.id fase.id  %}">
+        <button type="submit" class="waves-effect waves-teal btn-flat">
+            Volver a la configuración de la fase {{ fase.nombre }}
+            <i class="material-icons dark blue-text left">keyboard_return</i>
+        </button>
+        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+    </form>
+    <div class="container">
+        <h4 style="text-align: center"> Linea Base {{ lineaBase.nombre }}</h4>
+        <h5 style="text-align: center"> Listado de Solicitudes de Rotura</h5><br>
+            <form action="/fase/roturaLineaBase/form/proyectoid={{ proyecto.id }}/faseid= {{ fase.id }}/lineaBaseid={{ lineaBase.id }}/">
+                <button type="submit" class="btn btn-small blue darken-1 right">
+                    Solicitar Rotura de Línea Base
+                    <i class="material-icons white-text left">add_circle</i>
+                </button>
+            </form><br>
+
+        {% if solicitudes %}
+            <div class="col s12 md6 x8">
+                <ul class="z-depth-1">
+                    {% for s in solicitudes %}
+                        <li>
+                            <div class="card-panel z-depth-4 expense">
+                                <div class="row">
+                                    <div class="col 14 left">
+                                        <b>Solicitante:</b>
+                                        {{s.solicitante}}
+                                    </div>
+                                    {% if es_comite and s.estado == "pendiente" %}
+                                        <div class="col 14 right">
+                                            <a href="{%url 'votacionRoturaLineaBase' proyecto.id fase.id lineaBase.id s.id%}"
+                                               title="Votar para romper o no la Línea Base."
+                                            >
+                                                Resolver rotura de Línea Base
+                                                <i class="material-icons blue-text left">touch_app</i>
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="row">
+                                    <div class="col 14 right">
+                                        <b>Fecha:</b>
+                                        {{s.fecha}}
+                                    </div>
+                                    <div class="col 14 left">
+                                        <b>Estado:</b>
+                                        {{s.estado}}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% else %}
+            <h5>La línea base no cuenta con solicitudes de rotura.</h5>
+        {% endif %}
+    </div>
+{% endblock%}

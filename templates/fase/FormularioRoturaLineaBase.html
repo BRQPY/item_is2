@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <style>
+        textarea::placeholder {
+          color: #3b444b;
+        }
+    </style>
+    <div class="container">
+        <form action="/fase/roturaLineaBase/form/proyectoid={{ proyecto.id }}/faseid= {{ fase.id }}/lineaBaseid={{ lineaBase.id }}/" method="post">
+            {% csrf_token %}
+            <h4 style="text-align: center"> Formulario de Solicitud para Rotura de Línea Base</h4><br><br>
+            <h6>
+                <b>Usuario solicitante:</b>  {{ request.user }}
+            </h6>
+            <h6>
+                <b>Línea Base afectada:</b>  {{ lineaBase.nombre }}
+            </h6>
+            <h6>
+                <b>Descripción de la solicitud:</b>
+            </h6>
+            <textarea id="descripcion" name="descripcion" required
+                      style="width:100%; height:80px;"
+                      placeholder="Explica, en menos de 200 caracteres, al Comité de Control de Cambios porqué deseas romper ésta Línea Base."
+            ></textarea>
+            <h6>
+                <b>Ítems a modificar dentro de la Línea Base:</b>
+            </h6>
+            {% for i in items %}
+                <div class="form-check">
+                    <label>
+                        <input class="filled-in" type="checkbox" id="items" name="items" value="{{ i.id }}">
+                        <span style="color:black">{{ i.nombre }}</span>
+                    </label>
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn-small blue darken-3 right">
+                Enviar Solicitud
+                <i class="material-icons left">add_circle</i>
+            </button>
+        </form>
+    </div>
+{% endblock%}
