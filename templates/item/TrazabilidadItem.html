@@ -396,8 +396,9 @@
       // define some sample graphs in some of the lanes
       myDiagram.model = new go.GraphLinksModel(
         [ // node data
-          { key: "Pool1", text: "Pool", isGroup: true, category: "Pool" },
-          { key: "Pool2", text: "Pool2", isGroup: true, category: "Pool" },
+          { key: "Pool1", text: "Trazabilidad del Ítem", isGroup: true, category: "Pool" },
+            //ciclo que recorra las fases en vez del lane
+
           { key: "Lane1", text: "Lane1", isGroup: true, group: "Pool1", color: "lightblue" },
           { key: "Lane2", text: "Lane2", isGroup: true, group: "Pool1", color: "lightgreen" },
           { key: "Lane3", text: "Lane3", isGroup: true, group: "Pool1", color: "lightyellow" },
@@ -455,6 +456,10 @@
   </script>
 </head>
 <body onload="init()">
+<div class="container">
+    {% for %}
+    {% endfor %}
+</div>
 <div id="sample">
   <div id="myDiagramDiv" style="border: solid 1px black; width:100%; height:600px;"></div>
   <p>

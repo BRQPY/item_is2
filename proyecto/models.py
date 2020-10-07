@@ -32,6 +32,7 @@ class Item(models.Model):
     # archivos = models.ManyToManyField(Files,default=None)
     archivos = ArrayField(models.CharField(max_length=40), default=list, blank=True)
     history = HistoricalRecords(excluded_fields=['relaciones'])
+    faseid = models.IntegerField(default=0, editable=False)
 
     __history_date = None
 

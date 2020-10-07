@@ -784,7 +784,7 @@ def itemCrear(request):
             """Creacion del item con los datos proveidos por el usuario."""
             item = Item.objects.create(tipoItem=obj, nombre=dato['nombre'], fecha=dato['fecha'],
                                        observacion=dato['observacion'], costo=dato['costo'],
-                                       _history_date=datetime.now(), )
+                                       _history_date=datetime.now(), faseid=faseid)
 
             """Almacenar la informacion de cada campo extra proveido por el usuario."""
             item.estado = "en desarrollo"
