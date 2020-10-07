@@ -3013,3 +3013,165 @@ def RechazarRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid, s
             lineasBase = fase.lineasBase.all()
             return render(request, "fase/faseGestionLineaBase.html",
                           {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+
+
+def itemTrazabilidad(request):
+    if request.method == 'GET':
+        """ID del proyecto"""
+        proyectoid = request.GET.get('proyectoid')
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """ID de fase"""
+        faseid = request.GET.get('faseid')
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        """ID de item_from"""
+        itemIdTrazabilidad = request.GET.get('itemIdTrazabilidad')
+        """Obtener item."""
+        itemTrazabilidad = Item.objects.get(id=itemIdTrazabilidad)
+        """ID de item_to"""
+
+        adj = {}
+        confirmados = []
+        confirmados.append(int(itemTrazabilidad.id))
+        hijos = []
+        itemsFase = fase.items.exclude(estado="deshabilitado")
+        for r in itemTrazabilidad.relaciones.all():
+            if r in itemsFase:
+                confirmados.append(int(r.id))
+                hijos.append(int(r.id))
+                adj[int(r.id)] = []
+
+        adj[int(itemTrazabilidad.id)] = hijos
+
+
+        seguir = False
+        for c in confirmados:
+            confirmado = Item.objects.get(id=c)
+            for r in confirmado.relaciones.all():
+                if r in itemsFase and int(r.id) not in confirmados:
+                    seguir = True
+
+
+        while seguir:
+            for c in confirmados:
+                confirmado = Item.objects.get(id=c)
+                for r in confirmado.relaciones.all():
+                    if r in itemsFase and int(r.id) not in confirmados:
+                        #print("confirmado", confirmado.id, "falta", r.id)
+                        confirmados.append(int(r.id))
+                        adj[int(r.id)] = []
+                        adj[int(confirmado.id)].append(int(r.id))
+
+                """Volver a verificar"""
+                seguir = False
+                for c in confirmados:
+                    confirmado = Item.objects.get(id=c)
+                    for r in confirmado.relaciones.all():
+                        if r in itemsFase and int(r.id) not in confirmados:
+                            seguir = True
+
+
+        """FIltrar fases del proyecto apropiadas."""
+        fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+
+        """Inicializar contador."""
+        cont = 0
+        """Inicializar bandera para validar si un item pertenece a la primera fase."""
+        esPrimeraFase = False
+        """Recorrer las fases del proyecto."""
+        for fp in fasesProyecto:
+            """Aumenta el contador por cada fase."""
+            cont = cont + 1
+            """Si la fase encontrada es igual a la actual"""
+            if fp == fase:
+                """Si el contador es igual a 1."""
+                if cont == 1:
+                    """Setear bandera en true."""
+                    esPrimeraFase = True
+                    """ROmper ciclo."""
+                    break
+
+        "Solo verificar si son items posteriores a la primera fase."
+        if esPrimeraFase == False:
+            for r in itemTrazabilidad.relaciones.all():
+                if Relacion.objects.filter(item_from=r, item_to=itemTrazabilidad, tipo="antecesor").exists():
+                    lista = []
+                    lista.append(int(itemTrazabilidad.id))
+                    adj[int(r.id)] = lista
+
+
+
+        """Aqui sigue el codigo normal de calculo de impacto."""
+        for fp in fasesProyecto:
+            if int(fp.id) > int(fase.id):
+                itemsFase = fp.items.exclude(estado="deshabilitado").order_by('id')
+                confirmadosAux = []
+                """Para relaciones directas."""
+                for iF in itemsFase:
+                    hijos = []
+                    if Relacion.objects.filter(item_from_id__in=confirmados, item_to=iF, tipo="antecesor").exists():
+
+                        """Podria eistir la posibilidad de que tenga mas de un antecesor valido. Solo para el grafo."""
+                        for c in confirmados:
+                            if Relacion.objects.filter(item_from_id=c, item_to=iF, tipo="antecesor").exists():
+                                adj[int(c)].append(int(iF.id))
+
+
+                        if not int(iF.id) in confirmadosAux:
+                            calculo = calculo + int(iF.costo)
+                            confirmadosAux.append(int(iF.id))
+
+                        for r in iF.relaciones.all():
+                            if r in itemsFase:
+                                if not int(r.id) in confirmadosAux:
+                                    calculo = calculo + int(r.costo)
+                                    confirmadosAux.append(int(r.id))
+                                    hijos.append(int(r.id))
+                                    adj[int(r.id)] = []
+
+                        adj[int(iF.id)] = hijos
+                      #  adj[int(iF.id)] = confirmadosAux
+
+
+                """Para relaciones indirectas."""
+                for iF in itemsFase:
+                    hijos = []
+                    if not Relacion.objects.filter(item_from_id__in=confirmados, item_to=iF, tipo="antecesor").exists():
+
+                        if Relacion.objects.filter(item_from_id__in=confirmadosAux, item_to=iF).exists():
+                            if not int(iF.id) in confirmadosAux:
+                                calculo = calculo + int(iF.costo)
+                                confirmadosAux.append(int(iF.id))
+
+                            for r in iF.relaciones.all():
+                                if r in itemsFase:
+                                    if not int(r.id) in confirmadosAux:
+                                        calculo = calculo + int(r.costo)
+                                        confirmadosAux.append(int(r.id))
+                                        hijos.append(int(r.id))
+                                        adj[int(r.id)] = []
+
+                            adj[int(iF.id)] = hijos
+                        #  adj[int(iF.id)] = confirmadosAux
+
+                confirmados = confirmadosAux
+        print(adj)
+        print(calculo)
+        '''
+        """SI TIENE UN CICLO ELIMINAR RELACIONES Y REDIRIGIR A VISUALIZACION DE RELACIONES"""
+        if isCyclicDisconnected(adj, V):
+            relaciones_uno = Relacion.objects.get(item_from=itemActual, item_to=itemRelacion)
+            relaciones_uno.delete()
+            relaciones_dos = Relacion.objects.get(item_from=itemRelacion, item_to=itemActual)
+            relaciones_dos.delete(),
+            return redirect('itemVerRelaciones', itemid=itemIdActual, faseid=faseid, proyectoid=proyectoid,
+                            mensaje="Error! No se puede relacionar porque genera un ciclo.")
+        """SINO MANTENER RELACIONES Y REDIRIGIR A LA VISTA DE RELACIONES."""
+        return redirect('itemVerRelaciones', itemid=itemActual.id, faseid=faseid, proyectoid=proyectoid,
+                        mensaje=' ')
+        '''
+        return render(request, 'item/itemCalculoImpacto.html',
+                      {'faseid': faseid, 'proyectoid': proyectoid,
+                       'item': itemCalculo,
+                       'calculo': calculo, })
