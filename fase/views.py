@@ -3119,13 +3119,11 @@ def itemTrazabilidad(request):
 
 
                         if not int(iF.id) in confirmadosAux:
-                            calculo = calculo + int(iF.costo)
                             confirmadosAux.append(int(iF.id))
 
                         for r in iF.relaciones.all():
                             if r in itemsFase:
                                 if not int(r.id) in confirmadosAux:
-                                    calculo = calculo + int(r.costo)
                                     confirmadosAux.append(int(r.id))
                                     hijos.append(int(r.id))
                                     adj[int(r.id)] = []
@@ -3141,13 +3139,11 @@ def itemTrazabilidad(request):
 
                         if Relacion.objects.filter(item_from_id__in=confirmadosAux, item_to=iF).exists():
                             if not int(iF.id) in confirmadosAux:
-                                calculo = calculo + int(iF.costo)
                                 confirmadosAux.append(int(iF.id))
 
                             for r in iF.relaciones.all():
                                 if r in itemsFase:
                                     if not int(r.id) in confirmadosAux:
-                                        calculo = calculo + int(r.costo)
                                         confirmadosAux.append(int(r.id))
                                         hijos.append(int(r.id))
                                         adj[int(r.id)] = []
@@ -3157,7 +3153,6 @@ def itemTrazabilidad(request):
 
                 confirmados = confirmadosAux
         print(adj)
-        print(calculo)
         '''
         """SI TIENE UN CICLO ELIMINAR RELACIONES Y REDIRIGIR A VISUALIZACION DE RELACIONES"""
         if isCyclicDisconnected(adj, V):
@@ -3171,7 +3166,4 @@ def itemTrazabilidad(request):
         return redirect('itemVerRelaciones', itemid=itemActual.id, faseid=faseid, proyectoid=proyectoid,
                         mensaje=' ')
         '''
-        return render(request, 'item/itemCalculoImpacto.html',
-                      {'faseid': faseid, 'proyectoid': proyectoid,
-                       'item': itemCalculo,
-                       'calculo': calculo, })
+        return render(request, 'item/TrazabilidadItem.html',)

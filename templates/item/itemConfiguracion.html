@@ -169,6 +169,17 @@
                             <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
                             <input  type="hidden" value={{item.id}} id="itemIdCalculo" name="itemIdCalculo">
                         </form>
+                        <form action="/item/trazabilidad/">
+                            <button type="submit" class="btn blue darken-5 right"
+                                    title="Calculo de Impacto del ítem {{ item.nombre }}"
+                            >
+                                Trazabilidad
+                                <i class="material-icons white-text left">timeline</i>
+                            </button>
+                            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                            <input  type="hidden" value={{item.id}} id="itemIdTrazabilidad" name="itemIdTrazabilidad">
+                        </form>
                     </div>
                 </div>
 
