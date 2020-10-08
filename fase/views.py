@@ -2326,6 +2326,8 @@ def itemCalculoImpacto(request):
         """ID de item_to"""
 
         calculo = itemCalculo.costo
+
+        """NUEVA LOGICA CALCULO DE IMPACTO"""
         adj = {}
         confirmados = []
         confirmados.append(int(itemCalculo.id))
@@ -2333,46 +2335,50 @@ def itemCalculoImpacto(request):
         itemsFase = fase.items.exclude(estado="deshabilitado")
         for r in itemCalculo.relaciones.all():
             if r in itemsFase:
-                calculo = calculo + int(r.costo)
-                confirmados.append(int(r.id))
-                hijos.append(int(r.id))
-                adj[int(r.id)] = []
+                if Relacion.objects.filter(item_from=r, item_to=itemCalculo, tipo="hijo").exists():
+                    calculo = calculo + int(r.costo)
+                    confirmados.append(int(r.id))
+                    hijos.append(int(r.id))
+                    adj[int(r.id)] = []
 
         adj[int(itemCalculo.id)] = hijos
-
 
         seguir = False
         for c in confirmados:
             confirmado = Item.objects.get(id=c)
             for r in confirmado.relaciones.all():
-                if r in itemsFase and int(r.id) not in confirmados:
-                    seguir = True
-
+                if r in itemsFase:
+                    if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="hijo").exists():
+                        if int(r.id) not in confirmados:
+                            seguir = True
 
         while seguir:
             for c in confirmados:
                 confirmado = Item.objects.get(id=c)
                 for r in confirmado.relaciones.all():
-                    if r in itemsFase and int(r.id) not in confirmados:
-                        #print("confirmado", confirmado.id, "falta", r.id)
-                        calculo = calculo + int(r.costo)
-                        confirmados.append(int(r.id))
-                        adj[int(r.id)] = []
-                        adj[int(confirmado.id)].append(int(r.id))
+                    if r in itemsFase:
+                        if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="hijo").exists():
+                            if int(r.id) not in confirmados:
+                                # print("confirmado", confirmado.id, "falta", r.id)
+                                calculo = calculo + int(r.costo)
+                                confirmados.append(int(r.id))
+                                adj[int(r.id)] = []
+                                adj[int(confirmado.id)].append(int(r.id))
 
                 """Volver a verificar"""
                 seguir = False
                 for c in confirmados:
                     confirmado = Item.objects.get(id=c)
                     for r in confirmado.relaciones.all():
-                        if r in itemsFase and int(r.id) not in confirmados:
-                            seguir = True
-
+                        if r in itemsFase:
+                            if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="hijo").exists():
+                                if int(r.id) not in confirmados:
+                                    seguir = True
 
         """FIltrar fases del proyecto apropiadas."""
         fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
 
-
+        """Aqui sigue el codigo normal de calculo de impacto."""
         for fp in fasesProyecto:
             if int(fp.id) > int(fase.id):
                 itemsFase = fp.items.exclude(estado="deshabilitado").order_by('id')
@@ -2382,11 +2388,10 @@ def itemCalculoImpacto(request):
                     hijos = []
                     if Relacion.objects.filter(item_from_id__in=confirmados, item_to=iF, tipo="antecesor").exists():
 
-                        """Podria eistir la posibilidad de que tenga mas de un antecesor valido. Solo para el grafo."""
+                        """Podria existir la posibilidad de que tenga mas de un antecesor valido. Solo para el grafo."""
                         for c in confirmados:
                             if Relacion.objects.filter(item_from_id=c, item_to=iF, tipo="antecesor").exists():
                                 adj[int(c)].append(int(iF.id))
-
 
                         if not int(iF.id) in confirmadosAux:
                             calculo = calculo + int(iF.costo)
@@ -2394,15 +2399,15 @@ def itemCalculoImpacto(request):
 
                         for r in iF.relaciones.all():
                             if r in itemsFase:
-                                if not int(r.id) in confirmadosAux:
-                                    calculo = calculo + int(r.costo)
-                                    confirmadosAux.append(int(r.id))
-                                    hijos.append(int(r.id))
-                                    adj[int(r.id)] = []
+                                if Relacion.objects.filter(item_from=r, item_to=iF, tipo="hijo").exists():
+                                    if int(r.id) not in confirmadosAux:
+                                        calculo = calculo + int(r.costo)
+                                        confirmadosAux.append(int(r.id))
+                                        hijos.append(int(r.id))
+                                        adj[int(r.id)] = []
 
                         adj[int(iF.id)] = hijos
-                      #  adj[int(iF.id)] = confirmadosAux
-
+                    #  adj[int(iF.id)] = confirmadosAux
 
                 """Para relaciones indirectas."""
                 for iF in itemsFase:
@@ -2416,11 +2421,12 @@ def itemCalculoImpacto(request):
 
                             for r in iF.relaciones.all():
                                 if r in itemsFase:
-                                    if not int(r.id) in confirmadosAux:
-                                        calculo = calculo + int(r.costo)
-                                        confirmadosAux.append(int(r.id))
-                                        hijos.append(int(r.id))
-                                        adj[int(r.id)] = []
+                                    if Relacion.objects.filter(item_from=r, item_to=iF, tipo="hijo").exists():
+                                        if int(r.id) not in confirmadosAux:
+                                            calculo = calculo + int(r.costo)
+                                            confirmadosAux.append(int(r.id))
+                                            hijos.append(int(r.id))
+                                            adj[int(r.id)] = []
 
                             adj[int(iF.id)] = hijos
                         #  adj[int(iF.id)] = confirmadosAux
@@ -2428,19 +2434,7 @@ def itemCalculoImpacto(request):
                 confirmados = confirmadosAux
         print(adj)
         print(calculo)
-        '''
-        """SI TIENE UN CICLO ELIMINAR RELACIONES Y REDIRIGIR A VISUALIZACION DE RELACIONES"""
-        if isCyclicDisconnected(adj, V):
-            relaciones_uno = Relacion.objects.get(item_from=itemActual, item_to=itemRelacion)
-            relaciones_uno.delete()
-            relaciones_dos = Relacion.objects.get(item_from=itemRelacion, item_to=itemActual)
-            relaciones_dos.delete(),
-            return redirect('itemVerRelaciones', itemid=itemIdActual, faseid=faseid, proyectoid=proyectoid,
-                            mensaje="Error! No se puede relacionar porque genera un ciclo.")
-        """SINO MANTENER RELACIONES Y REDIRIGIR A LA VISTA DE RELACIONES."""
-        return redirect('itemVerRelaciones', itemid=itemActual.id, faseid=faseid, proyectoid=proyectoid,
-                        mensaje=' ')
-        '''
+
         return render(request, 'item/itemCalculoImpacto.html',
                       {'faseid': faseid, 'proyectoid': proyectoid,
                        'item': itemCalculo,
@@ -3030,7 +3024,10 @@ def itemTrazabilidad(request):
         """Obtener item."""
         itemTrazabilidad = Item.objects.get(id=itemIdTrazabilidad)
         """ID de item_to"""
-
+        """
+            TRAZABILIDAD HACIA LA DERECHA
+            SUCESORES E HIJOS. Y LOS HIJOS Y SUCESORES DE ESTOS HASTA LLEGAR AL FINAL
+        """
         adj = {}
         confirmados = []
         confirmados.append(int(itemTrazabilidad.id))
@@ -3038,9 +3035,10 @@ def itemTrazabilidad(request):
         itemsFase = fase.items.exclude(estado="deshabilitado")
         for r in itemTrazabilidad.relaciones.all():
             if r in itemsFase:
-                confirmados.append(int(r.id))
-                hijos.append(int(r.id))
-                adj[int(r.id)] = []
+                if Relacion.objects.filter(item_from=r, item_to=itemTrazabilidad, tipo="hijo").exists():
+                    confirmados.append(int(r.id))
+                    hijos.append(int(r.id))
+                    adj[int(r.id)] = []
 
         adj[int(itemTrazabilidad.id)] = hijos
 
@@ -3049,56 +3047,37 @@ def itemTrazabilidad(request):
         for c in confirmados:
             confirmado = Item.objects.get(id=c)
             for r in confirmado.relaciones.all():
-                if r in itemsFase and int(r.id) not in confirmados:
-                    seguir = True
+                if r in itemsFase:
+                    if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="hijo").exists():
+                        if int(r.id) not in confirmados:
+                            seguir = True
 
 
         while seguir:
             for c in confirmados:
                 confirmado = Item.objects.get(id=c)
                 for r in confirmado.relaciones.all():
-                    if r in itemsFase and int(r.id) not in confirmados:
-                        #print("confirmado", confirmado.id, "falta", r.id)
-                        confirmados.append(int(r.id))
-                        adj[int(r.id)] = []
-                        adj[int(confirmado.id)].append(int(r.id))
+                    if r in itemsFase:
+                        if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="hijo").exists():
+                            if int(r.id) not in confirmados:
+                                #print("confirmado", confirmado.id, "falta", r.id)
+                                confirmados.append(int(r.id))
+                                adj[int(r.id)] = []
+                                adj[int(confirmado.id)].append(int(r.id))
 
                 """Volver a verificar"""
                 seguir = False
                 for c in confirmados:
                     confirmado = Item.objects.get(id=c)
                     for r in confirmado.relaciones.all():
-                        if r in itemsFase and int(r.id) not in confirmados:
-                            seguir = True
+                        if r in itemsFase:
+                            if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="hijo").exists():
+                                if int(r.id) not in confirmados:
+                                    seguir = True
 
 
         """FIltrar fases del proyecto apropiadas."""
         fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
-
-        """Inicializar contador."""
-        cont = 0
-        """Inicializar bandera para validar si un item pertenece a la primera fase."""
-        esPrimeraFase = False
-        """Recorrer las fases del proyecto."""
-        for fp in fasesProyecto:
-            """Aumenta el contador por cada fase."""
-            cont = cont + 1
-            """Si la fase encontrada es igual a la actual"""
-            if fp == fase:
-                """Si el contador es igual a 1."""
-                if cont == 1:
-                    """Setear bandera en true."""
-                    esPrimeraFase = True
-                    """ROmper ciclo."""
-                    break
-
-        "Solo verificar si son items posteriores a la primera fase."
-        if esPrimeraFase == False:
-            for r in itemTrazabilidad.relaciones.all():
-                if Relacion.objects.filter(item_from=r, item_to=itemTrazabilidad, tipo="antecesor").exists():
-                    lista = []
-                    lista.append(int(itemTrazabilidad.id))
-                    adj[int(r.id)] = lista
 
 
 
@@ -3112,7 +3091,7 @@ def itemTrazabilidad(request):
                     hijos = []
                     if Relacion.objects.filter(item_from_id__in=confirmados, item_to=iF, tipo="antecesor").exists():
 
-                        """Podria eistir la posibilidad de que tenga mas de un antecesor valido. Solo para el grafo."""
+                        """Podria existir la posibilidad de que tenga mas de un antecesor valido. Solo para el grafo."""
                         for c in confirmados:
                             if Relacion.objects.filter(item_from_id=c, item_to=iF, tipo="antecesor").exists():
                                 adj[int(c)].append(int(iF.id))
@@ -3123,10 +3102,11 @@ def itemTrazabilidad(request):
 
                         for r in iF.relaciones.all():
                             if r in itemsFase:
-                                if not int(r.id) in confirmadosAux:
-                                    confirmadosAux.append(int(r.id))
-                                    hijos.append(int(r.id))
-                                    adj[int(r.id)] = []
+                                if Relacion.objects.filter(item_from=r, item_to=iF, tipo="hijo").exists():
+                                    if int(r.id) not in confirmadosAux:
+                                        confirmadosAux.append(int(r.id))
+                                        hijos.append(int(r.id))
+                                        adj[int(r.id)] = []
 
                         adj[int(iF.id)] = hijos
                       #  adj[int(iF.id)] = confirmadosAux
@@ -3143,27 +3123,163 @@ def itemTrazabilidad(request):
 
                             for r in iF.relaciones.all():
                                 if r in itemsFase:
-                                    if not int(r.id) in confirmadosAux:
-                                        confirmadosAux.append(int(r.id))
-                                        hijos.append(int(r.id))
-                                        adj[int(r.id)] = []
+                                    if Relacion.objects.filter(item_from=r, item_to=iF, tipo="hijo").exists():
+                                        if int(r.id) not in confirmadosAux:
+                                            confirmadosAux.append(int(r.id))
+                                            hijos.append(int(r.id))
+                                            adj[int(r.id)] = []
 
                             adj[int(iF.id)] = hijos
                         #  adj[int(iF.id)] = confirmadosAux
 
                 confirmados = confirmadosAux
+
+        """
+            TRAZABILIDAD HACIA ATRAS --> Antecesores y padres
+        """
+        confirmados = []
+        confirmados.append(int(itemTrazabilidad.id))
+        padres = []
+        itemsFase = fase.items.exclude(estado="deshabilitado")
+        for r in itemTrazabilidad.relaciones.all():
+            if r in itemsFase:
+                if Relacion.objects.filter(item_from=r, item_to=itemTrazabilidad, tipo="padre").exists():
+                    confirmados.append(int(r.id))
+                    padres.append(int(r.id))
+                    if int(r.id) in adj.keys():
+                        adj[int(r.id)].append(int(itemTrazabilidad.id))
+                    else:
+                        lista_item = []
+                        lista_item.append(int(itemTrazabilidad.id))
+                        adj[int(r.id)] = lista_item
+
+        #adj[int(itemTrazabilidad.id)] = padres
+
+        seguir = False
+        for c in confirmados:
+            confirmado = Item.objects.get(id=c)
+            for r in confirmado.relaciones.all():
+                if r in itemsFase:
+                    if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="padre").exists():
+                        if int(r.id) not in confirmados:
+                            seguir = True
+
+        while seguir:
+            for c in confirmados:
+                confirmado = Item.objects.get(id=c)
+                for r in confirmado.relaciones.all():
+                    if r in itemsFase:
+                        if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="padre").exists():
+                            if int(r.id) not in confirmados:
+                                # print("confirmado", confirmado.id, "falta", r.id)
+                                confirmados.append(int(r.id))
+                                if int(r.id) in adj.keys():
+                                    adj[int(r.id)].append(int(confirmado.id))
+                                else:
+                                    lista_item = []
+                                    lista_item.append(int(confirmado.id))
+                                    adj[int(r.id)] = lista_item
+
+
+                """Volver a verificar"""
+                seguir = False
+                for c in confirmados:
+                    confirmado = Item.objects.get(id=c)
+                    for r in confirmado.relaciones.all():
+                        if r in itemsFase:
+                            if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="padre").exists():
+                                if int(r.id) not in confirmados:
+                                    seguir = True
+
+        """FIltrar fases del proyecto apropiadas."""
+        fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('-id')
+
+        """Aqui sigue el codigo normal de calculo de impacto."""
+        for fp in fasesProyecto:
+            if int(fp.id) < int(fase.id):
+                itemsFase = fp.items.exclude(estado="deshabilitado").order_by('id')
+                confirmadosAux = []
+                """Para relaciones directas."""
+                for iF in itemsFase:
+                    padres = []
+                    if Relacion.objects.filter(item_from_id__in=confirmados, item_to=iF, tipo="sucesor").exists():
+
+                        """Podria existir la posibilidad de que tenga mas de un sucesor valido. Solo para el grafo."""
+                        for c in confirmados:
+                            if Relacion.objects.filter(item_from_id=c, item_to=iF, tipo="sucesor").exists():
+                                if int(iF.id) in adj.keys():
+                                    adj[int(iF.id)].append(int(c))
+                                else:
+                                    lista_item = []
+                                    lista_item.append(c)
+                                    adj[int(iF.id)]= lista_item
+
+
+
+                        if not int(iF.id) in confirmadosAux:
+                            confirmadosAux.append(int(iF.id))
+
+                        for r in iF.relaciones.all():
+                            if r in itemsFase:
+                                if Relacion.objects.filter(item_from=r, item_to=iF, tipo="padre").exists():
+                                    if int(r.id) not in confirmadosAux:
+                                        confirmadosAux.append(int(r.id))
+                                        padres.append(int(r.id))
+                                        if int(r.id) in adj.keys():
+                                            adj[int(r.id)].append(int(iF.id))
+                                        else:
+                                            lista_item = []
+                                            lista_item.append(int(iF.id))
+                                            adj[int(r.id)] = lista_item
+
+                     #   adj[int(iF.id)] = padres
+                    #  adj[int(iF.id)] = confirmadosAux
+
+                """Para relaciones indirectas."""
+                for iF in itemsFase:
+                    padres = []
+                    if not Relacion.objects.filter(item_from_id__in=confirmados, item_to=iF, tipo="sucesor").exists():
+
+                        if Relacion.objects.filter(item_from=iF, item_to_id__in=confirmadosAux).exists():
+                            if not int(iF.id) in confirmadosAux:
+                                confirmadosAux.append(int(iF.id))
+
+                            for r in iF.relaciones.all():
+                                if r in itemsFase:
+                                    if Relacion.objects.filter(item_from=r, item_to=iF, tipo="padre").exists():
+                                        if int(r.id) not in confirmadosAux:
+                                            confirmadosAux.append(int(r.id))
+                                            padres.append(int(r.id))
+                                            if int(r.id) in adj.keys():
+                                                adj[int(r.id)].append(int(iF.id))
+                                            else:
+                                                lista_item = []
+                                                lista_item.append(int(iF.id))
+                                                adj[int(r.id)] = lista_item
+
+                         #   adj[int(iF.id)] = padres
+                        #  adj[int(iF.id)] = confirmadosAux
+
+                confirmados = confirmadosAux
         print(adj)
-        '''
-        """SI TIENE UN CICLO ELIMINAR RELACIONES Y REDIRIGIR A VISUALIZACION DE RELACIONES"""
-        if isCyclicDisconnected(adj, V):
-            relaciones_uno = Relacion.objects.get(item_from=itemActual, item_to=itemRelacion)
-            relaciones_uno.delete()
-            relaciones_dos = Relacion.objects.get(item_from=itemRelacion, item_to=itemActual)
-            relaciones_dos.delete(),
-            return redirect('itemVerRelaciones', itemid=itemIdActual, faseid=faseid, proyectoid=proyectoid,
-                            mensaje="Error! No se puede relacionar porque genera un ciclo.")
-        """SINO MANTENER RELACIONES Y REDIRIGIR A LA VISTA DE RELACIONES."""
-        return redirect('itemVerRelaciones', itemid=itemActual.id, faseid=faseid, proyectoid=proyectoid,
-                        mensaje=' ')
-        '''
-        return render(request, 'item/TrazabilidadItem.html',)
+        fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+        lista_items = []
+        for key,value in adj.items():
+            item_key = Item.objects.get(id=key)
+            if not item_key in lista_items:
+                lista_items.append(item_key)
+            for v in adj[key]:
+                item_value = Item.objects.get(id=int(v))
+                if not item_value in lista_items:
+                    lista_items.append(item_value)
+
+        relaciones = []
+        for r in Relacion.objects.all():
+            if r.tipo == "antecesor" or r.tipo== "padre":
+                relaciones.append(r)
+
+
+
+        return render(request, 'item/TrazabilidadItem.html',{'fasesProyecto': fasesProyecto, 'proyecto':proyecto,
+                                                             'lista_item': sorted(lista_items, key=lambda x: x.id,reverse=False),
+                                                             'relaciones':relaciones})
