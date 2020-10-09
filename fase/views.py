@@ -687,6 +687,7 @@ def FaseAddTipoItem(request):
             """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
             return redirect('faseTipoItem', faseid=faseid, proyectoid=proyectoid)
 
+        return redirect('faseTipoItem', faseid=faseid, proyectoid=proyectoid)
 
 def FaseRemoveTipoItem(request, proyectoid, faseid, tipoid):
     if request.method == 'GET':
@@ -710,6 +711,9 @@ def FaseRemoveTipoItem(request, proyectoid, faseid, tipoid):
         if proyecto.estado == "pendiente":
             """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
             return redirect('faseTipoItem', faseid=faseid, proyectoid=proyectoid)
+
+        return redirect('faseTipoItem', faseid=faseid, proyectoid=proyectoid)
+
 
 
 def fasesDeshabilitadas(request):
@@ -3157,7 +3161,6 @@ def itemTrazabilidad(request):
 
                 confirmados = confirmadosAux
         print(adj)
-        print(calculo)
         '''
         """SI TIENE UN CICLO ELIMINAR RELACIONES Y REDIRIGIR A VISUALIZACION DE RELACIONES"""
         if isCyclicDisconnected(adj, V):

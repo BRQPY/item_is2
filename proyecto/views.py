@@ -69,7 +69,7 @@ def proyectoCrear(request):
         usuarios = []
         for user in users:
             """Filtra que el usuario no este deshabilitado."""
-            if user.is_active:
+            if user.is_active and user.has_perm("perms.view_menu") == True and user.username != "AnonymousUser":
                 usuarios.append(user)
         """Template a renderizar: proyectoCrear.html"""
         return render(request, 'proyecto/proyectoCrear.html', {'usuarios': usuarios, })
@@ -122,6 +122,16 @@ def proyectoInicializar(request):
     """Verifica que el proyecto cuente con fases."""
     if list(proyecto.fases.all()) == []:
         mensaje = "No se puede inicializar proyecto. Aun no cuenta con fases."
+        """En caso contrario, no permite inicializar el proyecto y redirige a la vista del proyecto."""
+        return redirect('proyectoView', id=proyectoid)
+
+    if int(proyecto.comite.count()) != 3:
+        mensaje = "No se puede inicializar proyecto. No cuenta con el comite de 3 miembros."
+        """En caso contrario, no permite inicializar el proyecto y redirige a la vista del proyecto."""
+        return redirect('proyectoView', id=proyectoid)
+
+    if int(proyecto.tipoItem.count()) == 0:
+        mensaje = "No se puede inicializar proyecto. No cuenta con tipos de item."
         """En caso contrario, no permite inicializar el proyecto y redirige a la vista del proyecto."""
         return redirect('proyectoView', id=proyectoid)
 
@@ -542,7 +552,7 @@ def proyectoUserAdd(request):
             y los usuarios deshabilitados.
             """
             if u.is_staff == False and u != request.user and u != gerente and not (u in proyecto.usuarios.all()) \
-                    and u.is_active:
+                    and u.is_active and u.has_perm("perms.view_menu") == True:
                 usuarios.append(u)
         """
         Template a renderizar: proyectoUserAdd.html con parametros
@@ -1419,7 +1429,7 @@ def importar_tipo_de_item(request):
                     tipos_modificable.remove(tipos)
                     tipos_no_modificable.append(tipos)
         return render(request, "proyecto/gestionartipodeitem.html",
-                      {'proyectoid': proyectoid, 'tipos_modificable': tipos_modificable,
+                      {'proyecto': proyecto, 'tipos_modificable': tipos_modificable,
                        'tipos_no_modificable': tipos_no_modificable, })
 
     """Se recibe el ID del proyecto en el cual se encuentra actualmente el Usuario"""
@@ -1482,5 +1492,5 @@ def remover_tipo_de_item(request, proyectoid, tipoid):
                     tipos_modificable.remove(tipos)
                     tipos_no_modificable.append(tipos)
         return render(request, "proyecto/gestionartipodeitem.html",
-                      {'proyectoid': proyectoid, 'tipos_modificable': tipos_modificable,
+                      {'proyecto': proyecto, 'tipos_modificable': tipos_modificable,
                        'tipos_no_modificable': tipos_no_modificable, })
