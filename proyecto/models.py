@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User, Group
 from django.contrib.postgres.fields import ArrayField
 from simple_history.models import HistoricalRecords
+import reversion
+from reversion.models import Version
 
 
 class TipodeItem(models.Model):
@@ -9,13 +11,16 @@ class TipodeItem(models.Model):
     descripcion = models.CharField(max_length=40)
     campo_extra = ArrayField(models.CharField(max_length=40), default=list, blank=True)
     history = HistoricalRecords()
+
+
 class CampoExtra(models.Model):
     titulo = models.CharField(max_length=40)
 
 
 class CampoExtraValores(models.Model):
     campoExtra = models.ForeignKey(CampoExtra, on_delete=models.CASCADE, default=None, related_name="campoExtra")
-    valor =  models.CharField(max_length=40)
+    valor = models.CharField(max_length=40)
+
 
 class Item(models.Model):
     tipoItem = models.ForeignKey(TipodeItem, on_delete=models.CASCADE, default=None, related_name="tipoItem")
@@ -31,18 +36,6 @@ class Item(models.Model):
     version = models.IntegerField(default=0, editable=False)
     # archivos = models.ManyToManyField(Files,default=None)
     archivos = ArrayField(models.CharField(max_length=40), default=list, blank=True)
-    history = HistoricalRecords(excluded_fields=['relaciones'])
-    faseid = models.IntegerField(default=0, editable=False)
-
-    __history_date = None
-
-    @property
-    def _history_date(self):
-        return self.__history_date
-
-    @_history_date.setter
-    def _history_date(self, value):
-        self.__history_date = value
 
 
 class Files(models.Model):
@@ -66,6 +59,7 @@ class RoturaLineaBaseComprometida(models.Model):
     registrados_votos_comprometida  = models.ManyToManyField(User, default=None, related_name="comprometidavotantes")
     comprometida_estado  = models.CharField(max_length=40, null=False, default="pendiente")
 
+@reversion.register(follow=['items'])
 class LineaBase(models.Model):
     nombre = models.CharField(max_length=40, null=False, default=None)
     items = models.ManyToManyField(Item, default=None)
@@ -105,6 +99,7 @@ class Fase(models.Model):
             ("solicitar_roturaLineaBase", "Solicitar rotura de línea base."),
             ("cerrar_fase", "cerrar fase"),
         )
+
 
 class FaseUser(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -172,4 +167,3 @@ class Proyecto(models.Model):
 class ProyectoFase(models.Model):
     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
     fase = models.ForeignKey(Fase, on_delete=models.CASCADE, default=None)
-

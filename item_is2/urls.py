@@ -135,7 +135,9 @@ urlpatterns = [
     path('item/relaciones/remover/itemid=<str:itemid>/item_rm=<str:item_rm>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',viewsFase.itemRelacionesRemover, name="itemRelacionesRemover"),
     path('item/addRelacion/', viewsFase.itemAddRelacion),
     path('item/history/', viewsFase.itemHistorial, name="itemHistorial"),
-    path('item/history/reversionar/proyecto<int:proyectoid>/faseid<int:faseid>/itemid<int:itemid>/history_data<str:history_date>/',viewsFase.itemReversionar, name="itemRev"),
+    path(
+        'item/history/reversionar/proyecto<int:proyectoid>/faseid<int:faseid>/itemid<int:itemid>/history_data<str:history_date>/',
+        viewsFase.itemReversionar, name="itemRev"),
     path('item/relaciones/ver/itemid=<str:itemid>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', viewsFase.itemVerRelaciones, name="itemVerRelaciones"),
     path('item/relaciones/remover/itemid=<str:itemid>/item_rm=<str:item_rm>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/',viewsFase.itemRelacionesRemover, name="itemRelacionesRemover"),
     path('item/downloadFile/filename=<str:filename>/itemid=<str:itemid>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', viewsFase.downloadFile, name="download"),

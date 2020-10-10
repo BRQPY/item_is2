@@ -7,6 +7,12 @@ from django.core.mail import  EmailMultiAlternatives
 from django.conf import settings
 from django.contrib import messages
 from django.template.loader import get_template
+from gestionUser.tasks import sendEmailView
+#from gestionUser import tasks as sendEmailView
+
+
+
+
 
 
 @login_required
@@ -76,27 +82,14 @@ def confUserView(request):
             mail = usuario.email
             name = usuario.username
             messages.success(request, "Permisos asignados exitosamente!")
-            sendEmailView(mail, name)
+            sendEmailView.delay(mail, name)
+            
         """
         Template a renderizar: gestionUser.html.
         """
         return render(request, 'gestionUser/gestionUser.html')
 
-def sendEmailView(mail,name):
 
-    context = {'name': name}
-
-    template = get_template('gestionUser/correo.html')
-    content = template.render(context)
-
-    email = EmailMultiAlternatives(
-        'Noficacion de acceso',
-        'item',
-        settings.EMAIL_HOST_USER,
-        [mail]
-    )
-    email.attach_alternative(content, 'text/html')
-    email.send()
 
 @permission_required('perms.assign_perms', login_url='/permissionError/')
 def gestionPermsView(request):
@@ -348,6 +341,7 @@ def verUserView(request):
         cuente con el permiso para ver usuarios y
         que (indirectamente) haya iniciado sesion
     """
+    sendEmailView.delay("Kathiamaria.kg@gmail.com", "kathe")
     seleccion = None
     permisos = None
     """POST request, captura un usuario y la informacion del mismo para mostrar."""

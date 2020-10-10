@@ -55,13 +55,17 @@
         <h3 style="text-align: center">{{ item.nombre }}</h3>
         <h5 style="text-align: center" class="grey-text">Historial del item</h5>
         <h8 style="text-align: left" class="grey-text">Haga click en el ícono + para desplegar la informacion sobre la version del item .</h8>
-        {% for i in lista %}
+        {% for i in versions %}
             <button class="accordion" >
                 <h8>
-                    Version {{ i.version }}
-                    ({{ i.history_date}})
+                    Version
                     <i class="material-icons blue-text left">update</i>
                 </h8>
+
+                 {% for field_name, field_value in i.field_dict.items %}
+                    <p></p>{{ field_name }} : {{ field_value }}<p>
+                {% endfor %}
+
                 <i class="material-icons blue-text left"></i>
             </button>
             <div class="panel">
@@ -117,7 +121,7 @@
                             </div>
                         </div>
                         {% if item.estado == "en desarrollo" %}
-                            <form action="{%url 'itemRev'  proyectoid faseid i.id i.history_date %}"
+                            <form action="{%url 'itemRev'  proyectoid faseid item.id i.revision.date_created %}"
                                   onsubmit="return confirm('Está seguro de volver a esta versión del ítem?');"
                             >
                                 <button
