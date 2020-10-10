@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Proyecto, Fase, Rol, FaseUser, TipodeItem
+from .models import Proyecto, Fase, Rol, FaseUser, TipodeItem, RoturaLineaBase
 from django.contrib.auth.models import User, Group, Permission
 from guardian.shortcuts import assign_perm, remove_perm
 from django.contrib.auth.decorators import permission_required
@@ -53,14 +53,13 @@ def proyectoCrear(request):
         proyecto.estado = "pendiente"
         """Guardar"""
         proyecto.save()
-
-        """Envio de Correo al gerente del proyecto"""
-        mail = gerente.email
-        name = gerente.username
-        messages.success(request, "Permisos asignados exitosamente!")
-        sendEmailViewProyecto.delay(mail, name, proyecto.nombre,0)
-
-        """Vista a redirigir: homeView"""
+        #Envio de Correo al gerente del proyecto
+        #mail = gerente.email
+        #name = gerente.username
+        #messages.success(request, "Permisos asignados exitosamente!")
+        #sendEmailViewProyecto.delay(mail, name, proyecto.nombre,0)
+        """
+        #Vista a redirigir: homeView"""
         return redirect("/home/")
 
     else:
@@ -687,10 +686,10 @@ def proyectoComiteAdd(request):
                 miembros.append(u)
 
                 """Notificar a los miembros del comite"""
-                mail = u.email
-                name = u.username
-                messages.success(request, "Permisos asignados exitosamente!")
-                sendEmailViewProyecto.delay(mail, name, proyecto.nombre,1)
+                #mail = u.email
+                #name = u.username
+                #messages.success(request, "Permisos asignados exitosamente!")
+                #sendEmailViewProyecto.delay(mail, name, proyecto.nombre,1)
 
 
         """
@@ -775,14 +774,56 @@ def proyectoComiteRemove(request):
     proyectoid = request.POST.get('proyectoid')
     """Proyecto del cual remover los miembros del comite"""
     proyecto = Proyecto.objects.get(id=proyectoid)
+    fases = proyecto.fases.all().exclude(estado="deshabilitada")
+    linea_base_norota = []
+    for f in fases:
+        for l in f.lineasBase.all().exclude(estado="rota"):
+            linea_base_norota.append(l)
+    solicitudes = []
+
     for u in users:
         """Usuario a remover del comite"""
         user = User.objects.get(id=u)
         """Remover usuario del comite"""
         proyecto.comite.remove(user)
+        proyecto.save()
         """Remover permisos para aprobar rotura de linea base"""
         remove_perm("aprobar_rotura_lineaBase", user, proyecto)
-
+        usuarios_votantes = []
+        for lb in linea_base_norota:
+            for s in lb.roturaslineasBase.all().filter(estado="pendiente"):
+                for v in s.votos_registrados.all():
+                    usuarios_votantes.append(int(v.id))
+                if int(user.id) in usuarios_votantes:
+                    posicion_user = usuarios_votantes.index(int(user.id))
+                    """Solo se puede remover los primeros dos votos, porque si hay 3 votos ya se cerró la votación"""
+                    if posicion_user == 0:
+                        s.voto_uno = s.voto_dos
+                        s.voto_dos= -1
+                        s.votos_registrados.remove(user)
+                        s.save()
+                    if posicion_user == 1:
+                        s.voto_dos = -1
+                        s.votos_registrados.remove(user)
+                        s.save()
+            usuarios_votantes_comprometida = []
+            for s in lb.roturaLineaBaseComprometida.all().filter(comprometida_estado="pendiente"):
+                print("Solicitud", s)
+                for v in s.registrados_votos_comprometida.all():
+                    print("Voto xdxdxd:",v)
+                    usuarios_votantes_comprometida.append(int(v.id))
+                if int(user.id) in usuarios_votantes_comprometida:
+                    posicion_user = usuarios_votantes_comprometida.index(int(user.id))
+                    """Solo se puede remover los primeros dos votos, porque si hay 3 votos ya se cerró la votación"""
+                    if posicion_user == 0:
+                        s.uno_voto_comprometida = s.dos_voto_comprometida
+                        s.dos_voto_comprometida= -1
+                        s.registrados_votos_comprometida.remove(user)
+                        s.save()
+                    if posicion_user == 1:
+                        s.dos_voto_comprometida = -1
+                        s.registrados_votos_comprometida.remove(user)
+                        s.save()
     """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
     return redirect('proyectoView', id=proyectoid)
 

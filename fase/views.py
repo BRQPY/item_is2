@@ -793,7 +793,7 @@ def itemCrear(request):
 
             """Creacion del item con los datos proveidos por el usuario."""
             item = Item.objects.create(tipoItem=obj, nombre=dato['nombre'], fecha=dato['fecha'],
-                                       observacion=dato['observacion'], costo=dato['costo'])
+                                       observacion=dato['observacion'], costo=dato['costo'], faseid=faseid)
 
             """Almacenar la informacion de cada campo extra proveido por el usuario."""
             item.estado = "en desarrollo"
@@ -1164,7 +1164,7 @@ def itemCambiarEstado(request):
                 if u.user.has_perm("aprove_item", fase):
                     mail = u.user.email
                     name = u.user.username
-                    sendEmailViewFase.delay(mail, name, item.nombre, fase.nombre)
+                    #sendEmailViewFase.delay(mail, name, item.nombre, fase.nombre)
 
 
         """Si el nuevo estado es en desarrollo."""
@@ -2612,11 +2612,14 @@ def AprobarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
                     """Establecer a la línea base como rota"""
                     lineaBase.estado = "rota"
                     lineaBase.save()
+                    en_revision = []
+                    en_revision_lb = []
                     for i in lineaBase.items.all():
                         i.estado = "en revision"
                         #i._history_date = datetime.now()
                         """Guardar"""
                         i.save()
+                        en_revision.append(i)
                         for r in i.relaciones.all():
                             relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
                             if not relacionItem:
@@ -2625,7 +2628,9 @@ def AprobarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
                                 """Guardar"""
                                 r.save()
                                 esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
+                                en_revision.append(r)
                                 if esta_en_LB:
+                                    en_revision_lb.append(r)
                                     lineaBaseItem = LineaBase.objects.get(items__id=r.id)
                                     """Si el estado de la linea base es cerrada."""
                                     if lineaBaseItem.estado == "cerrada":
@@ -2638,6 +2643,51 @@ def AprobarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
                                     if lineaBaseItem.estado == "abierta":
                                         lineaBaseItem.items.remove(r)
                                         lineaBaseItem.save()
+
+
+                        print("EL INICIO DE LA CADENA PA")
+                        print(en_revision)
+                        print("ELfin del INICIO DE LA CADENA PA")
+                        seguir = False
+                        for i in en_revision:
+                            if not i in en_revision_lb:
+                                for r in i.relaciones.all():
+                                    if not r in en_revision:
+                                        seguir = True
+                        while seguir:
+                            for i in en_revision:
+                                if not i in en_revision_lb:
+                                    for r in i.relaciones.all():
+                                        if not r in en_revision:
+                                            r.estado = "en revision"
+                                            # r._history_date = datetime.now()
+                                            """Guardar"""
+                                            r.save()
+                                            en_revision.append(r)
+                                            esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
+                                            if esta_en_LB:
+                                                en_revision_lb.append(r)
+                                                lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                                                """Si el estado de la linea base es cerrada."""
+                                                if lineaBaseItem.estado == "cerrada":
+                                                    lineaBaseItem.estado = "comprometida"
+                                                    solicitud = RoturaLineaBaseComprometida.objects.create(comprometida_estado="pendiente")
+                                                    solicitud.save()
+                                                    lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
+                                                    lineaBaseItem.save()
+                                                if lineaBaseItem.estado == "abierta":
+                                                    lineaBaseItem.items.remove(r)
+                                                    lineaBaseItem.save()
+
+                            seguir = False
+                            print("FEROZ CADENA PA")
+                            print(en_revision)
+                            for i in en_revision:
+                                if not i in en_revision_lb:
+                                    for r in i.relaciones.all():
+                                        if not r in en_revision:
+                                            seguir = True
+
 
 
                     mensaje = "Su voto se registro correctamente. Se aprobo la rotura de la Línea Base."
