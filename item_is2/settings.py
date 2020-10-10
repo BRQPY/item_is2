@@ -87,7 +87,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'simple_history.middleware.HistoryRequestMiddleware',
     'reversion.middleware.RevisionMiddleware',
 
 
@@ -122,9 +121,9 @@ WSGI_APPLICATION = 'item_is2.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'mydb5',
-        'USER': 'admin5',
-        'PASSWORD': 'admin5',
+        'NAME': 'mydb4',
+        'USER': 'admin4',
+        'PASSWORD': 'admin4',
         'HOST': 'localhost',
         'PORT': '5432',
     }
