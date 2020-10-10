@@ -17,7 +17,7 @@ from django.core.mail import EmailMultiAlternatives
 import reversion
 from django.db import transaction
 import threading
-
+from fase.tasks import sendEmailViewFase
 
 
 def gestionFase(request):
@@ -278,7 +278,7 @@ def faseModificar(request):
     """Actualizar descripcion de fase"""
     fase.descripcion = descripcion
     """Guardar"""
-    fase._history_date = datetime.now()
+    #fase._history_date = datetime.now()
     fase.save()
 
     """Template a renderizar: gestionFase con parametro -> proyectoid, faseid"""
@@ -321,7 +321,7 @@ def faseDeshabilitar(request):
 
     """Establecer el estado de la fase como deshabilitada."""
     fase.estado = "deshabilitada"
-    fase._history_date = datetime.now()
+    #fase._history_date = datetime.now()
     """Guardar"""
     fase.save()
     fases = proyecto.fases.all()
@@ -685,7 +685,7 @@ def FaseAddTipoItem(request):
         tipoItem = request.POST.get('tipoItem')
         tipo = TipodeItem.objects.get(id=tipoItem)
         fase.tipoItem.add(tipo)
-        fase._history_date = datetime.now()
+        #fase._history_date = datetime.now()
         fase.save()
         if proyecto.estado == "pendiente":
             """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
@@ -1164,9 +1164,8 @@ def itemCambiarEstado(request):
                 if u.user.has_perm("aprove_item", fase):
                     mail = u.user.email
                     name = u.user.username
-                    #sendEmailView(mail, name, item.nombre, fase.nombre)
-                    thread = threading.Thread(target=sendEmailView(mail, name, item.nombre, fase.nombre ))
-                    thread.start()
+                    sendEmailViewFase.delay(mail, name, item.nombre, fase.nombre)
+
 
         """Si el nuevo estado es en desarrollo."""
         if dato['estado'] == "en desarrollo":
@@ -1269,7 +1268,7 @@ def itemCambiarEstado(request):
         mensaje = "Estado actualizado correctamente."
         """Actualiza estado del item."""
         item.estado = dato['estado']
-        item._history_date = datetime.now()
+        #item._history_date = datetime.now()
         """Guardar."""
         item.save()
 
@@ -1368,7 +1367,7 @@ def itemDeshabilitar(request):
 
         """Establece estado de item como deshabilitado."""
         item.estado = "deshabilitado"
-        item._history_date = datetime.now()
+        #item._history_date = datetime.now()
         """Guardar."""
         item.save()
         """Redirige a la vista de la fase correspondiente."""
@@ -1909,8 +1908,7 @@ def faseAddLineaBase(request):
             item = Item.objects.get(id=i)
             """Actualizar estado de item."""
             item.estado = "en linea base"
-            """Actualizar history date de item, para version."""
-            item._history_date = datetime.now()
+            #item._history_date = datetime.now()
             """Guardar item."""
             item.save()
             """Agregar item a linea base."""
@@ -2069,7 +2067,7 @@ def lineaBaseAddItem(request):
             """Actualizar estado del item."""
             item.estado = "en linea base"
             """Actualizar history date del item."""
-            item._history_date = datetime.now()
+            #item._history_date = datetime.now()
             """Guardar item."""
             item.save()
             """Agregar item a linea base."""
@@ -2122,7 +2120,7 @@ def lineaBaseRemoveItem(request, proyectoid, faseid, lineaBaseid, itemid):
         """Actualizar estado de item."""
         item_remover.estado = "aprobado"
         """Actualizar history date de item para version."""
-        item_remover._history_date = datetime.now()
+        #item_remover._history_date = datetime.now()
         """Guardar item."""
         item_remover.save()
         """Obtener items de la linea base ordenados por id."""
@@ -2228,7 +2226,6 @@ def itemReversionar(request, proyectoid, faseid, itemid, history_date):
             verNum = 0
             versions = Version.objects.get_for_object(item)
             total = len(versions)
-            print(total)
             for f in versions:
                 verNum=verNum+1
                 aux = str(f.revision.date_created)
@@ -2237,8 +2234,6 @@ def itemReversionar(request, proyectoid, faseid, itemid, history_date):
                     break
                 else:
                     print("nou")
-            print("Ubi de la version requerida")
-            print(verNum)
             versions[verNum-1].revision.revert()
             item.refresh_from_db()
 
@@ -2335,20 +2330,6 @@ def cerrarFase(request, proyectoid, faseid):
         return redirect('faseConfinicializada', proyectoid=proyectoid, faseid=faseid)
 
 
-def sendEmailView(mail, name, item, fase):
-    context = {'name': name, 'item': item, 'fase': fase}
-
-    template = get_template('fase/correoSolicitudAprobacion.html')
-    content = template.render(context)
-
-    email = EmailMultiAlternatives(
-        'Solicitud de aprobacion de Item',
-        'item',
-        settings.EMAIL_HOST_USER,
-        [mail]
-    )
-    email.attach_alternative(content, 'text/html')
-    email.send()
 
 
 
@@ -2633,14 +2614,14 @@ def AprobarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
                     lineaBase.save()
                     for i in lineaBase.items.all():
                         i.estado = "en revision"
-                        i._history_date = datetime.now()
+                        #i._history_date = datetime.now()
                         """Guardar"""
                         i.save()
                         for r in i.relaciones.all():
                             relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
                             if not relacionItem:
                                 r.estado = "en revision"
-                                r._history_date = datetime.now()
+                                #r._history_date = datetime.now()
                                 """Guardar"""
                                 r.save()
                                 esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
@@ -2758,14 +2739,14 @@ def RechazarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
                     lineaBase.save()
                     for i in lineaBase.items.all():
                         i.estado = "en revision"
-                        i._history_date = datetime.now()
+                        #i._history_date = datetime.now()
                         """Guardar"""
                         i.save()
                         for r in i.relaciones.all():
                             relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
                             if not relacionItem:
                                 r.estado = "en revision"
-                                r._history_date = datetime.now()
+                                #r._history_date = datetime.now()
                                 """Guardar"""
                                 r.save()
                                 esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
@@ -2899,14 +2880,14 @@ def AprobarRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid,sol
                     lineaBase.save()
                     for i in lineaBase.items.all():
                         i.estado = "en revision"
-                        i._history_date = datetime.now()
+                        #i._history_date = datetime.now()
                         """Guardar"""
                         i.save()
                         for r in i.relaciones.all():
                             relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
                             if not relacionItem:
                                 r.estado = "en revision"
-                                r._history_date = datetime.now()
+                                #r._history_date = datetime.now()
                                 """Guardar"""
                                 r.save()
                                 esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
@@ -3010,14 +2991,14 @@ def RechazarRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid, s
                     lineaBase.save()
                     for i in lineaBase.items.all():
                         i.estado = "en revision"
-                        i._history_date = datetime.now()
+                        #i._history_date = datetime.now()
                         """Guardar"""
                         i.save()
                         for r in i.relaciones.all():
                             relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
                             if not relacionItem:
                                 r.estado = "en revision"
-                                r._history_date = datetime.now()
+                                #r._history_date = datetime.now()
                                 """Guardar"""
                                 r.save()
                                 esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()

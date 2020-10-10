@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.template.loader import get_template
 from gestionUser.tasks import sendEmailView
-#from gestionUser import tasks as sendEmailView
+
 
 
 
@@ -341,7 +341,7 @@ def verUserView(request):
         cuente con el permiso para ver usuarios y
         que (indirectamente) haya iniciado sesion
     """
-    sendEmailView.delay("Kathiamaria.kg@gmail.com", "kathe")
+
     seleccion = None
     permisos = None
     """POST request, captura un usuario y la informacion del mismo para mostrar."""

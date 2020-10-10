@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.template.loader import get_template
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
-
+from proyecto.tasks import sendEmailViewProyecto
 
 @permission_required('proyecto.add_proyecto', login_url='/permissionError/')
 def proyectoCrear(request):
@@ -58,7 +58,7 @@ def proyectoCrear(request):
         mail = gerente.email
         name = gerente.username
         messages.success(request, "Permisos asignados exitosamente!")
-        sendEmailView(mail, name, proyecto.nombre,0)
+        sendEmailViewProyecto.delay(mail, name, proyecto.nombre,0)
 
         """Vista a redirigir: homeView"""
         return redirect("/home/")
@@ -74,24 +74,6 @@ def proyectoCrear(request):
         """Template a renderizar: proyectoCrear.html"""
         return render(request, 'proyecto/proyectoCrear.html', {'usuarios': usuarios, })
 
-
-def sendEmailView(mail, name,proyecto_name,n):
-    context = {'name': name, 'proyecto_name':proyecto_name}
-    if(n==0):
-
-        template = get_template('proyecto/correoGerente.html')
-    else:
-        template = get_template('proyecto/correoComite.html')
-    content = template.render(context)
-
-    email = EmailMultiAlternatives(
-        'Noficacion de Proyectos',
-        'item',
-        settings.EMAIL_HOST_USER,
-        [mail]
-    )
-    email.attach_alternative(content, 'text/html')
-    email.send()
 
 
 def proyectoInicializar(request):
@@ -164,7 +146,7 @@ def proyectoCancelar(request):
 
     """Establecer estado del poryecto como cancelado."""
     proyecto.estado = "cancelado"
-    proyecto._history_date = datetime.now()
+    #proyecto._history_date = datetime.now()
     """Guardar."""
     proyecto.save()
     """Redirigir al menu principal del sistema."""
@@ -312,7 +294,6 @@ def proyectoView(request, id):
                                                                   'comite': comite,
                                                                   'select': seleccion,
                                                                   'items': items,
-                                                                  'historial': historial,
                                                                   })
 
 
@@ -709,7 +690,7 @@ def proyectoComiteAdd(request):
                 mail = u.email
                 name = u.username
                 messages.success(request, "Permisos asignados exitosamente!")
-                sendEmailView(mail, name, proyecto.nombre,1)
+                sendEmailViewProyecto.delay(mail, name, proyecto.nombre,1)
 
 
         """

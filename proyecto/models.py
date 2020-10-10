@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User, Group
 from django.contrib.postgres.fields import ArrayField
-from simple_history.models import HistoricalRecords
 import reversion
 from reversion.models import Version
 
@@ -10,7 +9,6 @@ class TipodeItem(models.Model):
     nombreTipo = models.CharField(max_length=40)
     descripcion = models.CharField(max_length=40)
     campo_extra = ArrayField(models.CharField(max_length=40), default=list, blank=True)
-    history = HistoricalRecords()
 
 
 class CampoExtra(models.Model):

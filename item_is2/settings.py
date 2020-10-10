@@ -61,10 +61,8 @@ INSTALLED_APPS = [
     'fase',
     'proyecto',
     'item_is2',
-    'simple_history',
     'storages',
     'reversion',
-    'djcelery',
 
 ]
 
@@ -124,9 +122,9 @@ WSGI_APPLICATION = 'item_is2.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'mydb42',
-        'USER': 'admin4',
-        'PASSWORD': 'admin4',
+        'NAME': 'mydb5',
+        'USER': 'admin5',
+        'PASSWORD': 'admin5',
         'HOST': 'localhost',
         'PORT': '5432',
     }

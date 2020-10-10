@@ -4,15 +4,15 @@ from django.conf import settings
 from django.contrib import messages
 from django.template.loader import get_template
 @app.task
-def sendEmailView(mail,name):
+def sendEmailViewFase(mail,name,item,fase):
 
-    context = {'name': name}
+    context = {'name': name, 'item':item, 'fase':fase}
 
-    template = get_template('gestionUser/correo.html')
+    template = get_template('fase/correoSolicitudAprobacion.html')
     content = template.render(context)
 
     email = EmailMultiAlternatives(
-        'Noficacion de acceso',
+        'Solicitud de aprobacion de Item',
         'item',
         settings.EMAIL_HOST_USER,
         [mail]
