@@ -48,7 +48,7 @@ def confUserView(request):
         Filtrar solamente los usuarios que tengan el acceso restringido. Tambien que
         el usuario este activo.
         """
-        if user.has_perm("perms.view_menu") == False and user.is_active:
+        if user.has_perm("perms.view_menu") == False and user.is_active and user.username != "AnonymousUser":
             usuarios.append(user)
 
     """
@@ -134,12 +134,14 @@ def addPermsView(request):
         """
         Boton Guardar fue presionado en el template
         """
+        print("ADDPERMMMMMM:", request.POST.get('addperm'))
         if 'addperm' in request.POST:
             user = request.POST.get('usuario')
             """
             Permisos a agregar al usuarios
             """
             permisos = request.POST.getlist('perms')
+            print("ESTAAAAAA ES LA LISTA DE PERMISOS:", permisos)
             """
             Usuario a agregar permisos.
             """
@@ -162,6 +164,7 @@ def addPermsView(request):
                             return render(request, "gestionUser/already.html")
 
                     usuario.user_permissions.add(permiso)
+                    usuario.save()
                 elif int(p) == 2:
                     """Permiso id=2 corresponde a Asignar Permisos"""
                     permiso = Permission.objects.get(codename="assign_perms")
@@ -173,7 +176,9 @@ def addPermsView(request):
                             return render(request, "gestionUser/already.html")
 
                     usuario.user_permissions.add(permiso)
-
+                    usuario.save()
+                    print(usuario)
+                    print(usuario.has_perm("perms.assign_perms"))
                 elif int(p) == 3:
                     """Permiso id=3 corresponde a Agregar Usuarios"""
                     permiso = Permission.objects.get(codename="add_user")
@@ -185,7 +190,7 @@ def addPermsView(request):
                             return render(request, "gestionUser/already.html")
 
                     usuario.user_permissions.add(permiso)
-
+                    usuario.save()
                 elif int(p) == 4:
                     """Permiso id=4 corresponde a Modificar Usuarios"""
                     permiso = Permission.objects.get(codename="change_user")
@@ -197,7 +202,7 @@ def addPermsView(request):
                             return render(request, "gestionUser/already.html")
 
                     usuario.user_permissions.add(permiso)
-
+                    usuario.save()
                 elif int(p) == 5:
                     """Permiso id=5 corresponde a Deshabilitar Usuarios"""
                     permiso = Permission.objects.get(codename="unable_user")
@@ -209,7 +214,7 @@ def addPermsView(request):
                             return render(request, "gestionUser/already.html")
 
                     usuario.user_permissions.add(permiso)
-
+                    usuario.save()
                 elif int(p) == 6:
                     """Permiso id=6 corresponde a Ver Usuarios"""
                     permiso = Permission.objects.get(codename="view_user")
@@ -221,7 +226,7 @@ def addPermsView(request):
                             return render(request, "gestionUser/already.html")
 
                     usuario.user_permissions.add(permiso)
-
+                    usuario.save()
                 elif int(p) == 7:
                     """Permiso id=7 corresponde a Ver Reporte"""
                     permiso = Permission.objects.get(codename="view_report")
@@ -233,7 +238,7 @@ def addPermsView(request):
                             return render(request, "gestionUser/already.html")
 
                     usuario.user_permissions.add(permiso)
-
+                    usuario.save()
                 elif int(p) == 8:
                     """Permiso id=8 corresponde a Agregar Proyecto"""
                     permiso = Permission.objects.get(codename="add_proyecto")
@@ -245,7 +250,7 @@ def addPermsView(request):
                             return render(request, "gestionUser/already.html")
 
                     usuario.user_permissions.add(permiso)
-
+                    usuario.save()
             """Template a renderizar: permisos.html"""
             return render(request, "gestionUser/permisos.html")
 
@@ -262,7 +267,7 @@ def addPermsView(request):
     for user in u:
         """Filtrar que usuarios no sean staff ni el mismo usuario que ha realizado el request. Tambien
         que no sea un usuario deshabilitado."""
-        if user.is_staff == False and user != request.user and user.is_active:
+        if user.is_staff == False and user != request.user and user.is_active and user.username != "AnonymousUser":
             usuarios.append(user)
     """Template a renderizar: addPerms.html"""
     return render(request, "gestionUser/addPerms.html", {'usuarios':usuarios, 'select':seleccion, })
