@@ -1,6 +1,25 @@
 from django.contrib import admin
 from .models import Rol, Proyecto, FaseUser, TipodeItem, Fase, Item, Relacion, LineaBase, Files, ProyectoFase
 from simple_history.admin import SimpleHistoryAdmin
+import reversion
+from reversion.admin import VersionAdmin
+
+
+
+class YourModelAdmin(VersionAdmin):
+
+    history_latest_first: True
+    list_display = ["tipoItem", "nombre", "campo_extra_valores", "fecha", "estado", "observacion", "costo",
+                    "archivos"]
+    reversion.register(follow=['relaciones'])
+
+class YourModelAdminRelaciones(VersionAdmin):
+    history_latest_first:True
+
+
+class YourModelAdminFase(VersionAdmin):
+    history_latest_first:True
+
 
 
 class ProyectoHistoryAdmin(SimpleHistoryAdmin):
@@ -27,13 +46,14 @@ class ProyectoHistoryRelacion(SimpleHistoryAdmin):
     history_list_display = ["tipo", "item_from","item_to"]
     search_fields = ['name', 'user__username']
 
-admin.site.register(Fase, ProyectoHistoryFase)
+admin.site.register(Fase, YourModelAdminFase )
 admin.site.register(FaseUser)
 admin.site.register(Files)
 admin.site.register(Rol)
-admin.site.register(Proyecto, ProyectoHistoryProyecto)
+admin.site.register(Proyecto)
 admin.site.register(TipodeItem)
-admin.site.register(Relacion,ProyectoHistoryRelacion)
+admin.site.register(Relacion,YourModelAdminRelaciones)
 admin.site.register(LineaBase)
-admin.site.register(Item, ProyectoHistoryAdmin)
-admin.site.register(ProyectoFase,ProyectoHistoryProyectoFase)
+#admin.site.register(Item, ProyectoHistoryAdmin)
+admin.site.register(ProyectoFase)
+admin.site.register(Item, YourModelAdmin)
