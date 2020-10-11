@@ -532,7 +532,7 @@ def proyectoUserAdd(request):
             y los usuarios deshabilitados.
             """
             if u.is_staff == False and u != request.user and u != gerente and not (u in proyecto.usuarios.all()) \
-                    and u.is_active and u.has_perm("perms.view_menu") == True:
+                    and u.is_active and u.has_perm("perms.view_menu") == True and u.username != "AnonymousUser":
                 usuarios.append(u)
         """
         Template a renderizar: proyectoUserAdd.html con parametros

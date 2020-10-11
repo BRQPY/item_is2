@@ -127,14 +127,12 @@ def addPermsView(request):
         """
         Boton Guardar fue presionado en el template
         """
-        print("ADDPERMMMMMM:", request.POST.get('addperm'))
         if 'addperm' in request.POST:
             user = request.POST.get('usuario')
             """
             Permisos a agregar al usuarios
             """
             permisos = request.POST.getlist('perms')
-            print("ESTAAAAAA ES LA LISTA DE PERMISOS:", permisos)
             """
             Usuario a agregar permisos.
             """
@@ -170,8 +168,6 @@ def addPermsView(request):
 
                     usuario.user_permissions.add(permiso)
                     usuario.save()
-                    print(usuario)
-                    print(usuario.has_perm("perms.assign_perms"))
                 elif int(p) == 3:
                     """Permiso id=3 corresponde a Agregar Usuarios"""
                     permiso = Permission.objects.get(codename="add_user")
@@ -364,7 +360,7 @@ def verUserView(request):
     u = User.objects.all()
     for user in u:
         """Filtrar que el usuario no sea staff"""
-        if user.is_staff == False:
+        if user.is_staff == False and user.has_perm("perms.view_menu") == True and user.username != "AnonymousUser":
             usuarios.append(user)
 
     """Template a renderizar: verUser.html"""
