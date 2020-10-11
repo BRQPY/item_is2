@@ -11,79 +11,132 @@ do
     case $opt in
         "Desarrollo")
             echo "Entorno de desarrollo"
-            echo "Éstas son las ramas con las que cuenta el proyecto actualmente"    
-            #echo "Elija uno de los siguientes tags:"
-            git branch
-            echo "Ingrese el nombre de alguna rama del proyecto:"
-            read rama
-            git checkout $rama
-            while [ "$?" -ne 0 ]; do
-                 echo
-                 echo "No existe la rama que ingresaste. Intentalo de nuevo por favor"
-                 echo
-                 echo "Éstas son las ramas con las que cuenta el proyecto actualmente"
-                 git branch
-                 read -p "Ingrese el nombre de la rama: " rama
-                 git checkout $rama
-            done
+            echo
+            # echo "Éstas son las ramas con las que cuenta el proyecto actualmente" 
+            # git branch
+            
+            # echo
+            # echo "Ingrese el nombre de alguna rama del proyecto:"
+            # read rama
+            # git checkout $rama
+            # while [ "$?" -ne 0 ]; do
+            #      echo
+            #      echo "No existe la rama que ingresaste. Intentalo de nuevo por favor"
+            #      echo
+            #      echo "Éstas son las ramas con las que cuenta el proyecto actualmente"
+            #      git branch
+            #      read -p "Ingrese el nombre de la rama: " rama
+            #      git checkout $rama
+            # done
+            
             echo
             path=$(pwd)
             sudo chmod -R 777 $path  
             echo "Instalando entorno virtual..."
-            sudo apt install python3-venv
+            sudo apt install python3-venv ||{
+                pwd
+                echo "Ocurrió un error al descargar el entorno virtual";
+                exit;
+            }
+            
             echo 
             echo "Creando entorno virtual 'is2virtual' para trabajar en el proyecto"
-            python3.7 -m venv is2virtual
-            #virtualenv venv --python=python3
+            python3.7 -m venv is2virtual ||{
+                pwd
+                echo "Ocurrió un error al crear el entorno virtual";
+                exit;
+            }
+            
             echo
             echo "Activando entorno virtual.."
-            source is2virtual/bin/activate
+            source is2virtual/bin/activate ||{
+                pwd
+                echo "Ocurrió un error al activar el entorno virtual";
+                exit;
+            }
+            
             echo
             echo "Actualizando el gestor de paquetes de Python 'pip'"
-            pip install --upgrade pip
+            pip install --upgrade pip ||{
+                pwd
+                echo "Ocurrió un error al actualizar el pip";
+                exit;
+            }
+            
             echo
             echo "Procederemos a cargar los requerimientos del proyecto a tu entorno virtual."
-            pip install -r requirements.txt
+            pip install -r requirements.txt ||{
+                pwd
+                echo "Ocurrió un error al cargar los requerimientos";
+                exit;
+            }
+            
             echo
             echo "Tu entorno virtual ya está listo."
             echo "Poblando Base de Datos"
             #chmod +x devbdconf.sh
             #sudo -u postgres ./devbdconf.sh
+            echo "Guardando cambios como migraciones"
+            python manage.py makemigrations
+            echo "Migrando .."
+            python manage.py migrate
+            echo "Corriendo entorno de desarrollo"
+            python manage.py runserver
             break
             ;;
         "Producción")
             echo "Entorno de Producción"
-            echo "Éstos son los tag con los que cuenta el proyecto actualmente"  
-            git tag
-            echo "Ingrese el nombre de algún tag del proyecto:"
-            read tg
-            git checkout $tg
-            while [ "$?" -ne 0 ]; do
-                 echo
-                 echo "No existe el tag que ingresaste. Intentalo de nuevo por favor"
-                 echo
-                 echo "Éstos son  los tag con los que cuenta el proyecto actualmente"
-                 git tag
-                 read -p "Ingrese el nombre de algún tag del proyecto: " tg
-                 git checkout $tg
-            done
+            # echo "Éstos son los tag con los que cuenta el proyecto actualmente"  
+            # git tag
+            # echo "Ingrese el nombre de algún tag del proyecto:"
+            # read tg
+            # git checkout $tg
+            # while [ "$?" -ne 0 ]; do
+            #      echo
+            #      echo "No existe el tag que ingresaste. Intentalo de nuevo por favor"
+            #      echo
+            #      echo "Éstos son  los tag con los que cuenta el proyecto actualmente"
+            #      git tag
+            #      read -p "Ingrese el nombre de algún tag del proyecto: " tg
+            #      git checkout $tg
+            # done
             path=$(pwd)
             sudo chmod -R 777 $path  
             echo "Instalando entorno virtual..."
             sudo apt install python3-venv
+            
             echo 
             echo "Creando entorno virtual 'is2virtual' para trabajar en el proyecto"
-            python3.7 -m venv is2virtual
-            #virtualenv venv --python=python3
+            python3.7 -m venv is2virtual ||{
+                pwd
+                echo "Ocurrió un error al crear el entorno virtual";
+                exit;
+            }
+            
             echo
             echo "Activando entorno virtual.."
-            source is2virtual/bin/activate
+            source is2virtual/bin/activate ||{
+                pwd
+                echo "Ocurrió un error al activar el entorno virtual";
+                exit;
+            }
+            
             echo
             echo "Actualizando el gestor de paquetes de Python 'pip'"
-            pip install --upgrade pip
+            pip install --upgrade pip ||{
+                pwd
+                echo "Ocurrió un error al actualizar el pip";
+                exit;
+            }
+            
             echo
             echo "Procederemos a cargar los requerimientos del proyecto a tu entorno virtual."
-            #pip install -r requirements.txt COMENTADO SOLO PARA NO TARDAR MIL AÑOS
+            pip install -r requirements.txt ||{
+                pwd
+                echo "Ocurrió un error al cargar los requerimientos";
+                exit;
+            }
+            
             echo
             echo "Tu entorno virtual ya está listo."
             echo "Poblando Base de Datos"

@@ -76,7 +76,6 @@ pathspec==0.8.0
 pbr==5.4.5
 pep8-naming==0.9.1
 pkginfo==1.5.0.1
-pkg-resources==0.0.0
 prompt-toolkit==3.0.7
 pluggy==0.13.1
 psycopg2==2.8.4
