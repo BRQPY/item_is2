@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-
+from django.contrib.auth.models import User, Group, Permission
 from proyecto.models import Proyecto, Fase, TipodeItem, Item, FaseUser, User, Rol, Relacion, LineaBase, Files, RoturaLineaBase, RoturaLineaBaseComprometida
 from guardian.shortcuts import assign_perm, remove_perm
 from proyecto.views import proyectoView, faseView
@@ -126,7 +126,7 @@ def faseCrear(request):
         proyecto = Proyecto.objects.get(id=proyectoid)
 
         """Verificar que el usuario sea el gerente del proyecto."""
-        if not (request.user.has_perm("is_gerente", proyecto)):
+        if not (request.user.has_perm("is_gerente", proyecto) ):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
 
@@ -429,10 +429,15 @@ def FaseAddUser(request):
 
         for c in codenames:
             """Asignar los permisos del rol al grupo, en la fase correspondiente"""
-            assign_perm(c, grupo, fase)
+            assign_perm(c, user, fase)
             """Asignar el grupo al usuario"""
-            user.groups.add(grupo)
-            user.save()
+            print(c)
+
+            """Asignar los permisos del rol al grupo, en la fase correspondiente"""
+            #assign_perm(c, grupo, fase)
+            """Asignar el grupo al usuario"""
+            #user.groups.add(grupo)
+        user.save()
         """Agregar asociacion al rol"""
         rol.faseUser.add(faseUser)
         rol.save()
@@ -459,7 +464,7 @@ def FaseRemoveUser(request, proyectoid, faseid, userid):
             for fu in fasesUser_rol:
                 if fu.fase == fase and fu.user == usuario:
                     roles_del_user.append(r)
-
+        print(roles_del_user)
         for ru in roles_del_user:
             """Eliminar asociacion entre fase y usuario"""
             ru.faseUser.filter(user=usuario, fase=fase).delete()
@@ -528,6 +533,7 @@ def faseRolAsignar(request, proyectoid, faseid, userid):
 
     """Usuario a ser asignado el rol"""
     user = User.objects.get(id=userid)
+    faseUser = FaseUser.objects.get(fase=fase, user=user)
     """Rol a ser asignado"""
     rol = Rol.objects.get(id=rolid)
     """Permisos del rol"""
@@ -538,13 +544,14 @@ def faseRolAsignar(request, proyectoid, faseid, userid):
         codenames.append(p.codename)
 
     """Crear asociacion entre fase y usuario"""
-    faseUser = FaseUser.objects.create(user=user, fase=fase)
+    #faseUser = FaseUser.objects.create(user=user, fase=fase)
 
     for c in codenames:
         """Asignar los permisos del rol al grupo, en la fase correspondiente"""
         assign_perm(c, user, fase)
+        print(c)
         """Asignar el grupo al usuario"""
-
+    print(user.has_perm("change_fase"),fase)
     user.save()
     """Agregar asociacion al rol"""
     rol.faseUser.add(faseUser)
@@ -577,21 +584,21 @@ def faseRolRemover(request, proyectoid, faseid, userid):
             return redirect('/permissionError/')
 
         """Lista de roles del proyecto"""
-        roles = proyecto.roles.all()
-        roles_del_user = []
-        for r in roles:
-            fasesUser_rol = r.faseUser.all()
-            for fu in fasesUser_rol:
+        rolesUsuario = proyecto.roles.all()
+        roles_usuario = []
+        for r in rolesUsuario:
+            fasesUserRol = r.faseUser.all()
+            for fu in fasesUserRol:
                 if fu.fase == fase and fu.user == usuario:
-                    roles_del_user.append(r)
+                    roles_usuario.append(r)
 
         """
         Template a renderizar: faseRolAsignar.html con parametros -> roles
         ,usuarios y fases del proyecto,
          ademas de proyectoid
          """
-        cantidad_roles = len(roles_del_user)
-        return render(request, "fase/faseRolRemover.html", {'fase': fase, 'usuario': usuario, 'roles': roles_del_user,
+        cantidad_roles = len(roles_usuario)
+        return render(request, "fase/faseRolRemover.html", {'fase': fase, 'usuario': usuario, 'roles': roles_usuario,
                                                             'proyecto': proyecto, 'cant_roles': cantidad_roles})
 
     """POST request, captura el usuario, el rol y las fases para remover"""
@@ -603,19 +610,42 @@ def faseRolRemover(request, proyectoid, faseid, userid):
     """Rol a remover"""
     rol = Rol.objects.get(id=rolid)
 
-    """Eliminar asociacion entre fase y usuario"""
-    rol.faseUser.filter(user=usuario, fase=fase).delete()
+
     """Permisos del rol"""
     grupo = rol.perms
     permisos = grupo.permissions.all()
+    roles = proyecto.roles.all()
+    rolesUsuario = proyecto.roles.all()
+    roles_usuario = []
+    for r in rolesUsuario:
+        fasesUserRol = r.faseUser.all()
+        for fu in fasesUserRol:
+            if fu.fase == fase and fu.user == usuario:
+                roles_usuario.append(r)
+    print(roles_usuario)
+    roles_usuario.remove(rol)
     codenames = []
     for p in permisos:
         codenames.append(p.codename)
     for c in codenames:
         """Asignar los permisos del rol al grupo, en la fase correspondiente"""
-        remove_perm(c, usuario, fase)
+        permiso = Permission.objects.get(codename=c)
+        existe = False
+        for ru in roles_usuario:
+            grupo = ru.perms
+            permisos_grupo = grupo.permissions.all()
+            if permiso in permisos_grupo:
+                existe = True
+        if not existe:
+            remove_perm(c, usuario, fase)
 
     usuario.save()
+    """Eliminar asociacion entre fase y usuario"""
+    #rol.faseUser.filter(user=usuario, fase=fase).delete()
+    faseUserdelRol = FaseUser.objects.get(user=usuario, fase=fase)
+
+    rol.faseUser.remove(faseUserdelRol)
+    rol.save()
     """ Se le asigna el permiso para ver la fase ya que el usuario posee otro rol
         Porque no deja remover el ultimo rol --> se debe eliminar al usuario de la fase
     """
@@ -623,7 +653,7 @@ def faseRolRemover(request, proyectoid, faseid, userid):
 
     if proyecto.estado == "pendiente":
         """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
-        return redirect('faseTipoItem')
+        return redirect('faseUsers', faseid=faseid, proyectoid=proyectoid)
     elif proyecto.estado == "inicializado":
         return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
 
@@ -850,7 +880,7 @@ def itemCrear(request):
     Verificar que el usuario cuente 
     con los permisos necesarios.
     """
-    if not (request.user.has_perm("create_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+    if not (request.user.has_perm("create_item", fase)):
         """Al no contar con los permisos, niega el acceso, redirigiendo."""
         return redirect('/permissionError/')
 
@@ -1002,7 +1032,7 @@ def itemModificar(request):
         fase = Fase.objects.get(id=faseid)
 
         """Verificar que el usuario cuente con los permisos necesarios."""
-        if not (request.user.has_perm("modify_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+        if not (request.user.has_perm("modify_item", fase)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
 
@@ -1052,6 +1082,21 @@ def itemModificar(request):
     caso de que el nombre se mantenga.
     """
     doc = request.FILES.getlist("file[]")
+    archivos_borrados = request.POST.getlist('archivo')
+    print("Archivos a borrar", archivos_borrados)
+    archivos_no_borrados = []
+    for aa in archivos_borrados:
+        if not aa == "":
+            """
+            Agrega campos que no sean igual a un espacio en blanco,
+            pues estos fueron eliminados por el usuario.
+            """
+            archivos_no_borrados.append(aa)
+    print("Archivos a borrar",archivos_borrados)
+    print("Archivos a no borrar", archivos_no_borrados)
+    for a in item.archivos:
+        if not a in archivos_no_borrados:
+            item.archivos.remove(a)
 
     if fase.items.filter(nombre=dato['nombre']).exclude(estado="deshabilitado").exclude(id=dato['itemid']).exists():
         """
@@ -1153,8 +1198,7 @@ def itemCambiarEstado(request):
         """Si el nuevo estado es pendiente de aprobacion."""
         if dato['estado'] == "pendiente de aprobacion":
             """Verificar que el usuario cuente con los permisos para asignar ese estado."""
-            if not (request.user.has_perm("establecer_itemPendienteAprob", fase)) and not (
-                    request.user.has_perm("is_gerente", proyecto)):
+            if not (request.user.has_perm("establecer_itemPendienteAprob", fase)):
                 """Al no contar con los permisos, niega el acceso, redirigiendo."""
                 return redirect('/permissionError/')
 
@@ -1170,15 +1214,14 @@ def itemCambiarEstado(request):
         """Si el nuevo estado es en desarrollo."""
         if dato['estado'] == "en desarrollo":
             """Verificar que el usuario cuente con los permisos para asignar ese estado."""
-            if not (request.user.has_perm("establecer_itemDesarrollo", fase)) and not (
-                    request.user.has_perm("is_gerente", proyecto)):
+            if not (request.user.has_perm("establecer_itemDesarrollo", fase)):
                 """Al no contar con los permisos, niega el acceso, redirigiendo."""
                 return redirect('/permissionError/')
 
         """Si el nuevo estado es aprobado."""
         if dato['estado'] == "aprobado":
             """Verificar que el usuario cuente con los permisos para asignar ese estado."""
-            if not (request.user.has_perm("aprove_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+            if not (request.user.has_perm("aprove_item", fase)):
                 """Al no contar con los permisos, niega el acceso, redirigiendo."""
                 return redirect('/permissionError/')
 
@@ -1310,7 +1353,7 @@ def itemDeshabilitar(request):
     """Item a deshabilitar."""
     item = Item.objects.get(id=itemid)
     """Verificar que el usuario cuente con los permisos necesarios."""
-    if not (request.user.has_perm("unable_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+    if not (request.user.has_perm("unable_item", fase)):
         """Al no contar con los permisos, niega el acceso, redirigiendo."""
         return redirect('/permissionError/')
 
@@ -1490,6 +1533,9 @@ def itemRelacionesRemover(request, itemid, item_rm, faseid, proyectoid):
         # faseid = request.GET.get('faseid')
         """Fase en la cual se encuentra el item."""
         fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("relacionar_item", fase)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
         # itemid = request.GET.get('itemid')
         # itemid_final = request.GET.get('itemid_final')
         item_inicio = Item.objects.get(id=itemid)
@@ -1608,7 +1654,7 @@ def itemAddRelacion(request):
         """Obtener el item"""
         item = Item.objects.get(id=itemid)
         """Verificar que el usuario cuente con los permisos necesarios."""
-        if not (request.user.has_perm("relacionar_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+        if not (request.user.has_perm("relacionar_item", fase)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
         if item.estado != "aprobado" and item.estado != "en linea base":
@@ -1943,7 +1989,7 @@ def faseAddLineaBase(request):
     proyecto = Proyecto.objects.get(id=request.GET.get('proyectoid'))
     fase = Fase.objects.get(id=request.GET.get('faseid'))
     """Verificar permiso necesario en el proyecto correspondiente"""
-    if not (request.user.has_perm("create_lineaBase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+    if not (request.user.has_perm("create_lineaBase", fase)):
         return redirect('/permissionError/')
 
     """Si el proyecto no se encuentra inicializado."""
@@ -2024,8 +2070,7 @@ def lineaBaseAddItem(request):
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
 
         """Verificar que el usuario cuente con los permisos necesarios para efectuar la accion."""
-        if not (request.user.has_perm("modify_lineaBase", fase)) and not (
-                request.user.has_perm("is_gerente", proyecto)):
+        if not (request.user.has_perm("modify_lineaBase", fase)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
 
@@ -2100,8 +2145,7 @@ def lineaBaseRemoveItem(request, proyectoid, faseid, lineaBaseid, itemid):
         """Obtener item a remover de linea base"""
         item_remover = Item.objects.get(id=itemid)
         """Verificar que el usuario cuente con los permisos necesarios para efectuar la accion."""
-        if not (request.user.has_perm("modify_lineaBase", fase)) and not (
-                request.user.has_perm("is_gerente", proyecto)):
+        if not (request.user.has_perm("modify_lineaBase", fase)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
 
@@ -2177,7 +2221,12 @@ def itemHistorial(request):
         faseid = request.GET.get('faseid')
         itemid = request.GET.get('itemid')
         item = Item.objects.get(id=itemid)
+
         fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("ver_item", fase)) and not (
+                request.user.has_perm("is_gerente", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
         "Creacion de una lista con los historiales de cambios del item"
         # version_list = reversion.get_for_object(item)
         versions = Version.objects.get_for_object(item)
@@ -2213,8 +2262,7 @@ def itemReversionar(request, proyectoid, faseid, itemid, history_date):
         item = Item.objects.get(id=itemid)
 
         """Verificar que el usuario cuente con los permisos necesarios."""
-        if not (request.user.has_perm("reversionar_item", fase)) and not (
-                request.user.has_perm("is_gerente", proyecto)):
+        if not (request.user.has_perm("reversionar_item", fase)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
 
@@ -2290,7 +2338,11 @@ def cerrarFase(request, proyectoid, faseid):
         """Para aprobar el item es necesario identificar que tenga alguna relacion con un antecesor
                     que se encuentre en una linea base cerrada, o bien con un padre(o hijo) que este aprobado."""
         fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+        fase_list = list(fasesProyecto)
+        ultima_fase = fase_list.pop()
+        print("Ultimafase:",ultima_fase)
         cont = 0
+
         esPrimeraFase = False
         for fp in fasesProyecto:
             cont = cont + 1
@@ -2300,7 +2352,8 @@ def cerrarFase(request, proyectoid, faseid):
                     break
         "Solo verificar si son items posteriores a la primera fase."
         bandera = False
-
+        """ Verifica que tenga al menos un antecesor y sucesor """
+        bandera_antecesor = False
         if esPrimeraFase == False:
 
             for i in itemsFase:
@@ -2311,21 +2364,28 @@ def cerrarFase(request, proyectoid, faseid):
 
                     if relacion.tipo == "sucesor":
                         bandera = True
-                        break
+                    if relacion.tipo == "antecesor":
+                        bandera_antecesor = True
+
 
         if esPrimeraFase == False:
+            if int(ultima_fase.id) == int(fase.id):
+                if cerrar  and bandera:
+                    fase.estado = "cerrada"
+                    fase.save()
+                    return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
+            else:
+                if cerrar == True and bandera == True and bandera_antecesor:
+                    fase.estado = "cerrada"
+                    fase.save()
+                    return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
 
-            if cerrar == True and bandera == True:
+            return redirect('faseConfinicializada', proyectoid=proyectoid, faseid=faseid)
+        else:
+            if cerrar == True:
                 fase.estado = "cerrada"
                 fase.save()
                 return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
-
-            return redirect('faseConfinicializada', proyectoid=proyectoid, faseid=faseid)
-
-        if cerrar == True:
-            fase.estado = "cerrada"
-            fase.save()
-            return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
 
         return redirect('faseConfinicializada', proyectoid=proyectoid, faseid=faseid)
 
@@ -2344,6 +2404,9 @@ def itemCalculoImpacto(request):
         faseid = request.GET.get('faseid')
         """Obtener fase."""
         fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("obtener_calculoImpacto", fase)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
         """ID de item_from"""
         itemIdCalculo = request.GET.get('itemIdCalculo')
         """Obtener item."""
@@ -2459,11 +2522,18 @@ def itemCalculoImpacto(request):
                 confirmados = confirmadosAux
         print(adj)
         print(calculo)
-
+        suma_total = 0
+        for fp in fasesProyecto:
+            itemsFase = fp.items.exclude(estado="deshabilitado").order_by('id')
+            for i in itemsFase:
+                suma_total = suma_total + int(i.costo)
+        print("calculo imp",calculo)
+        print("total",suma_total)
+        porcentaje = float((calculo*100)/suma_total)
         return render(request, 'item/itemCalculoImpacto.html',
                       {'faseid': faseid, 'proyectoid': proyectoid,
                        'item': itemCalculo,
-                       'calculo': calculo, })
+                       'calculo': porcentaje, })
 
 def gestionRoturaLineaBase(request,proyectoid,faseid,lineaBaseid):
     if request.method == "GET":
@@ -2471,6 +2541,9 @@ def gestionRoturaLineaBase(request,proyectoid,faseid,lineaBaseid):
         proyecto = Proyecto.objects.get(id=proyectoid)
         """Obtener fase."""
         fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("ver_lineaBase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
         """Obtener linea base."""
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
         solicitudes = lineaBase.roturaslineasBase.all()
@@ -2489,6 +2562,9 @@ def formRoturaLineaBase(request,proyectoid,faseid,lineaBaseid):
         fase = Fase.objects.get(id=faseid)
         """Obtener linea base."""
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        if not (request.user.has_perm("solicitar_roturaLineaBase", fase)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
         """Obtener items de linea base."""
         items = lineaBase.items.all()
         return render(request, "fase/FormularioRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
@@ -2534,6 +2610,9 @@ def votacionRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
         proyecto = Proyecto.objects.get(id=proyectoid)
         """Obtener fase."""
         fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("break_lineaBase", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
         """Obtener linea base."""
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
         solicitud = RoturaLineaBase.objects.get(id=solicituid)
@@ -2547,6 +2626,9 @@ def AprobarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
         proyecto = Proyecto.objects.get(id=proyectoid)
         """Obtener fase."""
         fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("break_lineaBase", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
         """Obtener linea base."""
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
         solicitud = RoturaLineaBase.objects.get(id=solicituid)
@@ -2725,6 +2807,9 @@ def RechazarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
         proyecto = Proyecto.objects.get(id=proyectoid)
         """Obtener fase."""
         fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("break_lineaBase", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
         """Obtener linea base."""
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
         solicitud = RoturaLineaBase.objects.get(id=solicituid)
@@ -2904,6 +2989,9 @@ def votacionRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid):
         proyecto = Proyecto.objects.get(id=proyectoid)
         """Obtener fase."""
         fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("break_lineaBase", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
         """Obtener linea base."""
         items_aprobados = []
         items_en_revision = []
@@ -2927,6 +3015,9 @@ def AprobarRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid,sol
         proyecto = Proyecto.objects.get(id=proyectoid)
         """Obtener fase."""
         fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("break_lineaBase", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
         """Obtener linea base."""
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
         solicitud = RoturaLineaBaseComprometida.objects.get(id=solicituid)
@@ -3093,6 +3184,9 @@ def RechazarRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid, s
         proyecto = Proyecto.objects.get(id=proyectoid)
         """Obtener fase."""
         fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("break_lineaBase", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
         """Obtener linea base."""
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
         solicitud = RoturaLineaBase.objects.get(id=solicituid)
@@ -3268,6 +3362,9 @@ def itemTrazabilidad(request):
         faseid = request.GET.get('faseid')
         """Obtener fase."""
         fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("obtener_trazabilidadItem", fase)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
         """ID de item_from"""
         itemIdTrazabilidad = request.GET.get('itemIdTrazabilidad')
         """Obtener item."""

@@ -7,7 +7,7 @@ from reversion.models import Version
 
 class TipodeItem(models.Model):
     nombreTipo = models.CharField(max_length=40)
-    descripcion = models.CharField(max_length=40)
+    descripcion = models.CharField(max_length=200)
     campo_extra = ArrayField(models.CharField(max_length=40), default=list, blank=True)
 
 
@@ -22,12 +22,12 @@ class CampoExtraValores(models.Model):
 
 class Item(models.Model):
     tipoItem = models.ForeignKey(TipodeItem, on_delete=models.CASCADE, default=None, related_name="tipoItem")
-    nombre = models.CharField(max_length=40, null=False, default=None)
+    nombre = models.CharField(max_length=100, null=False, default=None)
     campo_extra_valores = ArrayField(models.CharField(max_length=40), default=list, blank=True)
     # file = models.FileField(upload_to='media', blank=True)
     fecha = models.CharField(max_length=40, null=False, default=None)
     estado = models.CharField(max_length=40, blank=True, null=True)
-    observacion = models.CharField(max_length=50, blank=True, default=None)
+    observacion = models.CharField(max_length=200, blank=True, default=None)
     # relaciones_items = ArrayField(models.CharField(max_length=200), default=list, blank=True)
     costo = models.IntegerField(default=0, blank=True)
     relaciones = models.ManyToManyField('self', default=None, through='Relacion', symmetrical=False)
@@ -71,7 +71,7 @@ class LineaBase(models.Model):
 
 class Fase(models.Model):
     nombre = models.CharField(max_length=40)
-    descripcion = models.CharField(max_length=40, default=None)
+    descripcion = models.CharField(max_length=200, default=None)
     estado = models.CharField(max_length=40, default=None)
     items = models.ManyToManyField(Item, default=None)
     tipoItem = models.ManyToManyField(TipodeItem, default=None)
@@ -94,7 +94,6 @@ class Fase(models.Model):
             ("create_lineaBase", "Crear Línea Base."),
             ("modify_lineaBase", "Modificar Linea Base."),
             ("ver_lineaBase", "Ver Línea Base."),
-            ("break_lineaBase", "Romper Línea Base."),
             ("solicitar_roturaLineaBase", "Solicitar rotura de línea base."),
             ("cerrar_fase", "cerrar fase"),
         )
@@ -154,7 +153,7 @@ class Proyecto(models.Model):
             ("create_comite", "Can create comite"),
             ("change_comite", "Can change comite"),
             ("view_comite", "Can view_comite comite"),
-            ("aprobar_rotura_lineaBase", "Romper Línea Base."),
+            ("break_lineaBase", "Romper Línea Base."),
 
         )
 
