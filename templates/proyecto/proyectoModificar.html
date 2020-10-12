@@ -36,23 +36,22 @@
             {%if proyecto.estado == "inicializado"%}
                 <div>
                     <label for="fechaini">Fecha de Inicio:</label>
-                    <input type="text" id="fechaini" name="fechaini" value={{proyecto.fecha_inicio}}  readonly>El proyecto ya ha iniciado.
+                    <input type="date" id="fechaini" name="fechaini" value={{proyecto.fecha_inicio}}  readonly>El proyecto ya ha iniciado.
                 </div><br>
             {%else%}
                 <div>
                     <label for="fechaini">Fecha de Inicio:</label>
-                    <input type="text" id="fechaini" name="fechaini" value={{proyecto.fecha_inicio}}>
+                    <input type="date" id="fechaini" name="fechaini" value={{proyecto.fecha_inicio}}>
                 </div><br>
             {%endif%}
             <div>
                 <label for="fechafin">Fecha de Fin:</label>
-                <input type="text" id="fechafin" name="fechafin" value={{proyecto.fecha_fin}}>
+                <input type="date" id="fechafin" name="fechafin" value={{proyecto.fecha_fin}}>
             </div><br>
             <button type="submit" class="btn-small blue darken-3 right" onclick="myFunction()">
                 Guardar Modificaciones
                 <i class="material-icons white-text left">done</i>
             </button>
-            <button type="submit" onclick="myFunction()">Guardar</button>
         </form>
     </div>
 

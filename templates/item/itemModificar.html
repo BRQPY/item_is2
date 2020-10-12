@@ -80,32 +80,39 @@
                             <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
                             <p><div>
                                 <label for="nombre">Nombre del Item:</label>
-                                <input type="text" id="nombre" name="nombre" value={{item.nombre}} required>
+                                <input type="text" id="nombre" name="nombre" value="{{item.nombre}}" required>
                             </div></p>
                             <p><div>
                                 <label for="fecha">Fecha:</label>
-                                <input type="date" id="fecha" name="fecha" value={{item.fecha}} required>
+                                <input type="date" id="fecha" name="fecha" value="{{item.fecha}}" required>
                             </div></p>
                             <p><div>
                                 <label for="observacion">Observacion:</label>
-                                <input type="text" id="observacion" name="observacion" value={{item.observacion}} required>
+                                <input type="text" id="observacion" name="observacion" value="{{item.observacion}}" required>
                             </div></p>
                             <p><div>
                                 <label for="costo">Costo:</label>
-                                <input type="text" id="costo" name="costo" value={{item.costo}} required>
+                                <input type="text" id="costo" name="costo" value="{{item.costo}}" required>
                             </div></p>
-                             <div id="file"></div>
-                            <p><div>
-                               <label for="archivo">Archivos:</label>
-                                <input type="button" name="add_file" id="add_file" value="Agregar archivo">
-                             </div></p>
+
 
                                 {%for c, c2 in campos%}
                                     <p><div>
                                         <label for="campoextra">{{c}}:</label>
-                                        <input type="text" id="campoextra" name="{{c}}" value={{c2}} required>
+                                        <input type="text" id="campoextra" name="{{c}}" value="{{c2}}" required>
                                     </div></p>
                                 {%endfor%}
+                            <div id="file"></div>
+                            <p><div>
+                               <label for="archivo">Archivos:</label>
+                                <input type="button" name="add_file" id="add_file" value="Agregar archivo">
+                             </div></p>
+                            {% for a in item.archivos %}
+                                <input class="cla" type="text" id="{{ a }}" name="archivo" value="{{ a }}" readonly>
+                                <input class="cla" type="button"  onclick="document.getElementById('{{ a }}').value=''"  value="Eliminar" />
+                                <br>
+                            {% endfor %}
+                            <input class="cla"  type="hidden" id="archivosborrar" name="archivosborrar">
                             <button type="submit" class="btn-small blue darken-3 right" value="Save Data">
                                 Guardar modificaciones
                                 <i class="material-icons white-text left">edit</i>
@@ -243,7 +250,8 @@
         file.appendChild(br1);
 
     }
-
 </script>
+
+
 
 {% endblock%}

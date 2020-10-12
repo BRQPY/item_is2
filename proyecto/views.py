@@ -119,6 +119,13 @@ def proyectoInicializar(request):
     """Establecer el estado de proyecto como inicializado."""
     proyecto.estado = "inicializado"
     """Guardar."""
+    """Asignando permisos al miembro del comite"""
+    for user in proyecto.comite.all():
+        assign_perm("break_lineaBase", user, proyecto)
+        for f in proyecto.fases.all().exclude(estado="deshabilitado"):
+            assign_perm("ver_lineaBase", user, f)
+            assign_perm("view_fase", user, f)
+
     proyecto.save()
     """Redirigir a la vista del proyecto correspondiente."""
     return redirect('proyectoView', id=proyectoid)
@@ -369,7 +376,7 @@ def proyectoModificar(request):
     proyecto.save()
 
     """Template a renderizar: gestionProyecto con parametro -> proyectoid"""
-    return render(request, 'proyecto/ProyectoInicializadoConfig.html', {'proyectoid': proyectoid, })
+    return render(request, 'proyecto/ProyectoInicializadoConfig.html', {'proyecto': proyecto, })
 
 
 def proyectoDeshabilitar(request):
@@ -730,7 +737,12 @@ def proyectoComiteAdd(request):
         """Agregar miembro al Comite"""
         proyecto.comite.add(user)
         """Agregar el permiso para aprobar rotura de linea base"""
-        assign_perm("aprobar_rotura_lineaBase", user, proyecto)
+        if proyecto.estado == "inicializado":
+            assign_perm("break_lineaBase", user, proyecto)
+            for f in proyecto.fases.all().exclude(estado="deshabilitado"):
+                assign_perm("ver_lineaBase", user, f)
+                assign_perm("view_fase", user, f)
+
 
     """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
     return redirect('proyectoView', id=proyectoid)
@@ -788,7 +800,12 @@ def proyectoComiteRemove(request):
         proyecto.comite.remove(user)
         proyecto.save()
         """Remover permisos para aprobar rotura de linea base"""
-        remove_perm("aprobar_rotura_lineaBase", user, proyecto)
+        if proyecto.estado == "inicializado":
+            assign_perm("break_lineaBase", user, proyecto)
+            for f in proyecto.fases.all().exclude(estado="deshabilitado"):
+                remove_perm("ver_lineaBase", user, f)
+                remove_perm("view_fase", user, f)
+
         usuarios_votantes = []
         for lb in linea_base_norota:
             for s in lb.roturaslineasBase.all().filter(estado="pendiente"):
@@ -893,93 +910,92 @@ def proyectoRolCrear(request):
 
         for p in permisos:
             if int(p) == 1:
-                """Permiso Proyecto ID=1 corresponde a Crear Fase"""
-                permiso = Permission.objects.get(codename="add_fase")
-                grupo.permissions.add(permiso)
-            elif int(p) == 2:
-                """Permiso Proyecto ID=2 corresponde a Modificar Fase"""
-                permiso = Permission.objects.get(codename="change_fase")
-                grupo.permissions.add(permiso)
-            elif int(p) == 3:
-                """Permiso Proyecto ID=3 corresponde a Remover Fase"""
-                permiso = Permission.objects.get(codename="delete_fase")
-                grupo.permissions.add(permiso)
-            elif int(p) == 4:
                 """Permiso Proyecto ID=4 corresponde a Ver Fase"""
                 permiso = Permission.objects.get(codename="view_fase")
                 grupo.permissions.add(permiso)
+            elif int(p) == 3:
+                """Permiso Proyecto ID=2 corresponde a Modificar Fase"""
+                permiso = Permission.objects.get(codename="change_fase")
+                grupo.permissions.add(permiso)
+            elif int(p) == 4:
+                """Permiso Proyecto ID=3 corresponde a Remover Fase"""
+                permiso = Permission.objects.get(codename="delete_fase")
+                grupo.permissions.add(permiso)
             elif int(p) == 5:
+                """Permiso Proyecto ID=19 corresponde a Cerrar Fase"""
+                permiso = Permission.objects.get(codename="cerrar_fase")
+                grupo.permissions.add(permiso)
+            elif int(p) == 6:
+                """Permiso Proyecto ID=14 corresponde a Ver Item"""
+                permiso = Permission.objects.get(codename="ver_item")
+                grupo.permissions.add(permiso)
+            elif int(p) == 7:
                 """Permiso Proyecto ID=5 corresponde a Crear Item"""
                 permiso = Permission.objects.get(codename="create_item")
                 grupo.permissions.add(permiso)
-            elif int(p) == 6:
-                """Permiso Proyecto ID=6 corresponde a Aprobar Item"""
-                permiso = Permission.objects.get(codename="aprove_item")
-                grupo.permissions.add(permiso)
-            elif int(p) == 7:
-                """Permiso Proyecto ID=7 corresponde a Deshabilitar Item"""
-                permiso = Permission.objects.get(codename="deshabilitar_item")
-                grupo.permissions.add(permiso)
             elif int(p) == 8:
-                """Permiso Proyecto ID=8 corresponde a Reversionar Item"""
-                permiso = Permission.objects.get(codename="reversionar_item")
-                grupo.permissions.add(permiso)
-            elif int(p) == 9:
-                """Permiso Proyecto ID=9 corresponde a Relacionar Item"""
-                permiso = Permission.objects.get(codename="relacionar_item")
-                grupo.permissions.add(permiso)
-            elif int(p) == 10:
                 """Permiso Proyecto ID=10 corresponde a Modificar Item"""
                 permiso = Permission.objects.get(codename="modify_item")
                 grupo.permissions.add(permiso)
+            elif int(p) == 9:
+                """Permiso Proyecto ID=7 corresponde a Deshabilitar Item"""
+                permiso = Permission.objects.get(codename="deshabilitar_item")
+                grupo.permissions.add(permiso)
+            elif int(p) == 10:
+                """Permiso Proyecto ID=8 corresponde a Reversionar Item"""
+                permiso = Permission.objects.get(codename="reversionar_item")
+                grupo.permissions.add(permiso)
             elif int(p) == 11:
-                """Permiso Proyecto ID=11 corresponde a Establecer Item Pendiente de Aprobacion"""
-                permiso = Permission.objects.get(codename="establecer_itemPendienteAprob")
+                """Permiso Proyecto ID=9 corresponde a Relacionar Item"""
+                permiso = Permission.objects.get(codename="relacionar_item")
                 grupo.permissions.add(permiso)
             elif int(p) == 12:
-                """Permiso Proyecto ID=12 corresponde a Establecer Item Desarrollo"""
-                permiso = Permission.objects.get(codename="establecer_itemDesarrollo")
+                """Permiso Proyecto ID=6 corresponde a Aprobar Item"""
+                permiso = Permission.objects.get(codename="aprove_item")
                 grupo.permissions.add(permiso)
             elif int(p) == 13:
                 """Permiso Proyecto ID=13 corresponde a Obtener Trazabilidad de Item"""
                 permiso = Permission.objects.get(codename="obtener_trazabilidadItem")
                 grupo.permissions.add(permiso)
             elif int(p) == 14:
-                """Permiso Proyecto ID=14 corresponde a Ver Item"""
-                permiso = Permission.objects.get(codename="ver_item")
-                grupo.permissions.add(permiso)
-            elif int(p) == 15:
                 """Permiso Proyecto ID=15 corresponde a Obtener Calculo de Impacto"""
                 permiso = Permission.objects.get(codename="obtener_calculoImpacto")
                 grupo.permissions.add(permiso)
+            elif int(p) == 15:
+                """Permiso Proyecto ID=12 corresponde a Establecer Item Desarrollo"""
+                permiso = Permission.objects.get(codename="establecer_itemDesarrollo")
+                grupo.permissions.add(permiso)
             elif int(p) == 16:
-                """Permiso Proyecto ID=16 corresponde a Crear Linea Base"""
-                permiso = Permission.objects.get(codename="create_lineaBase")
+                """Permiso Proyecto ID=11 corresponde a Establecer Item Pendiente de Aprobacion"""
+                permiso = Permission.objects.get(codename="establecer_itemPendienteAprob")
                 grupo.permissions.add(permiso)
             elif int(p) == 17:
-                """Permiso Proyecto ID=17 corresponde a Romper Linea Base"""
-                permiso = Permission.objects.get(codename="break_lineaBase")
-                grupo.permissions.add(permiso)
-            elif int(p) == 18:
-                """Permiso Proyecto ID=18 corresponde a Solicitar Rotura de Linea Base"""
-                permiso = Permission.objects.get(codename="solicitar_roturaLineaBase")
-                grupo.permissions.add(permiso)
-            elif int(p) == 19:
-                """Permiso Proyecto ID=19 corresponde a Cerrar Fase"""
-                permiso = Permission.objects.get(codename="cerrar_fase")
-                grupo.permissions.add(permiso)
-            elif int(p) == 20:
-                """Permiso Proyecto ID=19 corresponde a Modificar Linea Base"""
-                permiso = Permission.objects.get(codename="modify_lineaBase")
-                grupo.permissions.add(permiso)
-            elif int(p) == 21:
                 """Permiso Proyecto ID=19 corresponde a Ver Linea Base"""
                 permiso = Permission.objects.get(codename="ver_lineaBase")
                 grupo.permissions.add(permiso)
-            if 5 < int(p) < 16:
+            elif int(p) == 18:
+                """Permiso Proyecto ID=16 corresponde a Crear Linea Base"""
+                permiso = Permission.objects.get(codename="create_lineaBase")
+                grupo.permissions.add(permiso)
+            elif int(p) == 19:
+                """Permiso Proyecto ID=19 corresponde a Modificar Linea Base"""
+                permiso = Permission.objects.get(codename="modify_lineaBase")
+                grupo.permissions.add(permiso)
+            elif int(p) == 20:
+                """Permiso Proyecto ID=18 corresponde a Solicitar Rotura de Linea Base"""
+                permiso = Permission.objects.get(codename="solicitar_roturaLineaBase")
+                grupo.permissions.add(permiso)
+
+            if 5 < int(p) < 17:
                 """Garantizar la presencia del permiso Ver Item"""
                 permiso = Permission.objects.get(codename="ver_item")
-                if not grupo.permissions.filter(codename="view_fase").exists():
+                if not grupo.permissions.filter(codename="ver_item").exists():
+                    grupo.permissions.add(permiso)
+
+            if 16 < int(p) < 21:
+                """Garantizar la presencia del permiso Ver Item"""
+                permiso = Permission.objects.get(codename="ver_lineaBase")
+                if not grupo.permissions.filter(codename="ver_lineaBase").exists():
                     grupo.permissions.add(permiso)
 
         """Garantizar la presencia del permiso Ver Fase"""
@@ -1056,6 +1072,7 @@ def proyectoRolModificar(request, proyectoid, rolid):
         """Proyecto en el que se encuentra el rol"""
         proyecto = Proyecto.objects.get(id=proyectoid)
         rol = Rol.objects.get(id=rolid)
+        perms_antes_modificar = rol.perms.permissions.all()
         permisos = request.POST.getlist('perms')
         vector = []
         """Nuevo nombre del rol"""
@@ -1091,93 +1108,116 @@ def proyectoRolModificar(request, proyectoid, rolid):
 
         grupo = Group.objects.get(name=rol.perms)
         for p in permisos:
-            """Permiso Proyecto ID=1 corresponde a Crear Fase"""
             if int(p) == 1:
-                permiso = Permission.objects.get(codename="add_fase")
-                vector.append(permiso)
-            elif int(p) == 2:
-                """Permiso Proyecto ID=2 corresponde a Modificar Fase"""
-                permiso = Permission.objects.get(codename="change_fase")
-                vector.append(permiso)
-            elif int(p) == 3:
-                """Permiso Proyecto ID=3 corresponde a Remover Fase"""
-                permiso = Permission.objects.get(codename="delete_fase")
-                vector.append(permiso)
-            elif int(p) == 4:
                 """Permiso Proyecto ID=4 corresponde a Ver Fase"""
                 permiso = Permission.objects.get(codename="view_fase")
                 vector.append(permiso)
+            elif int(p) == 3:
+                """Permiso Proyecto ID=2 corresponde a Modificar Fase"""
+                permiso = Permission.objects.get(codename="change_fase")
+                vector.append(permiso)
+            elif int(p) == 4:
+                """Permiso Proyecto ID=3 corresponde a Remover Fase"""
+                permiso = Permission.objects.get(codename="delete_fase")
+                vector.append(permiso)
             elif int(p) == 5:
+                """Permiso Proyecto ID=19 corresponde a Cerrar Fase"""
+                permiso = Permission.objects.get(codename="cerrar_fase")
+                vector.append(permiso)
+            elif int(p) == 6:
+                """Permiso Proyecto ID=14 corresponde a Ver Item"""
+                permiso = Permission.objects.get(codename="ver_item")
+                vector.append(permiso)
+            elif int(p) == 7:
                 """Permiso Proyecto ID=5 corresponde a Crear Item"""
                 permiso = Permission.objects.get(codename="create_item")
                 vector.append(permiso)
-            elif int(p) == 6:
-                """Permiso Proyecto ID=6 corresponde a Aprobar Item"""
-                permiso = Permission.objects.get(codename="aprove_item")
-                vector.append(permiso)
-            elif int(p) == 7:
-                """Permiso Proyecto ID=7 corresponde a Deshabilitar Item"""
-                permiso = Permission.objects.get(codename="deshabilitar_item")
-                vector.append(permiso)
             elif int(p) == 8:
-                """Permiso Proyecto ID=8 corresponde a Reversionar Item"""
-                permiso = Permission.objects.get(codename="reversionar_item")
-                vector.append(permiso)
-            elif int(p) == 9:
-                """Permiso Proyecto ID=9 corresponde a Relacionar Item"""
-                permiso = Permission.objects.get(codename="relacionar_item")
-                vector.append(permiso)
-            elif int(p) == 10:
                 """Permiso Proyecto ID=10 corresponde a Modificar Item"""
                 permiso = Permission.objects.get(codename="modify_item")
                 vector.append(permiso)
+            elif int(p) == 9:
+                """Permiso Proyecto ID=7 corresponde a Deshabilitar Item"""
+                permiso = Permission.objects.get(codename="deshabilitar_item")
+                vector.append(permiso)
+            elif int(p) == 10:
+                """Permiso Proyecto ID=8 corresponde a Reversionar Item"""
+                permiso = Permission.objects.get(codename="reversionar_item")
+                vector.append(permiso)
             elif int(p) == 11:
-                """Permiso Proyecto ID=11 corresponde a Establecer Item Pendiente de Aprobacion"""
-                permiso = Permission.objects.get(codename="establecer_itemPendienteAprob")
+                """Permiso Proyecto ID=9 corresponde a Relacionar Item"""
+                permiso = Permission.objects.get(codename="relacionar_item")
                 vector.append(permiso)
             elif int(p) == 12:
-                """Permiso Proyecto ID=12 corresponde a Establecer Item Desarrollo"""
-                permiso = Permission.objects.get(codename="establecer_itemDesarrollo")
+                """Permiso Proyecto ID=6 corresponde a Aprobar Item"""
+                permiso = Permission.objects.get(codename="aprove_item")
                 vector.append(permiso)
             elif int(p) == 13:
                 """Permiso Proyecto ID=13 corresponde a Obtener Trazabilidad de Item"""
                 permiso = Permission.objects.get(codename="obtener_trazabilidadItem")
                 vector.append(permiso)
             elif int(p) == 14:
-                """Permiso Proyecto ID=14 corresponde a Ver Item"""
-                permiso = Permission.objects.get(codename="ver_item")
-                vector.append(permiso)
-            elif int(p) == 15:
                 """Permiso Proyecto ID=15 corresponde a Obtener Calculo de Impacto"""
                 permiso = Permission.objects.get(codename="obtener_calculoImpacto")
                 vector.append(permiso)
+            elif int(p) == 15:
+                """Permiso Proyecto ID=12 corresponde a Establecer Item Desarrollo"""
+                permiso = Permission.objects.get(codename="establecer_itemDesarrollo")
+                vector.append(permiso)
             elif int(p) == 16:
+                """Permiso Proyecto ID=11 corresponde a Establecer Item Pendiente de Aprobacion"""
+                permiso = Permission.objects.get(codename="establecer_itemPendienteAprob")
+                vector.append(permiso)
+            elif int(p) == 17:
+                """Permiso Proyecto ID=19 corresponde a Ver Linea Base"""
+                permiso = Permission.objects.get(codename="ver_lineaBase")
+                vector.append(permiso)
+            elif int(p) == 18:
                 """Permiso Proyecto ID=16 corresponde a Crear Linea Base"""
                 permiso = Permission.objects.get(codename="create_lineaBase")
                 vector.append(permiso)
-            elif int(p) == 17:
-                """Permiso Proyecto ID=17 corresponde a Romper Linea Base"""
-                permiso = Permission.objects.get(codename="break_lineaBase")
+            elif int(p) == 19:
+                """Permiso Proyecto ID=19 corresponde a Modificar Linea Base"""
+                permiso = Permission.objects.get(codename="modify_lineaBase")
                 vector.append(permiso)
-            elif int(p) == 18:
+            elif int(p) == 20:
                 """Permiso Proyecto ID=18 corresponde a Solicitar Rotura de Linea Base"""
                 permiso = Permission.objects.get(codename="solicitar_roturaLineaBase")
                 vector.append(permiso)
 
-            if 5 < int(p) < 16:
+            if 5 < int(p) < 17:
                 """Garantizar la presencia del permiso Ver Item"""
                 permiso = Permission.objects.get(codename="ver_item")
-                if not grupo.permissions.filter(codename="view_fase").exists():
-                    grupo.permissions.add(permiso)
+                if permiso not in vector:
+                    vector.append(permiso)
+
+            if 16 < int(p) < 21:
+                """Garantizar la presencia del permiso Ver Item"""
+                permiso = Permission.objects.get(codename="ver_lineaBase")
+                if permiso not in vector:
+                    vector.append(permiso)
+
+
 
         """Garantizar la presencia del permiso Ver Fase"""
         permiso = Permission.objects.get(codename="view_fase")
         if permiso not in vector:
             vector.append(permiso)
+
+        for fu in rol.faseUser.all():
+            for p in perms_antes_modificar:
+                remove_perm(p.codename,fu.user,fu.fase)
+
         """Agregar permisos al grupo"""
         grupo.permissions.set(vector)
         """Guardar grupo"""
         grupo.save()
+        usuarios_con_el_rol = []
+
+
+        for fu in rol.faseUser.all():
+            for p in grupo.permissions.all():
+                assign_perm(p.codename,fu.user,fu.fase)
         """Agregar grupo de permisos al rol"""
         rol.perms = grupo
         """Guardar Rol"""
@@ -1259,12 +1299,13 @@ def crear_tipo_form(request):
                                                                'mensaje': "Lo sentimos, el nombre de tipo de item"
                                                                           " ya ha sido asignado en el proyecto.", })
         descrip = dato['descripciontipo']
-        campo = dato['Campos'].split(',')
+        campo = dato['camposadd'].split(',')
         """Creación de un objeto Tipo de Item con los valores recibidos en el post"""
         obj = TipodeItem.objects.create(nombreTipo=nombre1, descripcion=descrip)
         """Ciclo para agregar los campos extra creados por el usuario al objeto del tipo "Tipo de Item" """
         for c in campo:
-            obj.campo_extra.append(c)
+            if not c=="":
+                obj.campo_extra.append(c)
         """Se guarda en la BD el objeto creado"""
         obj.save()
         """Se asigna el proyecto en el cual se encuentra proyectoidel usuario el nuevo tipo de Item creado"""
@@ -1313,6 +1354,9 @@ def gestionar_tipo_de_item(request):
             if i.tipoItem == tipos and i.estado != "deshabilitado":
                 tipos_modificable.remove(tipos)
                 tipos_no_modificable.append(tipos)
+    for t in tipos:
+        print("Nombre", t.nombreTipo)
+        print("tamaño:",len(t.campo_extra))
     return render(request, "proyecto/gestionartipodeitem.html",
                   {'proyecto': proyecto, 'tipos_modificable': tipos_modificable,
                    'tipos_no_modificable': tipos_no_modificable, })
@@ -1381,15 +1425,16 @@ def modificar_tipo_de_item(request, proyectoid, tipoid):
             """Se crea un vector para guardar los cambios en los campos extras"""
             cambios_campos = []
             for c in cambios:
-                if c is not '':
+                if not c=="":
                     """
                     Agrega campos que no sean igual a un espacio en blanco,
                     pues estos fueron eliminados por el usuario.
                     """
                     cambios_campos.append(c)
             for cc in campos_add:
-                """Guarda los campos extra filtrados, es decir, sin espacios en blanco."""
-                cambios_campos.append(cc)
+                if not cc == "":
+                    """Guarda los campos extra filtrados, es decir, sin espacios en blanco."""
+                    cambios_campos.append(cc)
             obj.campo_extra = cambios_campos
             """Guarda las modificaciones en la BD"""
             obj.save()
@@ -1404,7 +1449,7 @@ def modificar_tipo_de_item(request, proyectoid, tipoid):
                         tipos_modificable.remove(tipos)
                         tipos_no_modificable.append(tipos)
             return render(request, "proyecto/gestionartipodeitem.html",
-                          {'proyectoid': proyectoid, 'tipos_modificable': tipos_modificable,
+                          {'proyecto': proyecto, 'tipos_modificable': tipos_modificable,
                            'tipos_no_modificable': tipos_no_modificable, })
 
 

@@ -256,7 +256,7 @@ def addPermsView(request):
     for user in u:
         """Filtrar que usuarios no sean staff ni el mismo usuario que ha realizado el request. Tambien
         que no sea un usuario deshabilitado."""
-        if user.is_staff == False and user != request.user and user.is_active and user.username != "AnonymousUser":
+        if user.is_staff == False and user != request.user and user.is_active and user.username != "AnonymousUser" and user.has_perm("perms.view_menu"):
             usuarios.append(user)
     """Template a renderizar: addPerms.html"""
     return render(request, "gestionUser/addPerms.html", {'usuarios':usuarios, 'select':seleccion, })
@@ -318,7 +318,7 @@ def removePermsView(request):
     for user in u:
         """Filtrar que los usuarios nos sean staff o igual al usuario que realizar el request. Tambien
         que no sea un usuario deshabilitado"""
-        if user.is_staff == False and user != request.user and user.is_active:
+        if user.is_staff == False and user != request.user and user.is_active and user.username != "AnonymousUser" and user.has_perm("perms.view_menu"):
             usuarios.append(user)
 
     """Template a renderizar: removePerms.html"""
@@ -412,7 +412,7 @@ def changeUserView(request):
     u = User.objects.all()
     for user in u:
         """Filtrar que el usuario no sea staff. Tambien que no este deshabilitado"""
-        if user.is_staff == False and user.is_active:
+        if user.is_staff == False and user.is_active and user.username != "AnonymousUser" and user.has_perm("perms.view_menu"):
             usuarios.append(user)
 
     """Template a renderizar: changeUser.html"""
@@ -436,7 +436,7 @@ def unableUserView(request):
         for user in u:
             """Filtrar que el usuario no sea staff, que no sea el usuario que realizo el request y
             que no este ya deshabilitado."""
-            if user.is_staff == False and user != request.user and user.is_active:
+            if user.is_staff == False and user != request.user and user.is_active and user.username != "AnonymousUser" and user.has_perm("perms.view_menu"):
                 usuarios.append(user)
         """Template a renderizar: unableUser.html"""
         return render(request, "gestionUser/unableUser.html", {'usuarios': usuarios, })
