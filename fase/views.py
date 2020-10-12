@@ -1036,6 +1036,7 @@ def itemModificar(request):
                        'archivos': list(item.archivos),
                        'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
                        'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
+                       'desarrolloPermiso': request.user.has_perm("establecer_itemDesarrollo", fase),
                        'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ], })
 
     """POST request, captura la informacion para actualizar los datos del item"""
@@ -1143,6 +1144,7 @@ def itemCambiarEstado(request):
                            'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
                            'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
                            'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
+                           'desarrolloPermiso': request.user.has_perm("establecer_itemDesarrollo", fase),
                            'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ],
                            'mensaje_error': mensaje_error, })
 
@@ -1257,6 +1259,7 @@ def itemCambiarEstado(request):
                                    'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
                                    'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
                                    'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
+                                   'desarrolloPermiso': request.user.has_perm("establecer_itemDesarrollo", fase),
                                    'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ],
                                    'mensaje_error': mensaje_error, })
 
@@ -1284,6 +1287,7 @@ def itemCambiarEstado(request):
                    'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
                    'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
                    'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
+                   'desarrolloPermiso': request.user.has_perm("establecer_itemDesarrollo", fase),
                    'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ],
                    'mensaje_error': mensaje_error, })
 
