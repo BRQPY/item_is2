@@ -61,8 +61,9 @@ INSTALLED_APPS = [
     'fase',
     'proyecto',
     'item_is2',
-    'simple_history',
     'storages',
+    'reversion',
+
 ]
 
 SITE_ID = 1
@@ -86,7 +87,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'simple_history.middleware.HistoryRequestMiddleware',
+    'reversion.middleware.RevisionMiddleware',
+
+
 ]
 
 ROOT_URLCONF = 'item_is2.urls'
@@ -177,4 +180,5 @@ AWS_SECRET_ACCESS_KEY = 'WBty2LjNymiAkqF/hQZcRYWp+HrC2+S9C2P1ca7w'
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_STORAGE_BUCKET_NAME = 'archivositem'
 AWS_S3_REGION_NAME = 'us-east-2'
+
 

@@ -1,69 +1,81 @@
 from django.db import models
 from django.contrib.auth.models import User, Group
 from django.contrib.postgres.fields import ArrayField
-from simple_history.models import HistoricalRecords
+import reversion
+from reversion.models import Version
 
 
 class TipodeItem(models.Model):
     nombreTipo = models.CharField(max_length=40)
-    descripcion = models.CharField(max_length=40)
+    descripcion = models.CharField(max_length=200)
     campo_extra = ArrayField(models.CharField(max_length=40), default=list, blank=True)
-    history = HistoricalRecords()
+
+
 class CampoExtra(models.Model):
     titulo = models.CharField(max_length=40)
 
 
 class CampoExtraValores(models.Model):
     campoExtra = models.ForeignKey(CampoExtra, on_delete=models.CASCADE, default=None, related_name="campoExtra")
-    valor =  models.CharField(max_length=40)
+    valor = models.CharField(max_length=40)
+
 
 class Item(models.Model):
     tipoItem = models.ForeignKey(TipodeItem, on_delete=models.CASCADE, default=None, related_name="tipoItem")
-    nombre = models.CharField(max_length=40, null=False, default=None)
+    nombre = models.CharField(max_length=100, null=False, default=None)
     campo_extra_valores = ArrayField(models.CharField(max_length=40), default=list, blank=True)
     # file = models.FileField(upload_to='media', blank=True)
     fecha = models.CharField(max_length=40, null=False, default=None)
     estado = models.CharField(max_length=40, blank=True, null=True)
-    observacion = models.CharField(max_length=50, blank=True, default=None)
+    observacion = models.CharField(max_length=200, blank=True, default=None)
     # relaciones_items = ArrayField(models.CharField(max_length=200), default=list, blank=True)
     costo = models.IntegerField(default=0, blank=True)
     relaciones = models.ManyToManyField('self', default=None, through='Relacion', symmetrical=False)
     version = models.IntegerField(default=0, editable=False)
     # archivos = models.ManyToManyField(Files,default=None)
     archivos = ArrayField(models.CharField(max_length=40), default=list, blank=True)
-    history = HistoricalRecords(excluded_fields=['relaciones'])
-
-    __history_date = None
-
-    @property
-    def _history_date(self):
-        return self.__history_date
-
-    @_history_date.setter
-    def _history_date(self, value):
-        self.__history_date = value
+    faseid=models.IntegerField(default=0, blank=True)
 
 
 class Files(models.Model):
     file = models.FileField(null=True, blank=True, default=None)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, default=None)
+class RoturaLineaBase(models.Model):
+    solicitante = models.ForeignKey(User, on_delete=models.CASCADE, default=None, null=True, related_name="solicitante")
+    descripcion_solicitud = models.CharField(max_length=200, null=False, default=None)
+    items_implicados = models.ManyToManyField(Item, default=None, related_name="items_implicados")
+    voto_uno = models.SmallIntegerField(null=False, default=-1)
+    voto_dos = models.SmallIntegerField(null=False, default=-1)
+    voto_tres = models.SmallIntegerField(null=False, default=-1)
+    votos_registrados = models.ManyToManyField(User, default=None, related_name="votantes")
+    fecha = models.CharField(max_length=40, null=False, default=None)
+    estado = models.CharField(max_length=40, null=False, default="pendiente")
 
+class RoturaLineaBaseComprometida(models.Model):
+    uno_voto_comprometida = models.SmallIntegerField(null=False, default=-1)
+    dos_voto_comprometida  = models.SmallIntegerField(null=False, default=-1)
+    tres_voto_comprometida  = models.SmallIntegerField(null=False, default=-1)
+    registrados_votos_comprometida  = models.ManyToManyField(User, default=None, related_name="comprometidavotantes")
+    comprometida_estado  = models.CharField(max_length=40, null=False, default="pendiente")
 
+@reversion.register(follow=['items'])
 class LineaBase(models.Model):
     nombre = models.CharField(max_length=40, null=False, default=None)
     items = models.ManyToManyField(Item, default=None)
     estado = models.CharField(max_length=40, default=None)
     creador = models.ForeignKey(User, on_delete=models.CASCADE, default=None, null=True)
+    roturaslineasBase = models.ManyToManyField(RoturaLineaBase, default=None, blank= True)
+    roturaLineaBaseComprometida = models.ManyToManyField(RoturaLineaBaseComprometida,default=None, blank= True, related_name="comprometida")
+
 
 
 class Fase(models.Model):
     nombre = models.CharField(max_length=40)
-    descripcion = models.CharField(max_length=40, default=None)
+    descripcion = models.CharField(max_length=200, default=None)
     estado = models.CharField(max_length=40, default=None)
     items = models.ManyToManyField(Item, default=None)
     tipoItem = models.ManyToManyField(TipodeItem, default=None)
     lineasBase = models.ManyToManyField(LineaBase, default=None)
-
     class Meta:
         permissions = (
             ("create_item", "Can create item"),
@@ -82,10 +94,10 @@ class Fase(models.Model):
             ("create_lineaBase", "Crear Línea Base."),
             ("modify_lineaBase", "Modificar Linea Base."),
             ("ver_lineaBase", "Ver Línea Base."),
-            ("break_lineaBase", "Romper Línea Base."),
             ("solicitar_roturaLineaBase", "Solicitar rotura de línea base."),
             ("cerrar_fase", "cerrar fase"),
         )
+
 
 class FaseUser(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -141,7 +153,7 @@ class Proyecto(models.Model):
             ("create_comite", "Can create comite"),
             ("change_comite", "Can change comite"),
             ("view_comite", "Can view_comite comite"),
-            ("aprobar_rotura_lineaBase", "Romper Línea Base."),
+            ("break_lineaBase", "Romper Línea Base."),
 
         )
 
@@ -153,4 +165,3 @@ class Proyecto(models.Model):
 class ProyectoFase(models.Model):
     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
     fase = models.ForeignKey(Fase, on_delete=models.CASCADE, default=None)
-

@@ -23,8 +23,8 @@
                 <input class="cla"  type="hidden" id="tipodeitem_id" name="tipodeitem_id" value="{{ tipo.id }}">
                 <h5>Campos agregados por los Usuarios:</h5>
                 {% for c in tipo.campo_extra %}
-                        <input class="cla" type="text" id="{{ c }}" name="campos" value="{{ c }}">
-                    <input class="cla"  type="button"  onclick="document.getElementById('{{ c }}').value=''" value="Eliminar"/>
+                        <input class="cla" type="text" id="{{ c }}" name="campos" value="{{ c }}" readonly>
+                    <input class="cla"  type="button"  onclick="document.getElementById('{{ c }}').value=''"  value="Eliminar" />
 
                   <br>
                 {% endfor %}
@@ -47,12 +47,15 @@
 
     function add_element_to_array()
     {
-        array[x] = document.getElementById("camposextra").value;
-        alert("El campo extra: \"" + array[x] + "\" fue agregado exitosamente." );
-        x++;
-        document.getElementById("camposextra").value = "" ;
-        document.getElementById("camposadd").value = array;
-
+        if (document.getElementById("camposextra").value == ""){
+            alert("El campo extra no se agrego por no contener texto" );
+        }else {
+            array[x] = document.getElementById("camposextra").value;
+            alert("El campo extra: \"" + array[x] + "\" fue agregado exitosamente.");
+            x++;
+            document.getElementById("camposextra").value = "";
+            document.getElementById("camposadd").value = array;
+        }
     }
 </script>
  </div>

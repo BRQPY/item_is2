@@ -1,18 +1,23 @@
 from django.shortcuts import render, redirect
-
-from proyecto.models import Proyecto, Fase, TipodeItem, Item, FaseUser, User, Rol, Relacion, LineaBase, Files
+from django.contrib.auth.models import User, Group, Permission
+from proyecto.models import Proyecto, Fase, TipodeItem, Item, FaseUser, User, Rol, Relacion, LineaBase, Files, RoturaLineaBase, RoturaLineaBaseComprometida
 from guardian.shortcuts import assign_perm, remove_perm
 from proyecto.views import proyectoView, faseView
 import boto3
-
+import reversion
 from datetime import datetime
+from reversion.models import Revision, Version
 
 from django.db.models import Q
 from collections import deque
 from django.conf import settings
 from django.contrib import messages
 from django.template.loader import get_template
-from django.core.mail import  EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives
+import reversion
+from django.db import transaction
+import threading
+from fase.tasks import sendEmailViewFase
 
 
 def gestionFase(request):
@@ -95,7 +100,7 @@ def faseCrear(request):
         """Descripcion de la Fase"""
         descripcion = request.POST.get('descripcion')
         """Creacion de la fase con los datos proveidos por el usuario."""
-        fase = Fase.objects.create(nombre=nombre, descripcion=descripcion, estado="abierta" )
+        fase = Fase.objects.create(nombre=nombre, descripcion=descripcion, estado="abierta")
 
         """Agregar la fase creada al proyecto correspondiente."""
         proyecto.fases.add(fase)
@@ -121,7 +126,7 @@ def faseCrear(request):
         proyecto = Proyecto.objects.get(id=proyectoid)
 
         """Verificar que el usuario sea el gerente del proyecto."""
-        if not (request.user.has_perm("is_gerente", proyecto)):
+        if not (request.user.has_perm("is_gerente", proyecto) ):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
 
@@ -153,8 +158,7 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
                                                                       'items_aprobado': items_aprobado,
                                                                       'items_LB_cerrada':items_LB_cerrada,
                                                                       'items_LB_abierta':items_LB_abierta,
-                                                                      'mensaje':mensaje
-                                                                      })
+                                                                      'mensaje':mensaje})
 
 
 def faseUsers(request, faseid, proyectoid):
@@ -244,8 +248,8 @@ def faseModificar(request):
              y redirige a gestion de Fase.
              """
             return render(request, 'home.html', {'proyectoid': proyectoid, 'faseid': faseid,
-                                                             'mensaje': "No se puede modificar la fase, el proyecto"
-                                                                        " no se encuentra en estado pendiente."})
+                                                 'mensaje': "No se puede modificar la fase, el proyecto"
+                                                            " no se encuentra en estado pendiente."})
         if fase.estado == "deshabilitada":
             return redirect('proyectoFase', id=proyectoid)
         """Template a renderizar: faseModificar con parametro -> fase, proyectoid"""
@@ -289,7 +293,7 @@ def faseModificar(request):
     """Actualizar descripcion de fase"""
     fase.descripcion = descripcion
     """Guardar"""
-    fase._history_date = datetime.now()
+    #fase._history_date = datetime.now()
     fase.save()
 
     """Template a renderizar: gestionFase con parametro -> proyectoid, faseid"""
@@ -327,12 +331,12 @@ def faseDeshabilitar(request):
         redirige a gestion de Fase.
         """
         return render(request, 'home.html', {'proyectoid': proyectoid, 'faseid': faseid,
-                                                         'mensaje': "No se puede deshabilitar la fase,"
-                                                                    " el proyecto no se encuentra en estado pendiente."})
+                                             'mensaje': "No se puede deshabilitar la fase,"
+                                                        " el proyecto no se encuentra en estado pendiente."})
 
     """Establecer el estado de la fase como deshabilitada."""
     fase.estado = "deshabilitada"
-    fase._history_date = datetime.now()
+    #fase._history_date = datetime.now()
     """Guardar"""
     fase.save()
     fases = proyecto.fases.all()
@@ -348,7 +352,6 @@ def faseDeshabilitar(request):
 
 def FaseConfigInicializada(request, proyectoid, faseid):
     """Fase a visualizar."""
-
 
     """Proyecto en el cual crear la fase."""
     proyecto = Proyecto.objects.get(id=proyectoid)
@@ -441,10 +444,15 @@ def FaseAddUser(request):
 
         for c in codenames:
             """Asignar los permisos del rol al grupo, en la fase correspondiente"""
-            assign_perm(c, grupo, fase)
+            assign_perm(c, user, fase)
             """Asignar el grupo al usuario"""
-            user.groups.add(grupo)
-            user.save()
+            print(c)
+
+            """Asignar los permisos del rol al grupo, en la fase correspondiente"""
+            #assign_perm(c, grupo, fase)
+            """Asignar el grupo al usuario"""
+            #user.groups.add(grupo)
+        user.save()
         """Agregar asociacion al rol"""
         rol.faseUser.add(faseUser)
         rol.save()
@@ -471,7 +479,7 @@ def FaseRemoveUser(request, proyectoid, faseid, userid):
             for fu in fasesUser_rol:
                 if fu.fase == fase and fu.user == usuario:
                     roles_del_user.append(r)
-
+        print(roles_del_user)
         for ru in roles_del_user:
             """Eliminar asociacion entre fase y usuario"""
             ru.faseUser.filter(user=usuario, fase=fase).delete()
@@ -540,6 +548,7 @@ def faseRolAsignar(request, proyectoid, faseid, userid):
 
     """Usuario a ser asignado el rol"""
     user = User.objects.get(id=userid)
+    faseUser = FaseUser.objects.get(fase=fase, user=user)
     """Rol a ser asignado"""
     rol = Rol.objects.get(id=rolid)
     """Permisos del rol"""
@@ -550,13 +559,14 @@ def faseRolAsignar(request, proyectoid, faseid, userid):
         codenames.append(p.codename)
 
     """Crear asociacion entre fase y usuario"""
-    faseUser = FaseUser.objects.create(user=user, fase=fase)
+    #faseUser = FaseUser.objects.create(user=user, fase=fase)
 
     for c in codenames:
         """Asignar los permisos del rol al grupo, en la fase correspondiente"""
         assign_perm(c, user, fase)
+        print(c)
         """Asignar el grupo al usuario"""
-
+    print(user.has_perm("change_fase"),fase)
     user.save()
     """Agregar asociacion al rol"""
     rol.faseUser.add(faseUser)
@@ -589,21 +599,21 @@ def faseRolRemover(request, proyectoid, faseid, userid):
             return redirect('/permissionError/')
 
         """Lista de roles del proyecto"""
-        roles = proyecto.roles.all()
-        roles_del_user = []
-        for r in roles:
-            fasesUser_rol = r.faseUser.all()
-            for fu in fasesUser_rol:
+        rolesUsuario = proyecto.roles.all()
+        roles_usuario = []
+        for r in rolesUsuario:
+            fasesUserRol = r.faseUser.all()
+            for fu in fasesUserRol:
                 if fu.fase == fase and fu.user == usuario:
-                    roles_del_user.append(r)
+                    roles_usuario.append(r)
 
         """
         Template a renderizar: faseRolAsignar.html con parametros -> roles
         ,usuarios y fases del proyecto,
          ademas de proyectoid
          """
-        cantidad_roles = len(roles_del_user)
-        return render(request, "fase/faseRolRemover.html", {'fase': fase, 'usuario': usuario, 'roles': roles_del_user,
+        cantidad_roles = len(roles_usuario)
+        return render(request, "fase/faseRolRemover.html", {'fase': fase, 'usuario': usuario, 'roles': roles_usuario,
                                                             'proyecto': proyecto, 'cant_roles': cantidad_roles})
 
     """POST request, captura el usuario, el rol y las fases para remover"""
@@ -615,19 +625,42 @@ def faseRolRemover(request, proyectoid, faseid, userid):
     """Rol a remover"""
     rol = Rol.objects.get(id=rolid)
 
-    """Eliminar asociacion entre fase y usuario"""
-    rol.faseUser.filter(user=usuario, fase=fase).delete()
+
     """Permisos del rol"""
     grupo = rol.perms
     permisos = grupo.permissions.all()
+    roles = proyecto.roles.all()
+    rolesUsuario = proyecto.roles.all()
+    roles_usuario = []
+    for r in rolesUsuario:
+        fasesUserRol = r.faseUser.all()
+        for fu in fasesUserRol:
+            if fu.fase == fase and fu.user == usuario:
+                roles_usuario.append(r)
+    print(roles_usuario)
+    roles_usuario.remove(rol)
     codenames = []
     for p in permisos:
         codenames.append(p.codename)
     for c in codenames:
         """Asignar los permisos del rol al grupo, en la fase correspondiente"""
-        remove_perm(c, usuario, fase)
+        permiso = Permission.objects.get(codename=c)
+        existe = False
+        for ru in roles_usuario:
+            grupo = ru.perms
+            permisos_grupo = grupo.permissions.all()
+            if permiso in permisos_grupo:
+                existe = True
+        if not existe:
+            remove_perm(c, usuario, fase)
 
     usuario.save()
+    """Eliminar asociacion entre fase y usuario"""
+    #rol.faseUser.filter(user=usuario, fase=fase).delete()
+    faseUserdelRol = FaseUser.objects.get(user=usuario, fase=fase)
+
+    rol.faseUser.remove(faseUserdelRol)
+    rol.save()
     """ Se le asigna el permiso para ver la fase ya que el usuario posee otro rol
         Porque no deja remover el ultimo rol --> se debe eliminar al usuario de la fase
     """
@@ -635,7 +668,7 @@ def faseRolRemover(request, proyectoid, faseid, userid):
 
     if proyecto.estado == "pendiente":
         """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
-        return redirect('faseTipoItem')
+        return redirect('faseUsers', faseid=faseid, proyectoid=proyectoid)
     elif proyecto.estado == "inicializado":
         return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
 
@@ -697,12 +730,13 @@ def FaseAddTipoItem(request):
         tipoItem = request.POST.get('tipoItem')
         tipo = TipodeItem.objects.get(id=tipoItem)
         fase.tipoItem.add(tipo)
-        fase._history_date = datetime.now()
+        #fase._history_date = datetime.now()
         fase.save()
         if proyecto.estado == "pendiente":
             """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
             return redirect('faseTipoItem', faseid=faseid, proyectoid=proyectoid)
 
+        return redirect('faseTipoItem', faseid=faseid, proyectoid=proyectoid)
 
 def FaseRemoveTipoItem(request, proyectoid, faseid, tipoid):
     if request.method == 'GET':
@@ -727,6 +761,9 @@ def FaseRemoveTipoItem(request, proyectoid, faseid, tipoid):
             """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
             return redirect('faseTipoItem', faseid=faseid, proyectoid=proyectoid)
 
+        return redirect('faseTipoItem', faseid=faseid, proyectoid=proyectoid)
+
+
 
 def fasesDeshabilitadas(request):
     proyectoid = request.GET.get('proyectoid')
@@ -743,6 +780,8 @@ def fasesDeshabilitadas(request):
     return render(request, 'fase/fasesDeshabilitadas.html', {'proyecto': proyecto, 'fasesDes': fasesDes, })
 
 
+@transaction.atomic()
+@reversion.create_revision()
 def itemCrear(request):
     """
                **itemCrear:**
@@ -799,8 +838,7 @@ def itemCrear(request):
 
             """Creacion del item con los datos proveidos por el usuario."""
             item = Item.objects.create(tipoItem=obj, nombre=dato['nombre'], fecha=dato['fecha'],
-                                       observacion=dato['observacion'], costo=dato['costo'],
-                                       _history_date=datetime.now(), )
+                                       observacion=dato['observacion'], costo=dato['costo'], faseid=faseid)
 
             """Almacenar la informacion de cada campo extra proveido por el usuario."""
             item.estado = "en desarrollo"
@@ -813,10 +851,12 @@ def itemCrear(request):
                 item.archivos.append(f)
             """Guardar."""
             item.save()
+            reversion.set_comment("holibb...")
+
             """Agregar item a fase."""
             fase.items.add(item)
             """Redirigir a la vista de la fase correspondiente."""
-            return redirect('faseViewInicializado', faseid=faseid ,proyectoid=proyectoid)
+            return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
         else:
             """POST para seleccionar tipo de item"""
             """ID del proyecto correspondiente."""
@@ -855,7 +895,7 @@ def itemCrear(request):
     Verificar que el usuario cuente 
     con los permisos necesarios.
     """
-    if not (request.user.has_perm("create_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+    if not (request.user.has_perm("create_item", fase)):
         """Al no contar con los permisos, niega el acceso, redirigiendo."""
         return redirect('/permissionError/')
 
@@ -974,11 +1014,14 @@ def itemConfigurar(request, itemid, faseid, proyectoid):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
 
-        return render(request, "item/itemConfiguracion.html", {'fase': fase, 'item': item, 'proyecto': proyecto, 'archivos': list(item.archivos),
-                                                               'campos': zip(item.tipoItem.campo_extra,
-                                                                             item.campo_extra_valores), })
+        return render(request, "item/itemConfiguracion.html",
+                      {'fase': fase, 'item': item, 'proyecto': proyecto, 'archivos': list(item.archivos),
+                       'campos': zip(item.tipoItem.campo_extra,
+                                     item.campo_extra_valores), })
 
 
+@transaction.atomic()
+@reversion.create_revision()
 def itemModificar(request):
     """
            **itemModificar:**
@@ -1004,7 +1047,7 @@ def itemModificar(request):
         fase = Fase.objects.get(id=faseid)
 
         """Verificar que el usuario cuente con los permisos necesarios."""
-        if not (request.user.has_perm("modify_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+        if not (request.user.has_perm("modify_item", fase)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
 
@@ -1018,15 +1061,15 @@ def itemModificar(request):
         encuentre en desarrollo, permitiendo modificaciones.
         """
 
-        #if item.estado == "pendiente de aprobacion" or item.estado == "aprobado" or item.estado == "en linea base":
-            #mensaje = "El estado actual del item no permite la modificacion del mismo."
+        # if item.estado == "pendiente de aprobacion" or item.estado == "aprobado" or item.estado == "en linea base":
+        # mensaje = "El estado actual del item no permite la modificacion del mismo."
         """
         En caso contrario, no permite la modificacion del item y 
         vuelve a gestion de Item con mensaje de error.
         Template a renderizar: gestionItem.html con 
         parametros -> proyectoid, faseid, itemid y mensaje de error.
         """
-            #return redirect('proyectoView', id=proyectoid)
+        # return redirect('proyectoView', id=proyectoid)
 
         """
         Template a renderizar: itemModificar 
@@ -1035,8 +1078,10 @@ def itemModificar(request):
         return render(request, 'item/itemModificar.html',
                       {'faseid': faseid, 'proyectoid': proyectoid, 'item': item,
                        'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
-                       'archivos': list(item.archivos),'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
+                       'archivos': list(item.archivos),
+                       'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
                        'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
+                       'desarrolloPermiso': request.user.has_perm("establecer_itemDesarrollo", fase),
                        'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ], })
 
     """POST request, captura la informacion para actualizar los datos del item"""
@@ -1053,6 +1098,21 @@ def itemModificar(request):
     caso de que el nombre se mantenga.
     """
     doc = request.FILES.getlist("file[]")
+    archivos_borrados = request.POST.getlist('archivo')
+    print("Archivos a borrar", archivos_borrados)
+    archivos_no_borrados = []
+    for aa in archivos_borrados:
+        if not aa == "":
+            """
+            Agrega campos que no sean igual a un espacio en blanco,
+            pues estos fueron eliminados por el usuario.
+            """
+            archivos_no_borrados.append(aa)
+    print("Archivos a borrar",archivos_borrados)
+    print("Archivos a no borrar", archivos_no_borrados)
+    for a in item.archivos:
+        if not a in archivos_no_borrados:
+            item.archivos.remove(a)
 
     if fase.items.filter(nombre=dato['nombre']).exclude(estado="deshabilitado").exclude(id=dato['itemid']).exists():
         """
@@ -1089,10 +1149,11 @@ def itemModificar(request):
         archivo = Files.objects.create(file=f, item=item)
         item.archivos.append(f)
 
-    item._history_date = datetime.now()
+    # item._history_date = datetime.now()
 
     """Guardar"""
     item.save()
+    reversion.set_comment("modificada...")
 
     """
     Template a renderizar: gestionItem con 
@@ -1143,6 +1204,7 @@ def itemCambiarEstado(request):
                            'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
                            'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
                            'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
+                           'desarrolloPermiso': request.user.has_perm("establecer_itemDesarrollo", fase),
                            'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ],
                            'mensaje_error': mensaje_error, })
 
@@ -1153,31 +1215,30 @@ def itemCambiarEstado(request):
         """Si el nuevo estado es pendiente de aprobacion."""
         if dato['estado'] == "pendiente de aprobacion":
             """Verificar que el usuario cuente con los permisos para asignar ese estado."""
-            if not (request.user.has_perm("establecer_itemPendienteAprob", fase)) and not (
-                    request.user.has_perm("is_gerente", proyecto)):
+            if not (request.user.has_perm("establecer_itemPendienteAprob", fase)):
                 """Al no contar con los permisos, niega el acceso, redirigiendo."""
                 return redirect('/permissionError/')
 
             "Envio de correo a los usuarios que cuentan con el permiso de aprobar item"
-            fuser= FaseUser.objects.filter(fase=fase)
+            fuser = FaseUser.objects.filter(fase=fase)
             for u in fuser:
-                if u.user.has_perm("aprove_item",fase):
-                    mail= u.user.email
-                    name= u.user.username
-                    sendEmailView(mail,name,item.nombre,fase.nombre)
+                if u.user.has_perm("aprove_item", fase):
+                    mail = u.user.email
+                    name = u.user.username
+                    #sendEmailViewFase.delay(mail, name, item.nombre, fase.nombre)
+
 
         """Si el nuevo estado es en desarrollo."""
         if dato['estado'] == "en desarrollo":
             """Verificar que el usuario cuente con los permisos para asignar ese estado."""
-            if not (request.user.has_perm("establecer_itemDesarrollo", fase)) and not (
-                    request.user.has_perm("is_gerente", proyecto)):
+            if not (request.user.has_perm("establecer_itemDesarrollo", fase)):
                 """Al no contar con los permisos, niega el acceso, redirigiendo."""
                 return redirect('/permissionError/')
 
         """Si el nuevo estado es aprobado."""
         if dato['estado'] == "aprobado":
             """Verificar que el usuario cuente con los permisos para asignar ese estado."""
-            if not (request.user.has_perm("aprove_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+            if not (request.user.has_perm("aprove_item", fase)):
                 """Al no contar con los permisos, niega el acceso, redirigiendo."""
                 return redirect('/permissionError/')
 
@@ -1256,6 +1317,7 @@ def itemCambiarEstado(request):
                                    'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
                                    'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
                                    'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
+                                   'desarrolloPermiso': request.user.has_perm("establecer_itemDesarrollo", fase),
                                    'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ],
                                    'mensaje_error': mensaje_error, })
 
@@ -1267,7 +1329,7 @@ def itemCambiarEstado(request):
         mensaje = "Estado actualizado correctamente."
         """Actualiza estado del item."""
         item.estado = dato['estado']
-        item._history_date = datetime.now()
+        #item._history_date = datetime.now()
         """Guardar."""
         item.save()
 
@@ -1283,6 +1345,7 @@ def itemCambiarEstado(request):
                    'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
                    'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
                    'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
+                   'desarrolloPermiso': request.user.has_perm("establecer_itemDesarrollo", fase),
                    'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ],
                    'mensaje_error': mensaje_error, })
 
@@ -1309,7 +1372,7 @@ def itemDeshabilitar(request):
     """Item a deshabilitar."""
     item = Item.objects.get(id=itemid)
     """Verificar que el usuario cuente con los permisos necesarios."""
-    if not (request.user.has_perm("unable_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+    if not (request.user.has_perm("unable_item", fase)):
         """Al no contar con los permisos, niega el acceso, redirigiendo."""
         return redirect('/permissionError/')
 
@@ -1366,7 +1429,7 @@ def itemDeshabilitar(request):
 
         """Establece estado de item como deshabilitado."""
         item.estado = "deshabilitado"
-        item._history_date = datetime.now()
+        #item._history_date = datetime.now()
         """Guardar."""
         item.save()
         """Redirige a la vista de la fase correspondiente."""
@@ -1467,11 +1530,11 @@ def itemVerRelaciones(request, itemid, faseid, proyectoid, mensaje):
                                                              'faseAnterior': anterior,
                                                              'faseSiguiente': siguiente, 'varias_fases': varias_fases,
                                                              'puede_relacionarse': puede_relacionarse,
-                                                             'habilitar_Add_relacion': habilitar_Add_relacion, 'mensaje':mensaje})
+                                                             'habilitar_Add_relacion': habilitar_Add_relacion,
+                                                             'mensaje': mensaje})
 
 
-
-def itemRelacionesRemover(request,itemid,item_rm, faseid, proyectoid):
+def itemRelacionesRemover(request, itemid, item_rm, faseid, proyectoid):
     """
                   **itemRelacionesRemover:**
                    Vista utilizada para remover relaciones del Item.
@@ -1480,7 +1543,7 @@ def itemRelacionesRemover(request,itemid,item_rm, faseid, proyectoid):
                    items en la fase, o bien, los de gerente del proyecto
                    y que (indirectamente) haya iniciado sesion.
        """
-    if request.method =='GET':
+    if request.method == 'GET':
         """ID del proyecto"""
         # proyectoid = request.GET.get('proyectoid')
         """Proyecto en el cual se encuentra el item."""
@@ -1489,6 +1552,9 @@ def itemRelacionesRemover(request,itemid,item_rm, faseid, proyectoid):
         # faseid = request.GET.get('faseid')
         """Fase en la cual se encuentra el item."""
         fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("relacionar_item", fase)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
         # itemid = request.GET.get('itemid')
         # itemid_final = request.GET.get('itemid_final')
         item_inicio = Item.objects.get(id=itemid)
@@ -1574,12 +1640,15 @@ def itemRelacionesRemover(request,itemid,item_rm, faseid, proyectoid):
             """Eliminar relacion objeto."""
             relaciones_dos.delete()
             """Redirigir a la vista itemVerRelaciones."""
-            return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid, mensaje=' ')
+            return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid,
+                            mensaje=' ')
 
         """Redirigir a la vista itemVerRelaciones sin romper la relacion."""
         return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid, mensaje=' ')
 
 
+@transaction.atomic()
+@reversion.create_revision()
 def itemAddRelacion(request):
     """
                    **itemAddRelacion:**
@@ -1604,7 +1673,7 @@ def itemAddRelacion(request):
         """Obtener el item"""
         item = Item.objects.get(id=itemid)
         """Verificar que el usuario cuente con los permisos necesarios."""
-        if not (request.user.has_perm("relacionar_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+        if not (request.user.has_perm("relacionar_item", fase)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
         if item.estado != "aprobado" and item.estado != "en linea base":
@@ -1649,7 +1718,8 @@ def itemAddRelacion(request):
                 """Si fase siguiente no es None."""
                 if siguiente is not None:
                     """Obtener items fase siguiente"""
-                    itemsFaseSiguiente = siguiente.items.exclude(Q(estado="deshabilitado") | Q(id__in=relaciones)).order_by('id')
+                    itemsFaseSiguiente = siguiente.items.exclude(
+                        Q(estado="deshabilitado") | Q(id__in=relaciones)).order_by('id')
             else:
                 """SI linea base no esta cerrada no cargar items de la fase siguiente."""
                 itemsFaseSiguiente = None
@@ -1699,17 +1769,19 @@ def itemAddRelacion(request):
                         """Si fase encontrada igual a fase siguiente."""
                         if int(fp.id) == int(faseSiguiente):
                             """Crear relacion."""
-                            Relacion.objects.create(tipo="antecesor", item_from=itemActual, item_to=itemRelacion, fase_item_to=fp)
+                            Relacion.objects.create(tipo="antecesor", item_from=itemActual, item_to=itemRelacion,
+                                                    fase_item_to=fp)
                             """Crear relacion."""
                             Relacion.objects.create(tipo="sucesor", item_from=itemRelacion, item_to=itemActual,
                                                     fase_item_to=fase)
                     """SI se encuentra a la fase actual."""
                     if fp == fase:
                         """Crear relacion."""
-                        Relacion.objects.create(tipo="padre", item_from=itemActual, item_to=itemRelacion,fase_item_to=fp)
+                        Relacion.objects.create(tipo="padre", item_from=itemActual, item_to=itemRelacion,
+                                                fase_item_to=fp)
                         """Crear relacion."""
                         Relacion.objects.create(tipo="hijo", item_from=itemRelacion, item_to=itemActual,
-                                                fase_item_to=fase )
+                                                fase_item_to=fase)
 
         """CONTROL DE CICLO EN EL GRAFO"""
         cantidad_items_proyecto = 0
@@ -1718,16 +1790,25 @@ def itemAddRelacion(request):
 
         V = cantidad_items_proyecto
         adj = {}
+        itemsProyecto = []
         for fp in fasesProyecto:
-            itemsFase = fp.items.exclude(estado="deshabilitado")
+            itemsFase = fp.items.exclude(estado="deshabilitado").order_by('id')
             for iF in itemsFase:
-                relaciones_por_item = []
-                relaciones = Relacion.objects.filter((Q(tipo="antecesor") | Q(tipo="padre")) & Q(item_from=iF))
-                for r in relaciones:
-                    relaciones_por_item.append(int(r.item_to.id))
+                itemsProyecto.append(iF)
 
-                adj[int(iF.id)] = relaciones_por_item
+        itemsProyectoOrd = sorted(itemsProyecto, key=lambda x: x.id, reverse=False)
 
+        for iP in itemsProyectoOrd:
+            relaciones_por_item = []
+            # relaciones = Relacion.objects.filter((Q(tipo="antecesor") | Q(tipo="padre")) & Q(item_from=iF))
+            relaciones = Relacion.objects.filter(item_from=iP)
+            for r in relaciones:
+                relaciones_por_item.append(int(r.item_to.id))
+
+            adj[int(iP.id)] = relaciones_por_item
+
+
+        print(adj)
         """SI TIENE UN CICLO ELIMINAR RELACIONES Y REDIRIGIR A VISUALIZACION DE RELACIONES"""
         if isCyclicDisconnected(adj, V):
             relaciones_uno = Relacion.objects.get(item_from=itemActual, item_to=itemRelacion)
@@ -1737,15 +1818,22 @@ def itemAddRelacion(request):
             return redirect('itemVerRelaciones', itemid=itemIdActual, faseid=faseid, proyectoid=proyectoid,
                             mensaje="Error! No se puede relacionar porque genera un ciclo.")
         """SINO MANTENER RELACIONES Y REDIRIGIR A LA VISTA DE RELACIONES."""
+
         return redirect('itemVerRelaciones', itemid=itemActual.id, faseid=faseid, proyectoid=proyectoid,
                         mensaje=' ')
 
+
 """Funcion para agregar Edge"""
+
+
 def addEdge(adj: dict, u, v):
     adj[u].append(v)
     adj[v].append(u)
 
+
 """FUncion auxiliar del algoritmo."""
+
+
 def isCyclicConnected(adj: dict, s, V,
                       visited: dict):
     # Set parent vertex for every vertex as -1.
@@ -1781,7 +1869,10 @@ def isCyclicConnected(adj: dict, s, V,
 
     return False
 
+
 """Algoritmo BFS para control de ciclos."""
+
+
 def isCyclicDisconnected(adj: dict, V):
     # Mark all the vertices as not visited
     visited = {}
@@ -1789,8 +1880,7 @@ def isCyclicDisconnected(adj: dict, V):
         visited[key] = False
 
     for key, value in adj.items():
-        if not visited[key] and \
-                isCyclicConnected(adj, key, V, visited):
+        if not visited[key] and isCyclicConnected(adj, key, V, visited):
             return True
     return False
 
@@ -1833,8 +1923,7 @@ def faseGestionLineaBase(request):
                       {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, 'crear_lb': crear_lb})
 
 
-
-def consultarLineaBase(request,proyectoid,faseid,lineaBaseid):
+def consultarLineaBase(request, proyectoid, faseid, lineaBaseid):
     """
                **consultarLineaBase:**
                 Vista utilizada para consultar de lineas base en Fase.
@@ -1851,7 +1940,7 @@ def consultarLineaBase(request,proyectoid,faseid,lineaBaseid):
         """Obtener linea base."""
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
         """Obtener items de linea base."""
-        items_lb = lineaBase.items.all() #probablemente hace falta excluir deshabilitados
+        items_lb = lineaBase.items.all()  # probablemente hace falta excluir deshabilitados
         """Renderizar fase/lineaBaseConsultar.html"""
         return render(request, "fase/lineaBaseConsultar.html", {'proyecto': proyecto, 'fase': fase,
                                                                 'items': items_lb, 'lineaBase': lineaBase, })
@@ -1884,8 +1973,7 @@ def faseAddLineaBase(request):
             item = Item.objects.get(id=i)
             """Actualizar estado de item."""
             item.estado = "en linea base"
-            """Actualizar history date de item, para version."""
-            item._history_date = datetime.now()
+            #item._history_date = datetime.now()
             """Guardar item."""
             item.save()
             """Agregar item a linea base."""
@@ -1920,7 +2008,7 @@ def faseAddLineaBase(request):
     proyecto = Proyecto.objects.get(id=request.GET.get('proyectoid'))
     fase = Fase.objects.get(id=request.GET.get('faseid'))
     """Verificar permiso necesario en el proyecto correspondiente"""
-    if not (request.user.has_perm("create_lineaBase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+    if not (request.user.has_perm("create_lineaBase", fase)):
         return redirect('/permissionError/')
 
     """Si el proyecto no se encuentra inicializado."""
@@ -2001,7 +2089,7 @@ def lineaBaseAddItem(request):
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
 
         """Verificar que el usuario cuente con los permisos necesarios para efectuar la accion."""
-        if not (request.user.has_perm("modify_lineaBase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+        if not (request.user.has_perm("modify_lineaBase", fase)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
 
@@ -2043,7 +2131,7 @@ def lineaBaseAddItem(request):
             """Actualizar estado del item."""
             item.estado = "en linea base"
             """Actualizar history date del item."""
-            item._history_date = datetime.now()
+            #item._history_date = datetime.now()
             """Guardar item."""
             item.save()
             """Agregar item a linea base."""
@@ -2076,11 +2164,9 @@ def lineaBaseRemoveItem(request, proyectoid, faseid, lineaBaseid, itemid):
         """Obtener item a remover de linea base"""
         item_remover = Item.objects.get(id=itemid)
         """Verificar que el usuario cuente con los permisos necesarios para efectuar la accion."""
-        if not (request.user.has_perm("modify_lineaBase", fase)) and not (
-                request.user.has_perm("is_gerente", proyecto)):
+        if not (request.user.has_perm("modify_lineaBase", fase)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
-
 
         "No se pueden agregar en una linea base cerrada o rota"
         if lineaBase.estado != "abierta":
@@ -2097,7 +2183,7 @@ def lineaBaseRemoveItem(request, proyectoid, faseid, lineaBaseid, itemid):
         """Actualizar estado de item."""
         item_remover.estado = "aprobado"
         """Actualizar history date de item para version."""
-        item_remover._history_date = datetime.now()
+        #item_remover._history_date = datetime.now()
         """Guardar item."""
         item_remover.save()
         """Obtener items de la linea base ordenados por id."""
@@ -2107,8 +2193,7 @@ def lineaBaseRemoveItem(request, proyectoid, faseid, lineaBaseid, itemid):
                       {'fase': fase, 'proyecto': proyecto, 'items': itemsLineaBase, 'lineaBase': lineaBase, })
 
 
-
-def faseCerrarLineaBase(request,proyectoid,faseid,lineaBaseid):
+def faseCerrarLineaBase(request, proyectoid, faseid, lineaBaseid):
     """
                                    **faseCerrarLineaBase:**
                                     Vista utilizada para cerrar lineas base en Fase.
@@ -2154,12 +2239,17 @@ def itemHistorial(request):
         faseid = request.GET.get('faseid')
         itemid = request.GET.get('itemid')
         item = Item.objects.get(id=itemid)
+
         fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("ver_item", fase)) and not (
+                request.user.has_perm("is_gerente", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
         "Creacion de una lista con los historiales de cambios del item"
-        lista_historial = []
-        lista_historial = item.history.all()
-        lista_historial = list(lista_historial)
-        lista_historial.pop()
+        # version_list = reversion.get_for_object(item)
+        versions = Version.objects.get_for_object(item)
+        entry_list = list(versions.all())
+
         prueba = {}
         "Obtiene los campos extras del item con sus respectivos valores"
         p2 = zip(item.tipoItem.campo_extra, item.campo_extra_valores)
@@ -2167,10 +2257,11 @@ def itemHistorial(request):
             prueba[p] = k
         return render(request, 'item/historialitem.html',
                       {'faseid': faseid, 'proyectoid': proyectoid,
-                       'item': item, 'lista': lista_historial,
-                       'campos': prueba})
+                       'item': item,
+                       'campos': prueba, 'versions': versions})
 
-
+@transaction.atomic()
+@reversion.create_revision()
 def itemReversionar(request, proyectoid, faseid, itemid, history_date):
     """
                   **itemReversiona:**
@@ -2185,43 +2276,50 @@ def itemReversionar(request, proyectoid, faseid, itemid, history_date):
 
         fase = Fase.objects.get(id=faseid)
         proyecto = Proyecto.objects.get(id=proyectoid)
+
         item = Item.objects.get(id=itemid)
 
         """Verificar que el usuario cuente con los permisos necesarios."""
-        if not (request.user.has_perm("reversionar_item", fase)) and not (
-                request.user.has_perm("is_gerente", proyecto)):
+        if not (request.user.has_perm("reversionar_item", fase)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
 
         """ Se podra reversionar el item si este se encuentra en estado de desarrollo"""
         if (item.estado == 'en desarrollo'):
 
-            """ Obtiene la version del item seleccionada por el usuario"""
-            rever = item.history.as_of(history_date)
-            """Obtiene el numero de la ultima version para incrementar el contador de versiones"""
             num = Item.objects.last()
-            """ Reversiona el item """
-            item = rever
-            item._history_date = datetime.now()
-            "Asigna el numero de version al item reversionado"
             item.version = num.version + 1
+            verNum = 0
+            versions = Version.objects.get_for_object(item)
+            total = len(versions)
+            for f in versions:
+                verNum=verNum+1
+                aux = str(f.revision.date_created)
+                if (aux == history_date):
+                    print("yei")
+                    break
+                else:
+                    print("nou")
+            versions[verNum-1].revision.revert()
+            item.refresh_from_db()
+
             item.save()
-            return redirect('itemConfigurar',itemid=itemid, faseid=faseid, proyectoid=proyectoid )
+
+            return redirect('itemConfigurar', itemid=itemid, faseid=faseid, proyectoid=proyectoid)
         else:
-            return redirect('itemConfigurar',itemid=itemid, faseid=faseid, proyectoid=proyectoid )
+            return redirect('itemConfigurar', itemid=itemid, faseid=faseid, proyectoid=proyectoid)
 
 
 def downloadFile(request, filename, itemid, faseid, proyectoid):
     path = '/var/www/item/descargas/'
     s3 = boto3.client('s3',
-                        aws_access_key_id='AKIAUWIIW4ARQQQA4TLN',
-                        aws_secret_access_key='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' )
-    #s3 = boto3.resource('s3',
-     #                   aws_access_key_id='AKIAUWIIW4ARQQQA4TLN',
-      #                  aws_secret_access_key='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')
+                      aws_access_key_id='AKIAUWIIW4ARQQQA4TLN',
+                      aws_secret_access_key='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')
+    # s3 = boto3.resource('s3',
+    #                   aws_access_key_id='AKIAUWIIW4ARQQQA4TLN',
+    #                  aws_secret_access_key='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')
     s3.download_file('archivositem', filename, path + filename)
-    return redirect('itemConfigurar', itemid= itemid, faseid= faseid, proyectoid= proyectoid)
-
+    return redirect('itemConfigurar', itemid=itemid, faseid=faseid, proyectoid=proyectoid)
 
 
 def cerrarFase(request, proyectoid, faseid):
@@ -2258,7 +2356,11 @@ def cerrarFase(request, proyectoid, faseid):
         """Para aprobar el item es necesario identificar que tenga alguna relacion con un antecesor
                     que se encuentre en una linea base cerrada, o bien con un padre(o hijo) que este aprobado."""
         fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+        fase_list = list(fasesProyecto)
+        ultima_fase = fase_list.pop()
+        print("Ultimafase:",ultima_fase)
         cont = 0
+
         esPrimeraFase = False
         for fp in fasesProyecto:
             cont = cont + 1
@@ -2268,7 +2370,8 @@ def cerrarFase(request, proyectoid, faseid):
                     break
         "Solo verificar si son items posteriores a la primera fase."
         bandera = False
-
+        """ Verifica que tenga al menos un antecesor y sucesor """
+        bandera_antecesor = False
         if esPrimeraFase == False:
 
             for i in itemsFase:
@@ -2279,16 +2382,31 @@ def cerrarFase(request, proyectoid, faseid):
 
                     if relacion.tipo == "sucesor":
                         bandera = True
-                        break
+                    if relacion.tipo == "antecesor":
+                        bandera_antecesor = True
+
 
         if esPrimeraFase == False:
+            if int(ultima_fase.id) == int(fase.id):
+                if cerrar  and bandera:
+                    fase.estado = "cerrada"
+                    fase.save()
+                    return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
+            else:
+                if cerrar == True and bandera == True and bandera_antecesor:
+                    fase.estado = "cerrada"
+                    fase.save()
+                    return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
 
-            if cerrar == True and bandera == True:
+            return redirect('faseConfinicializada', proyectoid=proyectoid, faseid=faseid)
+        else:
+            if cerrar == True:
                 fase.estado = "cerrada"
                 fase.save()
                 return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
 
-            return redirect('faseConfinicializada', proyectoid=proyectoid,faseid=faseid)
+        return redirect('faseConfinicializada', proyectoid=proyectoid, faseid=faseid)
+
 
         if cerrar == True:
             fase.estado = "cerrada"
@@ -2296,21 +2414,1263 @@ def cerrarFase(request, proyectoid, faseid):
             mensaje = "Éxito! La fase se cerró correctamente."
             return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
 
-        return redirect('faseConfinicializada',  proyectoid=proyectoid, faseid=faseid)
 
 
-def sendEmailView(mail,name,item,fase):
 
-    context = {'name': name, 'item':item, 'fase':fase}
 
-    template = get_template('fase/correoSolicitudAprobacion.html')
-    content = template.render(context)
 
-    email = EmailMultiAlternatives(
-        'Solicitud de aprobacion de Item',
-        'item',
-        settings.EMAIL_HOST_USER,
-        [mail]
-    )
-    email.attach_alternative(content, 'text/html')
-    email.send()
+def itemCalculoImpacto(request):
+    if request.method == 'GET':
+        """ID del proyecto"""
+        proyectoid = request.GET.get('proyectoid')
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """ID de fase"""
+        faseid = request.GET.get('faseid')
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("obtener_calculoImpacto", fase)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+        """ID de item_from"""
+        itemIdCalculo = request.GET.get('itemIdCalculo')
+        """Obtener item."""
+        itemCalculo = Item.objects.get(id=itemIdCalculo)
+        """ID de item_to"""
+
+        calculo = itemCalculo.costo
+
+        """NUEVA LOGICA CALCULO DE IMPACTO"""
+        adj = {}
+        confirmados = []
+        confirmados.append(int(itemCalculo.id))
+        hijos = []
+        itemsFase = fase.items.exclude(estado="deshabilitado")
+        for r in itemCalculo.relaciones.all():
+            if r in itemsFase:
+                if Relacion.objects.filter(item_from=r, item_to=itemCalculo, tipo="hijo").exists():
+                    calculo = calculo + int(r.costo)
+                    confirmados.append(int(r.id))
+                    hijos.append(int(r.id))
+                    adj[int(r.id)] = []
+
+        adj[int(itemCalculo.id)] = hijos
+
+        seguir = False
+        for c in confirmados:
+            confirmado = Item.objects.get(id=c)
+            for r in confirmado.relaciones.all():
+                if r in itemsFase:
+                    if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="hijo").exists():
+                        if int(r.id) not in confirmados:
+                            seguir = True
+
+        while seguir:
+            for c in confirmados:
+                confirmado = Item.objects.get(id=c)
+                for r in confirmado.relaciones.all():
+                    if r in itemsFase:
+                        if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="hijo").exists():
+                            if int(r.id) not in confirmados:
+                                # print("confirmado", confirmado.id, "falta", r.id)
+                                calculo = calculo + int(r.costo)
+                                confirmados.append(int(r.id))
+                                adj[int(r.id)] = []
+                                adj[int(confirmado.id)].append(int(r.id))
+
+                """Volver a verificar"""
+                seguir = False
+                for c in confirmados:
+                    confirmado = Item.objects.get(id=c)
+                    for r in confirmado.relaciones.all():
+                        if r in itemsFase:
+                            if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="hijo").exists():
+                                if int(r.id) not in confirmados:
+                                    seguir = True
+
+        """FIltrar fases del proyecto apropiadas."""
+        fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+
+        """Aqui sigue el codigo normal de calculo de impacto."""
+        for fp in fasesProyecto:
+            if int(fp.id) > int(fase.id):
+                itemsFase = fp.items.exclude(estado="deshabilitado").order_by('id')
+                confirmadosAux = []
+                """Para relaciones directas."""
+                for iF in itemsFase:
+                    hijos = []
+                    if Relacion.objects.filter(item_from_id__in=confirmados, item_to=iF, tipo="antecesor").exists():
+
+                        """Podria existir la posibilidad de que tenga mas de un antecesor valido. Solo para el grafo."""
+                        for c in confirmados:
+                            if Relacion.objects.filter(item_from_id=c, item_to=iF, tipo="antecesor").exists():
+                                adj[int(c)].append(int(iF.id))
+
+                        if not int(iF.id) in confirmadosAux:
+                            calculo = calculo + int(iF.costo)
+                            confirmadosAux.append(int(iF.id))
+
+                        for r in iF.relaciones.all():
+                            if r in itemsFase:
+                                if Relacion.objects.filter(item_from=r, item_to=iF, tipo="hijo").exists():
+                                    if int(r.id) not in confirmadosAux:
+                                        calculo = calculo + int(r.costo)
+                                        confirmadosAux.append(int(r.id))
+                                        hijos.append(int(r.id))
+                                        adj[int(r.id)] = []
+
+                        adj[int(iF.id)] = hijos
+                    #  adj[int(iF.id)] = confirmadosAux
+
+                """Para relaciones indirectas."""
+                for iF in itemsFase:
+                    hijos = []
+                    if not Relacion.objects.filter(item_from_id__in=confirmados, item_to=iF, tipo="antecesor").exists():
+
+                        if Relacion.objects.filter(item_from_id__in=confirmadosAux, item_to=iF).exists():
+                            if not int(iF.id) in confirmadosAux:
+                                calculo = calculo + int(iF.costo)
+                                confirmadosAux.append(int(iF.id))
+
+                            for r in iF.relaciones.all():
+                                if r in itemsFase:
+                                    if Relacion.objects.filter(item_from=r, item_to=iF, tipo="hijo").exists():
+                                        if int(r.id) not in confirmadosAux:
+                                            calculo = calculo + int(r.costo)
+                                            confirmadosAux.append(int(r.id))
+                                            hijos.append(int(r.id))
+                                            adj[int(r.id)] = []
+
+                            adj[int(iF.id)] = hijos
+                        #  adj[int(iF.id)] = confirmadosAux
+
+                confirmados = confirmadosAux
+        print(adj)
+        print(calculo)
+        suma_total = 0
+        for fp in fasesProyecto:
+            itemsFase = fp.items.exclude(estado="deshabilitado").order_by('id')
+            for i in itemsFase:
+                suma_total = suma_total + int(i.costo)
+        print("calculo imp",calculo)
+        print("total",suma_total)
+        porcentaje = float((calculo*100)/suma_total)
+        return render(request, 'item/itemCalculoImpacto.html',
+                      {'faseid': faseid, 'proyectoid': proyectoid,
+                       'item': itemCalculo,
+                       'calculo': porcentaje, })
+
+def gestionRoturaLineaBase(request,proyectoid,faseid,lineaBaseid):
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("ver_lineaBase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+        """Obtener linea base."""
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        solicitudes = lineaBase.roturaslineasBase.all()
+        es_comite = False
+        comite_miembros = proyecto.comite.all()
+        if request.user in comite_miembros:
+            es_comite = True
+        return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                'lineaBase': lineaBase, 'solicitudes': solicitudes, 'es_comite': es_comite })
+
+def formRoturaLineaBase(request,proyectoid,faseid,lineaBaseid):
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        """Obtener linea base."""
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        if not (request.user.has_perm("solicitar_roturaLineaBase", fase)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+        """Obtener items de linea base."""
+        items = lineaBase.items.all()
+        return render(request, "fase/FormularioRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                'lineaBase': lineaBase, 'items':items})
+    if request.method == "POST":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        """Obtener linea base."""
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        items = lineaBase.items.all()
+        descripcion = request.POST.get('descripcion')
+        """Se crea un objeto de tipo Rotura de Linea Base"""
+        solicitud = RoturaLineaBase.objects.create(solicitante=request.user, descripcion_solicitud=descripcion,
+                                                   fecha= datetime.now())
+        """Recupera los items a modificar seleccionados por el usuario"""
+        items_a_modificar = request.POST.getlist('items')
+        for i in items_a_modificar:
+            """Agrega los items a la solicitud"""
+            solicitud.items_implicados.add(Item.objects.get(id=i))
+        """Se guarda el objeto"""
+        solicitud.save()
+        """Se agrega la solicitud a la linea base"""
+        lineaBase.roturaslineasBase.add(solicitud)
+        lineaBase.save()
+        solicitudes = lineaBase.roturaslineasBase.all()
+        es_comite = False
+        comite_miembros = proyecto.comite.all()
+        if request.user in comite_miembros:
+            es_comite = True
+
+        mensaje = "Su solicitud se envió correctamente. El Comité de Control de Cambios decidirá romper o no la Línea Base."
+        # VERIFICAR SI EL USUARIO QUE ENTRA A ESA PAGINA YA EMITIO O NO SU VOTO PARA NO MOSTRARLE ESE TEMPLATE
+        return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                        'lineaBase': lineaBase,
+                                                                        'solicitudes': solicitudes,
+                                                                        'es_comite': es_comite, 'mensaje': mensaje})
+
+def votacionRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("break_lineaBase", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+        """Obtener linea base."""
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        solicitud = RoturaLineaBase.objects.get(id=solicituid)
+        return render(request, "fase/faseRoturaLineaBaseVotar.html", {'proyecto': proyecto, 'fase': fase,
+                                                                        'lineaBase': lineaBase,
+                                                                        'solicitud': solicitud,})
+
+def AprobarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("break_lineaBase", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+        """Obtener linea base."""
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        solicitud = RoturaLineaBase.objects.get(id=solicituid)
+        solicitudes = lineaBase.roturaslineasBase.all()
+        es_comite = False
+        comite_miembros = proyecto.comite.all()
+        if request.user in comite_miembros:
+            es_comite = True
+        """Registrar votos"""
+        voto_anotado = False
+        votos_registrados = []
+        votos_registrados = solicitud.votos_registrados.all()
+        votos_registrados = list(votos_registrados)
+        if not request.user in votos_registrados:
+            if solicitud.voto_uno == -1:
+                """Se registra el voto como primer voto y se guarda al usuario que voto"""
+                solicitud.voto_uno = 1
+                solicitud.votos_registrados.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+            """ Si ya se guardo un voto en voto_uno, se prueba en voto_dos"""
+            if solicitud.voto_dos == -1 and not voto_anotado:
+                """Se registra el voto como segundo voto y se guarda al usuario que voto"""
+                solicitud.voto_dos = 1
+                solicitud.votos_registrados.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+            """ Si ya se guardo un voto en voto_uno y voto_dos, se prueba en voto_tres"""
+            if solicitud.voto_tres == -1 and not voto_anotado:
+                """Se registra el voto como segundo voto y se guarda al usuario que voto"""
+                solicitud.voto_tres = 1
+                solicitud.votos_registrados.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+
+            """
+                Luego de registrar los votos, se procede a controlar si se rompe o no la Línea Base. 
+                Si algún voto está en -1, quiere decir que algún miembro del Comité aún no voto.
+                En caso de que todos hayan votado, se suman los valores.
+                Si:
+                    suma == 0, todos rechazaron --> No se rompe la linea base. 
+                    suma == 1, un solo voto por la aprobación, dos rechazos --> No se rompe la linea base. 
+                    suma == 2, dos votos por la aprobación, un rechazo --> Se rompe la linea base.
+                    suma == 3, todos aprobaron --> Se rompe la linea base. 
+            """
+            if solicitud.voto_uno is not -1 and solicitud.voto_dos is not -1 and solicitud.voto_tres is not -1:
+                """Ya votaron los tres miembros"""
+                suma = solicitud.voto_uno + solicitud.voto_dos + solicitud.voto_tres
+                if suma < 2 and suma >= 0:
+                    solicitud.estado = "rechazado"
+                    solicitud.save()
+                    # Acciones de rechazo de solicitud de Rotura Linea Base
+                    mensaje = "Su voto se registro correctamente. Se rechazó la rotura de la Línea Base."
+                    return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                                    'lineaBase': lineaBase,
+                                                                                    'solicitudes': solicitudes,
+                                                                                    'es_comite': es_comite,
+                                                                                    'mensaje': mensaje})
+                if suma >= 2 and suma <= 3:
+                    solicitud.estado = "aprobado"
+                    solicitud.save()
+                    # Acciones de aprobacion de solicitud de Rotura Linea Base
+                    """Establecer a la línea base como rota"""
+                    lineaBase.estado = "rota"
+                    lineaBase.save()
+                    en_revision = []
+                    en_revision_lb = []
+                    for i in lineaBase.items.all():
+                        i.estado = "en revision"
+                        #i._history_date = datetime.now()
+                        """Guardar"""
+                        i.save()
+                        en_revision.append(i)
+                        for r in i.relaciones.all():
+                            relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
+                            if not relacionItem:
+                                r.estado = "en revision"
+                                #r._history_date = datetime.now()
+                                """Guardar"""
+                                r.save()
+                                esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
+                                en_revision.append(r)
+                                if esta_en_LB:
+                                    en_revision_lb.append(r)
+                                    lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                                    """Si el estado de la linea base es cerrada."""
+                                    if lineaBaseItem.estado == "cerrada":
+                                        lineaBaseItem.estado = "comprometida"
+                                        solicitud = RoturaLineaBaseComprometida.objects.create(comprometida_estado="pendiente")
+                                        solicitud.save()
+                                        lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
+                                        lineaBaseItem.save()
+                                    if lineaBaseItem.estado == "comprometida":
+                                        solicitud = RoturaLineaBaseComprometida.objects.create(comprometida_estado="pendiente")
+                                        solicitud.save()
+                                        lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
+                                        lineaBaseItem.save()
+                                    if lineaBaseItem.estado == "abierta":
+                                        lineaBaseItem.items.remove(r)
+                                        lineaBaseItem.save()
+
+
+                        print("EL INICIO DE LA CADENA PA")
+                        print(en_revision)
+                        print("ELfin del INICIO DE LA CADENA PA")
+                        seguir = False
+                        for i in en_revision:
+                            if not i in en_revision_lb:
+                                for r in i.relaciones.all():
+                                    if not r in en_revision:
+                                        seguir = True
+                        while seguir:
+                            for i in en_revision:
+                                if not i in en_revision_lb:
+                                    for r in i.relaciones.all():
+                                        if not r in en_revision:
+                                            r.estado = "en revision"
+                                            # r._history_date = datetime.now()
+                                            """Guardar"""
+                                            r.save()
+                                            en_revision.append(r)
+                                            esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
+                                            if esta_en_LB:
+                                                en_revision_lb.append(r)
+                                                lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                                                """Si el estado de la linea base es cerrada."""
+                                                if lineaBaseItem.estado == "cerrada":
+                                                    lineaBaseItem.estado = "comprometida"
+                                                    solicitud = RoturaLineaBaseComprometida.objects.create(comprometida_estado="pendiente")
+                                                    solicitud.save()
+                                                    lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
+                                                    lineaBaseItem.save()
+                                                if lineaBaseItem.estado == "abierta":
+                                                    lineaBaseItem.items.remove(r)
+                                                    lineaBaseItem.save()
+
+                            seguir = False
+                            print("FEROZ CADENA PA")
+                            print(en_revision)
+                            for i in en_revision:
+                                if not i in en_revision_lb:
+                                    for r in i.relaciones.all():
+                                        if not r in en_revision:
+                                            seguir = True
+
+
+
+                    mensaje = "Su voto se registro correctamente. Se aprobo la rotura de la Línea Base."
+                    return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                                    'lineaBase': lineaBase,
+                                                                                    'solicitudes': solicitudes,
+                                                                                    'es_comite': es_comite,
+                                                                                    'mensaje': mensaje})
+
+            else:
+                """Aún no votaron todos los miembros"""
+                # Redirigir a la lista de solicitudes y mostrarle un mensaje de que se registro su voto.
+
+                mensaje = "Su voto se registro correctamente. La rotura se decidirá cuando todos los miembros del Comité emitan su voto."
+                # VERIFICAR SI EL USUARIO QUE ENTRA A ESA PAGINA YA EMITIO O NO SU VOTO PARA NO MOSTRARLE ESE TEMPLATE
+                return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                                'lineaBase': lineaBase,
+                                                                                'solicitudes': solicitudes,
+                                                                                'es_comite': es_comite, 'mensaje': mensaje})
+        else:
+            mensaje = " "
+            # VERIFICAR SI EL USUARIO QUE ENTRA A ESA PAGINA YA EMITIO O NO SU VOTO PARA NO MOSTRARLE ESE TEMPLATE
+            return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                            'lineaBase': lineaBase,
+                                                                            'solicitudes': solicitudes,
+                                                                            'es_comite': es_comite, 'mensaje': mensaje})
+
+def RechazarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("break_lineaBase", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+        """Obtener linea base."""
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        solicitud = RoturaLineaBase.objects.get(id=solicituid)
+        solicitudes = lineaBase.roturaslineasBase.all()
+        es_comite = False
+        comite_miembros = proyecto.comite.all()
+        if request.user in comite_miembros:
+            es_comite = True
+        """Registrar votos"""
+        voto_anotado = False
+        votos_registrados = []
+        votos_registrados = solicitud.votos_registrados.all()
+        votos_registrados = list(votos_registrados)
+        if not request.user in votos_registrados:
+            if solicitud.voto_uno == -1:
+                """Se registra el voto como primer voto y se guarda al usuario que voto"""
+                solicitud.voto_uno = 0
+                solicitud.votos_registrados.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+            """ Si ya se guardo un voto en voto_uno, se prueba en voto_dos"""
+            if solicitud.voto_dos == -1 and not voto_anotado:
+                """Se registra el voto como segundo voto y se guarda al usuario que voto"""
+                solicitud.voto_dos = 0
+                solicitud.votos_registrados.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+            """ Si ya se guardo un voto en voto_uno y voto_dos, se prueba en voto_tres"""
+            if solicitud.voto_tres == -1 and not voto_anotado:
+                """Se registra el voto como segundo voto y se guarda al usuario que voto"""
+                solicitud.voto_tres = 0
+                solicitud.votos_registrados.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+
+            """
+                Luego de registrar los votos, se procede a controlar si se rompe o no la Línea Base. 
+                Si algún voto está en -1, quiere decir que algún miembro del Comité aún no voto.
+                En caso de que todos hayan votado, se suman los valores.
+                Si:
+                    suma == 0, todos rechazaron --> No se rompe la linea base. 
+                    suma == 1, un solo voto por la aprobación, dos rechazos --> No se rompe la linea base. 
+                    suma == 2, dos votos por la aprobación, un rechazo --> Se rompe la linea base.
+                    suma == 3, todos aprobaron --> Se rompe la linea base. 
+            """
+            if solicitud.voto_uno is not -1 and solicitud.voto_dos is not -1 and solicitud.voto_tres is not -1:
+                """Ya votaron los tres miembros"""
+                suma = solicitud.voto_uno + solicitud.voto_dos + solicitud.voto_tres
+                if suma < 2 and suma >= 0:
+                    solicitud.estado = "rechazado"
+                    solicitud.save()
+                    # Acciones de rechazo de solicitud de Rotura Linea Base
+                    # Se podría enviar correo al solicitante para avisarle que se rechazó su solicitud
+                    mensaje = "Su voto se registro correctamente. Se rechazó la rotura de la Línea Base."
+                    return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                                    'lineaBase': lineaBase,
+                                                                                    'solicitudes': solicitudes,
+                                                                                    'es_comite': es_comite,
+                                                                                    'mensaje': mensaje})
+                if suma >= 2 and suma <= 3:
+                    solicitud.estado = "aprobado"
+                    solicitud.save()
+                    # Acciones de aprobacion de solicitud de Rotura Linea Base
+                    """Establecer a la línea base como rota"""
+                    lineaBase.estado = "rota"
+                    lineaBase.save()
+                    en_revision = []
+                    en_revision_lb = []
+                    for i in lineaBase.items.all():
+                        i.estado = "en revision"
+                        # i._history_date = datetime.now()
+                        """Guardar"""
+                        i.save()
+                        en_revision.append(i)
+                        for r in i.relaciones.all():
+                            relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
+                            if not relacionItem:
+                                r.estado = "en revision"
+                                # r._history_date = datetime.now()
+                                """Guardar"""
+                                r.save()
+                                esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
+                                en_revision.append(r)
+                                if esta_en_LB:
+                                    en_revision_lb.append(r)
+                                    lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                                    """Si el estado de la linea base es cerrada."""
+                                    if lineaBaseItem.estado == "cerrada":
+                                        lineaBaseItem.estado = "comprometida"
+                                        solicitud = RoturaLineaBaseComprometida.objects.create(
+                                            comprometida_estado="pendiente")
+                                        solicitud.save()
+                                        lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
+                                        lineaBaseItem.save()
+                                    if lineaBaseItem.estado == "comprometida":
+                                        solicitud = RoturaLineaBaseComprometida.objects.create(
+                                            comprometida_estado="pendiente")
+                                        solicitud.save()
+                                        lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
+                                        lineaBaseItem.save()
+                                    if lineaBaseItem.estado == "abierta":
+                                        lineaBaseItem.items.remove(r)
+                                        lineaBaseItem.save()
+
+                        print("EL INICIO DE LA CADENA PA")
+                        print(en_revision)
+                        print("ELfin del INICIO DE LA CADENA PA")
+                        seguir = False
+                        for i in en_revision:
+                            if not i in en_revision_lb:
+                                for r in i.relaciones.all():
+                                    if not r in en_revision:
+                                        seguir = True
+                        while seguir:
+                            for i in en_revision:
+                                if not i in en_revision_lb:
+                                    for r in i.relaciones.all():
+                                        if not r in en_revision:
+                                            r.estado = "en revision"
+                                            # r._history_date = datetime.now()
+                                            """Guardar"""
+                                            r.save()
+                                            en_revision.append(r)
+                                            esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
+                                            if esta_en_LB:
+                                                en_revision_lb.append(r)
+                                                lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                                                """Si el estado de la linea base es cerrada."""
+                                                if lineaBaseItem.estado == "cerrada":
+                                                    lineaBaseItem.estado = "comprometida"
+                                                    solicitud = RoturaLineaBaseComprometida.objects.create(
+                                                        comprometida_estado="pendiente")
+                                                    solicitud.save()
+                                                    lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
+                                                    lineaBaseItem.save()
+                                                if lineaBaseItem.estado == "abierta":
+                                                    lineaBaseItem.items.remove(r)
+                                                    lineaBaseItem.save()
+
+                            seguir = False
+                            print("FEROZ CADENA PA")
+                            print(en_revision)
+                            for i in en_revision:
+                                if not i in en_revision_lb:
+                                    for r in i.relaciones.all():
+                                        if not r in en_revision:
+                                            seguir = True
+
+                mensaje = "Su voto se registro correctamente. Se aprobo la rotura de la Línea Base."
+                return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                                    'lineaBase': lineaBase,
+                                                                                    'solicitudes': solicitudes,
+                                                                                    'es_comite': es_comite,
+                                                                                    'mensaje': mensaje})
+
+            else:
+                """Aún no votaron todos los miembros"""
+                # Redirigir a la lista de solicitudes y mostrarle un mensaje de que se registro su voto.
+
+                mensaje = "Su voto se registro correctamente. La rotura se decidirá cuando todos los miembros del Comité emitan su voto."
+                # VERIFICAR SI EL USUARIO QUE ENTRA A ESA PAGINA YA EMITIO O NO SU VOTO PARA NO MOSTRARLE ESE TEMPLATE
+                return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                                'lineaBase': lineaBase,
+                                                                                'solicitudes': solicitudes,
+                                                                                'es_comite': es_comite, 'mensaje': mensaje})
+        else:
+            mensaje = " "
+            # VERIFICAR SI EL USUARIO QUE ENTRA A ESA PAGINA YA EMITIO O NO SU VOTO PARA NO MOSTRARLE ESE TEMPLATE
+            return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                            'lineaBase': lineaBase,
+                                                                            'solicitudes': solicitudes,
+                                                                            'es_comite': es_comite, 'mensaje': mensaje})
+
+def votacionRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid):
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("break_lineaBase", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+        """Obtener linea base."""
+        items_aprobados = []
+        items_en_revision = []
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        items_lb = lineaBase.items.all()
+        for i in items_lb:
+            if i.estado == "aorobado":
+                items_aprobados.append(i)
+            if i.estado == "en revision":
+                items_en_revision.append(i)
+        solicitud_romper = []
+        solicitud_romper = lineaBase.roturaLineaBaseComprometida.all()
+        solicitud_romper = list(solicitud_romper)
+        solicitud = solicitud_romper.pop()
+        return render(request, "fase/faseRoturaLineaBaseVotarComprometida.html", {'proyecto': proyecto, 'fase': fase,'lineaBase': lineaBase,
+                                                                                  'items_aprobados': items_aprobados,
+                                                                                  'items_en_revision': items_en_revision, 'solicitud':solicitud})
+def AprobarRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid,solicituid):
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("break_lineaBase", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+        """Obtener linea base."""
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        solicitud = RoturaLineaBaseComprometida.objects.get(id=solicituid)
+        es_comite = False
+        comite_miembros = proyecto.comite.all()
+        if request.user in comite_miembros:
+            es_comite = True
+        """Registrar votos"""
+        voto_anotado = False
+        votos_registrados = []
+        votos_registrados = solicitud.registrados_votos_comprometida.all()
+        votos_registrados = list(votos_registrados)
+        if not request.user in votos_registrados:
+            if solicitud.uno_voto_comprometida == -1:
+                """Se registra el voto como primer voto y se guarda al usuario que voto"""
+                solicitud.uno_voto_comprometida = 1
+                solicitud.registrados_votos_comprometida.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+            """ Si ya se guardo un voto en voto_uno, se prueba en dos_voto_comprometida"""
+            if solicitud.dos_voto_comprometida == -1 and not voto_anotado:
+                """Se registra el voto como segundo voto y se guarda al usuario que voto"""
+                solicitud.dos_voto_comprometida = 1
+                solicitud.registrados_votos_comprometida.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+            """ Si ya se guardo un voto en voto_uno y voto_dos, se prueba en tres_voto_comprometida"""
+            if solicitud.tres_voto_comprometida == -1 and not voto_anotado:
+                """Se registra el voto como segundo voto y se guarda al usuario que voto"""
+                solicitud.tres_voto_comprometida = 1
+                solicitud.registrados_votos_comprometida.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+
+            """
+                Luego de registrar los votos, se procede a controlar si se rompe o no la Línea Base. 
+                Si algún voto está en -1, quiere decir que algún miembro del Comité aún no voto.
+                En caso de que todos hayan votado, se suman los valores.
+                Si:
+                    suma == 0, todos rechazaron --> No se rompe la linea base. 
+                    suma == 1, un solo voto por la aprobación, dos rechazos --> No se rompe la linea base. 
+                    suma == 2, dos votos por la aprobación, un rechazo --> Se rompe la linea base.
+                    suma == 3, todos aprobaron --> Se rompe la linea base. 
+            """
+            if solicitud.uno_voto_comprometida is not -1 and solicitud.dos_voto_comprometida is not -1 and solicitud.tres_voto_comprometida is not -1:
+                """Ya votaron los tres miembros"""
+                suma = solicitud.uno_voto_comprometida + solicitud.dos_voto_comprometida + solicitud.tres_voto_comprometida
+                if suma < 2 and suma >= 0:
+                    solicitud.comprometida_estado = "rechazado"
+                    solicitud.save()
+                    # Acciones de rechazo de solicitud de Rotura Linea Base
+                    mensaje = "Su voto se registro correctamente. Se rechazó la rotura de la Línea Base."
+                    lineasBase = fase.lineasBase.all()
+                    return render(request, "fase/faseGestionLineaBase.html",
+                                  {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+                if suma >= 2 and suma <= 3:
+                    solicitud.estado = "aprobado"
+                    solicitud.save()
+                    # Acciones de aprobacion de solicitud de Rotura Linea Base
+                    """Establecer a la línea base como rota"""
+                    lineaBase.estado = "rota"
+                    lineaBase.save()
+                    en_revision = []
+                    en_revision_lb = []
+                    for i in lineaBase.items.all():
+                        i.estado = "en revision"
+                        # i._history_date = datetime.now()
+                        """Guardar"""
+                        i.save()
+                        en_revision.append(i)
+                        for r in i.relaciones.all():
+                            relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
+                            if not relacionItem:
+                                r.estado = "en revision"
+                                # r._history_date = datetime.now()
+                                """Guardar"""
+                                r.save()
+                                esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
+                                en_revision.append(r)
+                                if esta_en_LB:
+                                    en_revision_lb.append(r)
+                                    lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                                    """Si el estado de la linea base es cerrada."""
+                                    if lineaBaseItem.estado == "cerrada":
+                                        lineaBaseItem.estado = "comprometida"
+                                        solicitud = RoturaLineaBaseComprometida.objects.create(
+                                            comprometida_estado="pendiente")
+                                        solicitud.save()
+                                        lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
+                                        lineaBaseItem.save()
+                                    if lineaBaseItem.estado == "comprometida":
+                                        solicitud = RoturaLineaBaseComprometida.objects.create(
+                                            comprometida_estado="pendiente")
+                                        solicitud.save()
+                                        lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
+                                        lineaBaseItem.save()
+                                    if lineaBaseItem.estado == "abierta":
+                                        lineaBaseItem.items.remove(r)
+                                        lineaBaseItem.save()
+
+                        print("EL INICIO DE LA CADENA PA")
+                        print(en_revision)
+                        print("ELfin del INICIO DE LA CADENA PA")
+                        seguir = False
+                        for i in en_revision:
+                            if not i in en_revision_lb:
+                                for r in i.relaciones.all():
+                                    if not r in en_revision:
+                                        seguir = True
+                        while seguir:
+                            for i in en_revision:
+                                if not i in en_revision_lb:
+                                    for r in i.relaciones.all():
+                                        if not r in en_revision:
+                                            r.estado = "en revision"
+                                            # r._history_date = datetime.now()
+                                            """Guardar"""
+                                            r.save()
+                                            en_revision.append(r)
+                                            esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
+                                            if esta_en_LB:
+                                                en_revision_lb.append(r)
+                                                lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                                                """Si el estado de la linea base es cerrada."""
+                                                if lineaBaseItem.estado == "cerrada":
+                                                    lineaBaseItem.estado = "comprometida"
+                                                    solicitud = RoturaLineaBaseComprometida.objects.create(
+                                                        comprometida_estado="pendiente")
+                                                    solicitud.save()
+                                                    lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
+                                                    lineaBaseItem.save()
+                                                if lineaBaseItem.estado == "abierta":
+                                                    lineaBaseItem.items.remove(r)
+                                                    lineaBaseItem.save()
+
+                            seguir = False
+                            print("FEROZ CADENA PA")
+                            print(en_revision)
+                            for i in en_revision:
+                                if not i in en_revision_lb:
+                                    for r in i.relaciones.all():
+                                        if not r in en_revision:
+                                            seguir = True
+
+                lineasBase = fase.lineasBase.all()
+                return render(request, "fase/faseGestionLineaBase.html",
+                                  {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+
+            else:
+                """Aún no votaron todos los miembros"""
+                # Redirigir a la lista de solicitudes y mostrarle un mensaje de que se registro su voto.
+
+                lineasBase = fase.lineasBase.all()
+                return render(request, "fase/faseGestionLineaBase.html",
+                              {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+        else:
+            lineasBase = fase.lineasBase.all()
+            return render(request, "fase/faseGestionLineaBase.html",
+                          {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+
+def RechazarRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid, solicituid):
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("break_lineaBase", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+        """Obtener linea base."""
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        solicitud = RoturaLineaBase.objects.get(id=solicituid)
+        solicitudes = lineaBase.roturaslineasBase.all()
+        es_comite = False
+        comite_miembros = proyecto.comite.all()
+        if request.user in comite_miembros:
+            es_comite = True
+        """Registrar votos"""
+        voto_anotado = False
+        votos_registrados = []
+        votos_registrados = solicitud.registrados_votos_comprometida.all()
+        votos_registrados = list(votos_registrados)
+        if not request.user in votos_registrados:
+            if solicitud.uno_voto_comprometida == -1:
+                """Se registra el voto como primer voto y se guarda al usuario que voto"""
+                solicitud.uno_voto_comprometida = 0
+                solicitud.registrados_votos_comprometida.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+            """ Si ya se guardo un voto en voto_uno, se prueba en dos_voto_comprometida"""
+            if solicitud.dos_voto_comprometida == -1 and not voto_anotado:
+                """Se registra el voto como segundo voto y se guarda al usuario que voto"""
+                solicitud.dos_voto_comprometida = 0
+                solicitud.registrados_votos_comprometida.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+            """ Si ya se guardo un voto en voto_uno y dos_voto_comprometida, se prueba en tres_voto_comprometida"""
+            if solicitud.tres_voto_comprometida == -1 and not voto_anotado:
+                """Se registra el voto como segundo voto y se guarda al usuario que voto"""
+                solicitud.tres_voto_comprometida = 0
+                solicitud.registrados_votos_comprometida.add(request.user)
+                solicitud.save()
+                voto_anotado = True
+
+            """
+                Luego de registrar los votos, se procede a controlar si se rompe o no la Línea Base. 
+                Si algún voto está en -1, quiere decir que algún miembro del Comité aún no voto.
+                En caso de que todos hayan votado, se suman los valores.
+                Si:
+                    suma == 0, todos rechazaron --> No se rompe la linea base. 
+                    suma == 1, un solo voto por la aprobación, dos rechazos --> No se rompe la linea base. 
+                    suma == 2, dos votos por la aprobación, un rechazo --> Se rompe la linea base.
+                    suma == 3, todos aprobaron --> Se rompe la linea base. 
+            """
+            if solicitud.uno_voto_comprometida is not -1 and solicitud.dos_voto_comprometida is not -1 and solicitud.tres_voto_comprometida is not -1:
+                """Ya votaron los tres miembros"""
+                suma = solicitud.uno_voto_comprometida + solicitud.dos_voto_comprometida + solicitud.tres_voto_comprometida
+                if suma < 2 and suma >= 0:
+                    solicitud.comprometida_estado = "rechazado"
+                    solicitud.save()
+                    # Acciones de rechazo de solicitud de Rotura Linea Base
+                    # Se podría enviar correo al solicitante para avisarle que se rechazó su solicitud
+                    lineasBase = fase.lineasBase.all()
+                    return render(request, "fase/faseGestionLineaBase.html",
+                                  {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+                if suma >= 2 and suma <= 3:
+                    solicitud.estado = "aprobado"
+                    solicitud.save()
+                    # Acciones de aprobacion de solicitud de Rotura Linea Base
+                    """Establecer a la línea base como rota"""
+                    lineaBase.estado = "rota"
+                    lineaBase.save()
+                    en_revision = []
+                    en_revision_lb = []
+                    for i in lineaBase.items.all():
+                        i.estado = "en revision"
+                        # i._history_date = datetime.now()
+                        """Guardar"""
+                        i.save()
+                        en_revision.append(i)
+                        for r in i.relaciones.all():
+                            relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
+                            if not relacionItem:
+                                r.estado = "en revision"
+                                # r._history_date = datetime.now()
+                                """Guardar"""
+                                r.save()
+                                esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
+                                en_revision.append(r)
+                                if esta_en_LB:
+                                    en_revision_lb.append(r)
+                                    lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                                    """Si el estado de la linea base es cerrada."""
+                                    if lineaBaseItem.estado == "cerrada":
+                                        lineaBaseItem.estado = "comprometida"
+                                        solicitud = RoturaLineaBaseComprometida.objects.create(
+                                            comprometida_estado="pendiente")
+                                        solicitud.save()
+                                        lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
+                                        lineaBaseItem.save()
+                                    if lineaBaseItem.estado == "comprometida":
+                                        solicitud = RoturaLineaBaseComprometida.objects.create(
+                                            comprometida_estado="pendiente")
+                                        solicitud.save()
+                                        lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
+                                        lineaBaseItem.save()
+                                    if lineaBaseItem.estado == "abierta":
+                                        lineaBaseItem.items.remove(r)
+                                        lineaBaseItem.save()
+
+                        print("EL INICIO DE LA CADENA PA")
+                        print(en_revision)
+                        print("ELfin del INICIO DE LA CADENA PA")
+                        seguir = False
+                        for i in en_revision:
+                            if not i in en_revision_lb:
+                                for r in i.relaciones.all():
+                                    if not r in en_revision:
+                                        seguir = True
+                        while seguir:
+                            for i in en_revision:
+                                if not i in en_revision_lb:
+                                    for r in i.relaciones.all():
+                                        if not r in en_revision:
+                                            r.estado = "en revision"
+                                            # r._history_date = datetime.now()
+                                            """Guardar"""
+                                            r.save()
+                                            en_revision.append(r)
+                                            esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
+                                            if esta_en_LB:
+                                                en_revision_lb.append(r)
+                                                lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                                                """Si el estado de la linea base es cerrada."""
+                                                if lineaBaseItem.estado == "cerrada":
+                                                    lineaBaseItem.estado = "comprometida"
+                                                    solicitud = RoturaLineaBaseComprometida.objects.create(
+                                                        comprometida_estado="pendiente")
+                                                    solicitud.save()
+                                                    lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
+                                                    lineaBaseItem.save()
+                                                if lineaBaseItem.estado == "abierta":
+                                                    lineaBaseItem.items.remove(r)
+                                                    lineaBaseItem.save()
+
+                            seguir = False
+                            print("FEROZ CADENA PA")
+                            print(en_revision)
+                            for i in en_revision:
+                                if not i in en_revision_lb:
+                                    for r in i.relaciones.all():
+                                        if not r in en_revision:
+                                            seguir = True
+
+                    mensaje = "Su voto se registro correctamente. Se aprobo la rotura de la Línea Base."
+                    lineasBase = fase.lineasBase.all()
+                    return render(request, "fase/faseGestionLineaBase.html",
+                                  {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+
+            else:
+                """Aún no votaron todos los miembros"""
+                # Redirigir a la lista de solicitudes y mostrarle un mensaje de que se registro su voto.
+
+                mensaje = "Su voto se registro correctamente. La rotura se decidirá cuando todos los miembros del Comité emitan su voto."
+                lineasBase = fase.lineasBase.all()
+                return render(request, "fase/faseGestionLineaBase.html",
+                              {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+        else:
+            mensaje = " "
+            lineasBase = fase.lineasBase.all()
+            return render(request, "fase/faseGestionLineaBase.html",
+                          {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+
+
+def itemTrazabilidad(request):
+    if request.method == 'GET':
+        """ID del proyecto"""
+        proyectoid = request.GET.get('proyectoid')
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """ID de fase"""
+        faseid = request.GET.get('faseid')
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("obtener_trazabilidadItem", fase)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+        """ID de item_from"""
+        itemIdTrazabilidad = request.GET.get('itemIdTrazabilidad')
+        """Obtener item."""
+        itemTrazabilidad = Item.objects.get(id=itemIdTrazabilidad)
+        """ID de item_to"""
+        """
+            TRAZABILIDAD HACIA LA DERECHA
+            SUCESORES E HIJOS. Y LOS HIJOS Y SUCESORES DE ESTOS HASTA LLEGAR AL FINAL
+        """
+        adj = {}
+        confirmados = []
+        confirmados.append(int(itemTrazabilidad.id))
+        hijos = []
+        itemsFase = fase.items.exclude(estado="deshabilitado")
+        for r in itemTrazabilidad.relaciones.all():
+            if r in itemsFase:
+                if Relacion.objects.filter(item_from=r, item_to=itemTrazabilidad, tipo="hijo").exists():
+                    confirmados.append(int(r.id))
+                    hijos.append(int(r.id))
+                    adj[int(r.id)] = []
+
+        adj[int(itemTrazabilidad.id)] = hijos
+
+
+        seguir = False
+        for c in confirmados:
+            confirmado = Item.objects.get(id=c)
+            for r in confirmado.relaciones.all():
+                if r in itemsFase:
+                    if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="hijo").exists():
+                        if int(r.id) not in confirmados:
+                            seguir = True
+
+
+        while seguir:
+            for c in confirmados:
+                confirmado = Item.objects.get(id=c)
+                for r in confirmado.relaciones.all():
+                    if r in itemsFase:
+                        if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="hijo").exists():
+                            if int(r.id) not in confirmados:
+                                #print("confirmado", confirmado.id, "falta", r.id)
+                                confirmados.append(int(r.id))
+                                adj[int(r.id)] = []
+                                adj[int(confirmado.id)].append(int(r.id))
+
+                """Volver a verificar"""
+                seguir = False
+                for c in confirmados:
+                    confirmado = Item.objects.get(id=c)
+                    for r in confirmado.relaciones.all():
+                        if r in itemsFase:
+                            if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="hijo").exists():
+                                if int(r.id) not in confirmados:
+                                    seguir = True
+
+
+        """FIltrar fases del proyecto apropiadas."""
+        fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+
+
+
+        """Aqui sigue el codigo normal de calculo de impacto."""
+        for fp in fasesProyecto:
+            if int(fp.id) > int(fase.id):
+                itemsFase = fp.items.exclude(estado="deshabilitado").order_by('id')
+                confirmadosAux = []
+                """Para relaciones directas."""
+                for iF in itemsFase:
+                    hijos = []
+                    if Relacion.objects.filter(item_from_id__in=confirmados, item_to=iF, tipo="antecesor").exists():
+
+                        """Podria existir la posibilidad de que tenga mas de un antecesor valido. Solo para el grafo."""
+                        for c in confirmados:
+                            if Relacion.objects.filter(item_from_id=c, item_to=iF, tipo="antecesor").exists():
+                                adj[int(c)].append(int(iF.id))
+
+
+                        if not int(iF.id) in confirmadosAux:
+                            confirmadosAux.append(int(iF.id))
+
+                        for r in iF.relaciones.all():
+                            if r in itemsFase:
+                                if Relacion.objects.filter(item_from=r, item_to=iF, tipo="hijo").exists():
+                                    if int(r.id) not in confirmadosAux:
+                                        confirmadosAux.append(int(r.id))
+                                        hijos.append(int(r.id))
+                                        adj[int(r.id)] = []
+
+                        adj[int(iF.id)] = hijos
+                      #  adj[int(iF.id)] = confirmadosAux
+
+
+                """Para relaciones indirectas."""
+                for iF in itemsFase:
+                    hijos = []
+                    if not Relacion.objects.filter(item_from_id__in=confirmados, item_to=iF, tipo="antecesor").exists():
+
+                        if Relacion.objects.filter(item_from_id__in=confirmadosAux, item_to=iF).exists():
+                            if not int(iF.id) in confirmadosAux:
+                                confirmadosAux.append(int(iF.id))
+
+                            for r in iF.relaciones.all():
+                                if r in itemsFase:
+                                    if Relacion.objects.filter(item_from=r, item_to=iF, tipo="hijo").exists():
+                                        if int(r.id) not in confirmadosAux:
+                                            confirmadosAux.append(int(r.id))
+                                            hijos.append(int(r.id))
+                                            adj[int(r.id)] = []
+
+                            adj[int(iF.id)] = hijos
+                        #  adj[int(iF.id)] = confirmadosAux
+
+                confirmados = confirmadosAux
+
+        """
+            TRAZABILIDAD HACIA ATRAS --> Antecesores y padres
+        """
+        confirmados = []
+        confirmados.append(int(itemTrazabilidad.id))
+        padres = []
+        itemsFase = fase.items.exclude(estado="deshabilitado")
+        for r in itemTrazabilidad.relaciones.all():
+            if r in itemsFase:
+                if Relacion.objects.filter(item_from=r, item_to=itemTrazabilidad, tipo="padre").exists():
+                    confirmados.append(int(r.id))
+                    padres.append(int(r.id))
+                    if int(r.id) in adj.keys():
+                        adj[int(r.id)].append(int(itemTrazabilidad.id))
+                    else:
+                        lista_item = []
+                        lista_item.append(int(itemTrazabilidad.id))
+                        adj[int(r.id)] = lista_item
+
+        #adj[int(itemTrazabilidad.id)] = padres
+
+        seguir = False
+        for c in confirmados:
+            confirmado = Item.objects.get(id=c)
+            for r in confirmado.relaciones.all():
+                if r in itemsFase:
+                    if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="padre").exists():
+                        if int(r.id) not in confirmados:
+                            seguir = True
+
+        while seguir:
+            for c in confirmados:
+                confirmado = Item.objects.get(id=c)
+                for r in confirmado.relaciones.all():
+                    if r in itemsFase:
+                        if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="padre").exists():
+                            if int(r.id) not in confirmados:
+                                # print("confirmado", confirmado.id, "falta", r.id)
+                                confirmados.append(int(r.id))
+                                if int(r.id) in adj.keys():
+                                    adj[int(r.id)].append(int(confirmado.id))
+                                else:
+                                    lista_item = []
+                                    lista_item.append(int(confirmado.id))
+                                    adj[int(r.id)] = lista_item
+
+
+                """Volver a verificar"""
+                seguir = False
+                for c in confirmados:
+                    confirmado = Item.objects.get(id=c)
+                    for r in confirmado.relaciones.all():
+                        if r in itemsFase:
+                            if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="padre").exists():
+                                if int(r.id) not in confirmados:
+                                    seguir = True
+
+        """FIltrar fases del proyecto apropiadas."""
+        fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('-id')
+
+        """Aqui sigue el codigo normal de calculo de impacto."""
+        for fp in fasesProyecto:
+            if int(fp.id) < int(fase.id):
+                itemsFase = fp.items.exclude(estado="deshabilitado").order_by('id')
+                confirmadosAux = []
+                """Para relaciones directas."""
+                for iF in itemsFase:
+                    padres = []
+                    if Relacion.objects.filter(item_from_id__in=confirmados, item_to=iF, tipo="sucesor").exists():
+
+                        """Podria existir la posibilidad de que tenga mas de un sucesor valido. Solo para el grafo."""
+                        for c in confirmados:
+                            if Relacion.objects.filter(item_from_id=c, item_to=iF, tipo="sucesor").exists():
+                                if int(iF.id) in adj.keys():
+                                    adj[int(iF.id)].append(int(c))
+                                else:
+                                    lista_item = []
+                                    lista_item.append(c)
+                                    adj[int(iF.id)]= lista_item
+
+
+
+                        if not int(iF.id) in confirmadosAux:
+                            confirmadosAux.append(int(iF.id))
+
+                        for r in iF.relaciones.all():
+                            if r in itemsFase:
+                                if Relacion.objects.filter(item_from=r, item_to=iF, tipo="padre").exists():
+                                    if int(r.id) not in confirmadosAux:
+                                        confirmadosAux.append(int(r.id))
+                                        padres.append(int(r.id))
+                                        if int(r.id) in adj.keys():
+                                            adj[int(r.id)].append(int(iF.id))
+                                        else:
+                                            lista_item = []
+                                            lista_item.append(int(iF.id))
+                                            adj[int(r.id)] = lista_item
+
+                     #   adj[int(iF.id)] = padres
+                    #  adj[int(iF.id)] = confirmadosAux
+
+                """Para relaciones indirectas."""
+                for iF in itemsFase:
+                    padres = []
+                    if not Relacion.objects.filter(item_from_id__in=confirmados, item_to=iF, tipo="sucesor").exists():
+
+                        if Relacion.objects.filter(item_from=iF, item_to_id__in=confirmadosAux).exists():
+                            if not int(iF.id) in confirmadosAux:
+                                confirmadosAux.append(int(iF.id))
+
+                            for r in iF.relaciones.all():
+                                if r in itemsFase:
+                                    if Relacion.objects.filter(item_from=r, item_to=iF, tipo="padre").exists():
+                                        if int(r.id) not in confirmadosAux:
+                                            confirmadosAux.append(int(r.id))
+                                            padres.append(int(r.id))
+                                            if int(r.id) in adj.keys():
+                                                adj[int(r.id)].append(int(iF.id))
+                                            else:
+                                                lista_item = []
+                                                lista_item.append(int(iF.id))
+                                                adj[int(r.id)] = lista_item
+
+                         #   adj[int(iF.id)] = padres
+                        #  adj[int(iF.id)] = confirmadosAux
+
+                confirmados = confirmadosAux
+        print(adj)
+
+        fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+        lista_items = []
+        for key,value in adj.items():
+            item_key = Item.objects.get(id=key)
+            if not item_key in lista_items:
+                lista_items.append(item_key)
+            for v in adj[key]:
+                item_value = Item.objects.get(id=int(v))
+                if not item_value in lista_items:
+                    lista_items.append(item_value)
+
+        relaciones = []
+        for r in Relacion.objects.all():
+            if r.tipo == "antecesor" or r.tipo== "padre":
+                relaciones.append(r)
+
+
+
+        return render(request, 'item/TrazabilidadItem.html',{'fasesProyecto': fasesProyecto, 'proyecto':proyecto,
+                                                             'lista_item': sorted(lista_items, key=lambda x: x.id,reverse=False),
+                                                             'relaciones':relaciones})
+
+
+def itemVerDatos(request, itemid, faseid, proyectoid):
+    if request.method == "GET":
+        """Fase en el cual se encuentra el item."""
+        fase = Fase.objects.get(id=faseid)
+        """Proyecto en el cual se encuentra el item."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Item a visualizar."""
+        item = Item.objects.get(id=itemid)
+        """Verificar que el usuario cuente con los permisos necesarios."""
+        if not (request.user.has_perm("ver_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+
+        return render(request, "item/itemVerDatos.html",
+                      {'fase': fase, 'item': item, 'proyecto': proyecto, 'archivos': list(item.archivos),
+                       'campos': zip(item.tipoItem.campo_extra,
+                                     item.campo_extra_valores), })

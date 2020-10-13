@@ -55,6 +55,34 @@
                                     {% endif %}
                                     {% if lb.estado == "cerrada" %}
                                         <div class="col 14 right">
+                                            <a href="{%url 'gestionRoturaLineaBase' proyecto.id fase.id lb.id%}"
+                                               title="En una Línea Base Cerrada sólo se puede consultar sus ítems."
+                                               style="color: red"
+                                            >
+                                                Gestionar Rotura de Línea Base
+                                                <i class="material-icons red-text left">lock_open</i>
+                                            </a>
+                                        </div>
+                                        <div class="col 14 right">
+                                            <a href="{%url 'consultarLineaBase' proyecto.id fase.id lb.id%}"
+                                               title="En una Línea Base Cerrada sólo se puede consultar sus ítems."
+                                            >
+                                                Consultar Línea Base
+                                                <i class="material-icons blue-text left">info_outline</i>
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                    {% if lb.estado == "comprometida" %}
+                                        <div class="col 14 right">
+                                            <a href="{%url 'votacionRoturaLineaBaseComprometida' proyecto.id fase.id lb.id%}"
+                                               title="En una Línea Base Cerrada sólo se puede consultar sus ítems."
+                                               style="color: red"
+                                            >
+                                                Gestionar Rotura de Línea Base
+                                                <i class="material-icons red-text left">lock_open</i>
+                                            </a>
+                                        </div>
+                                        <div class="col 14 right">
                                             <a href="{%url 'consultarLineaBase' proyecto.id fase.id lb.id%}"
                                                title="En una Línea Base Cerrada sólo se puede consultar sus ítems."
                                             >

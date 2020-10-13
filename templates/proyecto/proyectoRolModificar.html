@@ -2,6 +2,56 @@
 {% load static %}
 
 {% block content %}
+    <head>
+        <script>
+            function myFunction2(obj) {
+                var verItem = document.getElementById('verItem');
+                if (obj.checked) {
+                    verItem.checked = true;
+                }
+            }
+            function myFunctionlb(obj) {
+                var verLB = document.getElementById('verLB');
+                if (obj.checked) {
+                    verLB.checked = true;
+                }
+            }
+            function myFunction3() {
+                var onclick = true;
+                var perms = document.getElementsByTagName('input');
+                for(var i = 0; i < perms.length; ++i)
+                {
+                    if(perms[i].type === "checkbox"){
+                        var valor = parseInt(perms[i].value);
+                        if(valor > 6 && valor < 17){
+                            if(perms[i].checked === true){
+                                onclick = false;
+                            }
+                        }
+
+                    }
+                }
+                 return onclick;
+            }
+            function myFunction4() {
+                var onclick = true;
+                var perms = document.getElementsByTagName('input');
+                for(var i = 0; i < perms.length; ++i)
+                {
+                    if(perms[i].type === "checkbox"){
+                        var valor = parseInt(perms[i].value);
+                        if(valor > 17 && valor < 21){
+                            if(perms[i].checked === true){
+                                onclick = false;
+                            }
+                        }
+
+                    }
+                }
+                 return onclick;
+            }
+        </script>
+    </head>
     <form action="/proyecto/proyectoRol/">
          <button type="submit" class="waves-effect waves-teal btn-flat">
              Volver a Gestión de Roles de Proyecto
@@ -37,37 +87,37 @@
                     <h7>Permisos respecto a Fases de Proyecto:</h7>
                     <div class="form-check">
                         {%if "view_fase" in permisos%}
-                            <label><input class="filled-in" type="checkbox" value="4" id="permiso" name="perms" readonly checked onclick="return false;">
+                            <label><input class="filled-in" type="checkbox" value="1" id="permiso" name="perms" readonly checked onclick="return false;">
                             <span style="color:black">Ver Fase.</span></label>
                         {%else%}
-                        <label><input class="filled-in" type="checkbox" value="4" id="permiso" name="perms" readonly checked onclick="return false;">
+                        <label><input class="filled-in" type="checkbox" value="1" id="permiso" name="perms" readonly checked onclick="return false;">
                             <span style="color:black">Ver Fase.</span></label>
-                        {%endif%}
-                    </div>
-                    <div class="form-check">
-                        {%if "add_fase" in permisos%}
-                            <label><input class="filled-in" type="checkbox" value="1" id="permiso" name="perms" checked>
-                            <span style="color:black">Crear Fase.</span></label>
-                        {%else%}
-                            <label><input class="filled-in" type="checkbox" value="1" id="permiso" name="perms">
-                            <span style="color:black">Crear Fase.</span></label>
                         {%endif%}
                     </div>
                     <div class="form-check">
                         {%if "change_fase" in permisos%}
-                            <label><input class="filled-in" type="checkbox" value="2" id="permiso" name="perms" checked>
+                            <label><input class="filled-in" type="checkbox" value="3" id="permiso" name="perms" checked>
                             <span style="color:black">Modificar Fase.</span></label>
                         {%else%}
-                            <label><input class="filled-in" type="checkbox" value="2" id="permiso" name="perms">
+                            <label><input class="filled-in" type="checkbox" value="3" id="permiso" name="perms">
                             <span style="color:black">Modificar Fase.</span></label>
                         {%endif%}
                     </div>
                     <div class="form-check">
+                            {%if "cerrar_fase" in permisos%}
+                                <label><input class="filled-in" type="checkbox" value="4" id="permiso" name="perms" checked>
+                                <span style="color:black">Cerrar Fase.</span></label>
+                            {%else%}
+                                <label><input class="filled-in" type="checkbox" value="4" id="permiso" name="perms">
+                                <span style="color:black">Cerrar Fase.</span></label>
+                            {%endif%}
+                        </div>
+                    <div class="form-check">
                         {%if "delete_fase" in permisos%}
-                            <label><input class="filled-in" type="checkbox" value="3" id="permiso" name="perms" checked>
+                            <label><input class="filled-in" type="checkbox" value="5" id="permiso" name="perms" checked>
                             <span style="color:black">Deshabilitar Fase.</span></label>
                         {%else%}
-                            <label><input class="filled-in" type="checkbox" value="3" id="permiso" name="perms">
+                            <label><input class="filled-in" type="checkbox" value="5" id="permiso" name="perms">
                             <span style="color:black">Deshabilitar Fase.</span></label>
                         {%endif%}
                     </div>
@@ -75,80 +125,71 @@
                 <div style="position: absolute; right: 0; top: 0; text-align: left">
                     <h7>Permisos respecto a Ítems de Proyecto:</h7>
                     <div class="form-check">
+                        {%if "ver_item" in permisos%}
+                            <label><input class="filled-in" type="checkbox" value="6" id="verItem" name="perms" checked onclick="return myFunction3();">
+                            <span style="color:black">Visualizar Item.</span></label>
+                        {%else%}
+                            <label><input class="filled-in" type="checkbox" value="6" id="verItem" name="perms" onclick="return myFunction3();">
+                            <span style="color:black">Visualizar Item.</span></label>
+                        {%endif%}
+                    </div>
+                    <div class="form-check">
                         {%if "create_item" in permisos%}
-                            <label><input class="filled-in" type="checkbox" value="5" id="permiso" name="perms" checked>
+                            <label><input class="filled-in" type="checkbox" value="7" id="permiso" name="perms" checked onclick="myFunction2(this);">
                             <span style="color:black">Crear Item.</span></label>
                         {%else%}
-                            <label><input class="filled-in" type="checkbox" value="5" id="permiso" name="perms">
+                            <label><input class="filled-in" type="checkbox" value="7" id="permiso" name="perms" onclick="myFunction2(this);">
                             <span style="color:black">Crear Item.</span></label>
                         {%endif%}
                     </div>
                     <div class="form-check">
-                        {%if "aprove_item" in permisos%}
-                            <label><input class="filled-in" type="checkbox" value="6" id="permiso" name="perms" checked>
-                            <span style="color:black">Aprobar Item.</span></label>
+                        {%if "modify_item" in permisos%}
+                            <label><input class="filled-in" type="checkbox" value="8" id="permiso" name="perms" checked onclick="myFunction2(this);">
+                            <span style="color:black">Modificar Item.</span></label>
                         {%else%}
-                            <label><input class="filled-in" type="checkbox" value="6" id="permiso" name="perms" onclick="myFunction2(this);">
-                            <span style="color:black">Aprobar Item.</span></label>
+                            <label><input class="filled-in" type="checkbox" value="8" id="permiso" name="perms" onclick="myFunction2(this);">
+                            <span style="color:black">Modificar Item.</span></label>
                         {%endif%}
                     </div>
                     <div class="form-check">
                         {%if "deshabilitar_item" in permisos%}
-                            <label><input class="filled-in" type="checkbox" value="7" id="permiso" name="perms" checked>
+                            <label><input class="filled-in" type="checkbox" value="9" id="permiso" name="perms" checked onclick="myFunction2(this);">
                             <span style="color:black">Deshabilitar Item.</span></label>
                         {%else%}
-                            <label><input class="filled-in" type="checkbox" value="7" id="permiso" name="perms" onclick="myFunction2(this);">
+                            <label><input class="filled-in" type="checkbox" value="9" id="permiso" name="perms" onclick="myFunction2(this);">
                             <span style="color:black">Deshabilitar Item.</span></label>
                         {%endif%}
                     </div>
                     <div class="form-check">
                         {%if "reversionar_item" in permisos%}
-                            <label><input class="filled-in" type="checkbox" value="8" id="permiso" name="perms" checked>
+                            <label><input class="filled-in" type="checkbox" value="10" id="permiso" name="perms" checked onclick="myFunction2(this);">
                             <span style="color:black">Reversionar Item.</span></label>
                         {%else%}
-                            <label><input class="filled-in" type="checkbox" value="8" id="permiso" name="perms" onclick="myFunction2(this);">
+                            <label><input class="filled-in" type="checkbox" value="10" id="permiso" name="perms" onclick="myFunction2(this);">
                             <span style="color:black">Reversionar Item.</span></label>
                         {%endif%}
                     </div>
                     <div class="form-check">
                         {%if "relacionar_item" in permisos%}
-                            <label><input class="filled-in" type="checkbox" value="9" id="permiso" name="perms" checked>
+                            <label><input class="filled-in" type="checkbox" value="11" id="permiso" name="perms" checked onclick="myFunction2(this);">
                             <span style="color:black">Relacionar Item.</span></label>
-                        {%else%}
-                            <label><input class="filled-in" type="checkbox" value="9" id="permiso" name="perms" onclick="myFunction2(this);">
-                            <span style="color:black">Relacionar Item.</span></label>
-                        {%endif%}
-                    </div>
-                    <div class="form-check">
-                        {%if "modify_item" in permisos%}
-                            <label><input class="filled-in" type="checkbox" value="10" id="permiso" name="perms" checked>
-                            <span style="color:black">Modificar Item.</span></label>
-                        {%else%}
-                            <label><input class="filled-in" type="checkbox" value="10" id="permiso" name="perms" onclick="myFunction2(this);">
-                            <span style="color:black">Modificar Item.</span></label>
-                        {%endif%}
-                    </div>
-                    <div class="form-check">
-                        {%if "establecer_itemPendienteAprob" in permisos%}
-                            <label><input class="filled-in" type="checkbox" value="11" id="permiso" name="perms" checked>
-                            <span style="color:black">Establecer Item como pendiente de aprobacion.</span></label>
                         {%else%}
                             <label><input class="filled-in" type="checkbox" value="11" id="permiso" name="perms" onclick="myFunction2(this);">
-                            <span style="color:black">Establecer Item como pendiente de aprobacion.</span></label>
+                            <span style="color:black">Relacionar Item.</span></label>
                         {%endif%}
                     </div>
                     <div class="form-check">
-                        {%if "establecer_itemDesarrollo" in permisos%}
-                            <label><input class="filled-in" type="checkbox" value="12" id="permiso" name="perms" checked>
-                            <span style="color:black">Establecer Item como en Desarrollo.</span></label>
+                        {%if "aprove_item" in permisos%}
+                            <label><input class="filled-in" type="checkbox" value="12" id="permiso" name="perms" checked onclick="myFunction2(this);">
+                            <span style="color:black">Aprobar Item.</span></label>
                         {%else%}
                             <label><input class="filled-in" type="checkbox" value="12" id="permiso" name="perms" onclick="myFunction2(this);">
-                            <span style="color:black">Establecer Item como en Desarrollo.</span></label>
+                            <span style="color:black">Aprobar Item.</span></label>
                         {%endif%}
                     </div>
                     <div class="form-check">
                         {%if "obtener_trazabilidadItem" in permisos%}
-                            <label><input class="filled-in" type="checkbox" value="13" id="permiso" name="perms" checked>
+                            <label><input class="filled-in" type="checkbox" value="13" id="permiso" name="perms" checked onclick="myFunction2(this);">
                             <span style="color:black">Obtener trazabilidad de Item.</span></label>
                         {%else%}
                             <label><input class="filled-in" type="checkbox" value="13" id="permiso" name="perms" onclick="myFunction2(this);">
@@ -156,21 +197,30 @@
                         {%endif%}
                     </div>
                     <div class="form-check">
-                        {%if "ver_item" in permisos%}
-                            <label><input class="filled-in" type="checkbox" value="14" id="verItem" name="perms" checked onclick="return myFunction3();">
-                            <span style="color:black">Ver Item.</span></label>
+                        {%if "obtener_calculoImpacto" in permisos%}
+                            <label><input class="filled-in" type="checkbox" value="14" id="permiso" name="perms" checked onclick="myFunction2(this);">
+                            <span style="color:black">Obtener cálculo de Impacto de Item.</span></label>
                         {%else%}
-                            <label><input class="filled-in" type="checkbox" value="14" id="verItem" name="perms" onclick="return myFunction3();">
-                            <span style="color:black">Ver Item.</span></label>
+                            <label><input class="filled-in" type="checkbox" value="14" id="permiso" name="perms" onclick="myFunction2(this);">
+                            <span style="color:black">Obtener cálculo de Impacto de Item.</span></label>
                         {%endif%}
                     </div>
                     <div class="form-check">
-                        {%if "obtener_calculoImpacto" in permisos%}
-                            <label><input class="filled-in" type="checkbox" value="15" id="permiso" name="perms" checked>
-                            <span style="color:black">Obtener cálculo de Impacto de Item.</span></label>
+                        {%if "establecer_itemDesarrollo" in permisos%}
+                            <label><input class="filled-in" type="checkbox" value="15" id="permiso" name="perms" checked onclick="myFunction2(this);">
+                            <span style="color:black">Establecer Item como en Desarrollo.</span></label>
                         {%else%}
                             <label><input class="filled-in" type="checkbox" value="15" id="permiso" name="perms" onclick="myFunction2(this);">
-                            <span style="color:black">Obtener cálculo de Impacto de Item.</span></label>
+                            <span style="color:black">Establecer Item como en Desarrollo.</span></label>
+                        {%endif%}
+                    </div>
+                    <div class="form-check">
+                        {%if "establecer_itemPendienteAprob" in permisos%}
+                            <label><input class="filled-in" type="checkbox" value="16" id="permiso" name="perms" checked onclick="myFunction2(this);">
+                            <span style="color:black">Establecer Item como pendiente de aprobacion.</span></label>
+                        {%else%}
+                            <label><input class="filled-in" type="checkbox" value="16" id="permiso" name="perms" onclick="myFunction2(this);">
+                            <span style="color:black">Establecer Item como pendiente de aprobacion.</span></label>
                         {%endif%}
                     </div>
                 </div>
@@ -179,29 +229,38 @@
                 <div style="position: absolute; left: 0; top: 0; text-align: left">
                     <h7>Permisos respecto a Línea Base:</h7>
                     <div class="form-check">
+                        {%if "ver_lineaBase" in permisos%}
+                            <label><input class="filled-in" type="checkbox" value="17" id="verLB" name="perms" checked onclick="return myFunction4();">
+                            <span style="color:black">Ver Linea Base.</span></label>
+                        {%else%}
+                            <label><input class="filled-in" type="checkbox" value="17" id="verLB" name="perms" onclick="return myFunction4();">
+                            <span style="color:black">Ver Linea Base.</span></label>
+                        {%endif%}
+                    </div>
+                    <div class="form-check">
                         {%if "create_lineaBase" in permisos%}
-                            <label><input class="filled-in" type="checkbox" value="16" id="permiso" name="perms" checked>
+                            <label><input class="filled-in" type="checkbox" value="18" id="permiso" name="perms" checked onclick="myFunctionlb(this);">
                             <span style="color:black">Crear Linea Base.</span></label>
                         {%else%}
-                            <label><input class="filled-in" type="checkbox" value="16" id="permiso" name="perms"">
+                            <label><input class="filled-in" type="checkbox" value="18" id="permiso" name="perms" onclick="myFunctionlb(this);">
                             <span style="color:black">Crear Linea Base.</span></label>
                         {%endif%}
                     </div>
                     <div class="form-check">
-                        {%if "break_lineaBase" in permisos%}
-                            <label><input class="filled-in" type="checkbox" value="17" id="permiso" name="perms" checked>
-                            <span style="color:black">Romper Linea Base.</span></label>
+                        {%if "modify_lineaBase" in permisos%}
+                            <label><input class="filled-in" type="checkbox" value="19" id="permiso" name="perms" checked onclick="myFunctionlb(this);">
+                            <span style="color:black">Modificar Linea Base.</span></label>
                         {%else%}
-                            <label><input class="filled-in" type="checkbox" value="17" id="permiso" name="perms">
-                            <span style="color:black">Romper Linea Base.</span></label>
+                            <label><input class="filled-in" type="checkbox" value="19" id="permiso" name="perms" onclick="myFunctionlb(this);">
+                            <span style="color:black">Modificar Linea Base.</span></label>
                         {%endif%}
                     </div>
                     <div class="form-check">
                         {%if "solicitar_roturaLineaBase" in permisos%}
-                            <label><input class="filled-in" type="checkbox" value="18" id="permiso" name="perms" checked>
+                            <label><input class="filled-in" type="checkbox" value="20" id="permiso" name="perms" checked onclick="myFunctionlb(this);">
                             <span style="color:black">Solicitar Rotura de Linea Base.</span></label>
                         {%else%}
-                            <label><input class="filled-in" type="checkbox" value="18" id="permiso" name="perms">
+                            <label><input class="filled-in" type="checkbox" value="20" id="permiso" name="perms" onclick="myFunctionlb(this);">
                             <span style="color:black">Solicitar Rotura de Linea Base.</span></label>
                         {%endif%}
                     </div>
@@ -210,32 +269,4 @@
         </form>
     </div>
 {% endblock%}
-
-<script>
-    function myFunction2(obj) {
-        var verItem = document.getElementById('verItem')
-        if (obj.checked) {
-            verItem.checked = true;
-        }
-    }
-</script>
-<script>
-    function myFunction3() {
-        var onclick = true;
-        var perms = document.getElementsByTagName('input');
-        for(var i = 0; i < perms.length; ++i)
-        {
-            if(perms[i].type === "checkbox"){
-                var valor = parseInt(perms[i].value);
-                if(valor > 5 && valor !== 14 && valor < 16){
-                    if(perms[i].checked === true){
-                        onclick = false;
-                    }
-                }
-
-            }
-        }
-         return onclick;
-    }
-</script>
 

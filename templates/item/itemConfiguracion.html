@@ -27,97 +27,83 @@
         </button>
     </form>
     {{mensaje}}
-	<div class="container">
-        <section>
-            <h3 style="text-align: center">Item: {{item.nombre}}</h3>
-            <div style="position: relative;">
-                <div style="position: absolute; left: 0; top: 0; text-align: left">
-                    <b><h6 style="text-align: left">Datos del ítem</h6></b>
+
+    {%if proyecto.estado != "cancelado"%}
+    <div class="container">
+        <h4 style="text-align: center">{{item.nombre}}</h4>
+        <div class="row">
+            <div class="col s5 m3">
+                <div class="card">
+                    <div class="card-image" style= "border:1px solid #03a9f4;">
+                        <a href="{%url 'itemVerDatos' item.id fase.id proyecto.id%}">
+                            <img src="{% static 'img/datosdelitem.jpg' %}" alt="datosdelitem" width="80" height="180">
+                        </a>
+                    </div>
                 </div>
-                <div style="position: absolute; right: 0; top: 0; text-align: left">
-                    {% if proyecto.estado != "cancelado" %}
-                        {% if item.estado == "en linea base" %}
-                            <button
-                                title="El ítem no puede modificarse porque forma parte de una Línea Base."
-                                style="cursor: default"
-                                class="btn btn-small #eeeeee grey lighten-3 black-text right"
-                            >
-                                Modificar datos y estado del Ítem
-                                <i class="material-icons white-text left">add_circle</i>
-                            </button><br>
-                        {% else %}
-                            <form action="/item/modify/">
-                                <button type="submit" class="btn-small blue darken-2 right">
-                                    Modificar datos y estado del Ítem
-                                   <i class="material-icons white-text left">edit</i>
-                                </button>
+            </div>
+            <form
+                    action="/item/relaciones/ver/itemid={{ item.id }}/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/mensaje='' "
+                    id="formRelaciones"
+            >
+                <div class="col s5 m3">
+                    <div class="card">
+                        <div class="card-image" style= "border:1px solid #03a9f4;">
+                            <a href="#" onclick="document.getElementById('formRelaciones').submit()" >
+                                <img src="{% static 'img/Relaciones.jpg' %}" alt="relacionesitem" width="80" height="180">
                                 <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
                                 <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
                                 <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
-                            </form>
-                        {% endif %}
-                    {% endif %}
-                </div>
-            </div><br>
-            <ul class="z-depth-1">
-                <li>
-                    <div class="card-panel z-depth-4 expense">
-                        <div class="row">
-                            <div class="col l4 left">
-                                <b>Observación:</b>
-                                {{item.observacion}}
-                            </div>
+                            </a>
                         </div>
-                        <div class="row">
-                            <div class="col l4 left">
-                                <b>Estado:</b>
-                                {{item.estado}}
-                            </div>
-                            <div class="col l4 left">
-                                <b>Fecha:</b>
-                                {{item.fecha}}
-                            </div>
-                            <div class="col l4 left">
-                                <b>Costo en horas:</b>
-                                {{item.costo}}h
-                            </div>
-                        </div>
-                        {%for c, c2 in campos%}
-                            <div class="row">
-                                <div class="col l4 left">
-                                    <b>{{ c }}:</b>
-                                    {{ c2 }}
-                                </div>
-                            </div>
-                        {%endfor%}
-                        <div class="row">
-                            <div class="col l4 left">
-                                <b>Archivos cargados dentro del ítem:</b>
-                            </div>
-                        </div>
-                        {% if archivos %}
-                            {% for a in archivos %}
-                                <div class="row">
-                                    <div class="col l4 left">
-                                        <i class="material-icons dark black-text left">insert_drive_file</i>
-                                        {{ a }}
-                                        <a href="{%url 'download' a item.id fase.id proyecto.id %}"
-                                           title="Descargar"
-                                        >
-                                            <i class="material-icons dark blue-text right">file_download</i>
-                                        </a>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <h8>El ítem no cuenta con archivos.</h8>
-                        {% endif %}
                     </div>
-                </li>
-            </ul>
-        </section>
-    </div>
-    {%if proyecto.estado != "cancelado"%}
+                </div>
+            </form>
+            <form action="/item/trazabilidad/" id="formTrazabilidad">
+                <div class="col s5 m3">
+                    <div class="card">
+                        <div class="card-image" style= "border:1px solid #03a9f4;">
+                            <a href="#" onclick="document.getElementById('formTrazabilidad').submit()">
+                                <img src="{% static 'img/Trazabilidad.jpg' %}" alt="trazabilidaditem" width="80" height="180">
+                                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                                <input  type="hidden" value={{item.id}} id="itemIdTrazabilidad" name="itemIdTrazabilidad">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <form action="/item/calculoImpacto/" id="formImpacto">
+            <div class="col s5 m3">
+                <div class="card">
+                    <div class="card-image" style= "border:1px solid #03a9f4;">
+                        <a href="#" onclick="document.getElementById('formImpacto').submit()">
+                            <img src="{% static 'img/calculodeimpacto .jpg' %}" alt="calculodeimpacto" width="80" height="180">
+                            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                            <input  type="hidden" value={{item.id}} id="itemIdCalculo" name="itemIdCalculo">
+                        </a>
+                    </div>
+                </div>
+            </div>
+            </form>
+            <form action="/item/history/" id="formHistorial">
+                <div class="col s5 m3">
+                    <div class="card">
+                        <div class="card-image" style= "border:1px solid #03a9f4;">
+                            <a href="#" onclick="document.getElementById('formHistorial').submit()">
+                                <img src="{% static 'img/HistorialdeCambios.jpg' %}" alt="historialitem" width="80" height="180">
+                                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                                <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="row">
+        </div>
+    </div> <br><br><br><br>
                 <div class="row_opciones">
                     <div class="column">
                         <form action="/item/unable/"
@@ -127,32 +113,6 @@
                             >
                                 Deshabilitar Item
                                <i class="material-icons white-text left">delete</i>
-                            </button>
-                            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-                            <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
-                        </form>
-                    </div>
-                    <div class="column">
-                        <form action="/item/history/">
-                            <button type="submit" class="btn blue darken-5 right"
-                                    title="Gestionar historial de cambios del ítem."
-                            >
-                                Historial  de cambios del ítem
-                               <i class="material-icons white-text left">edit</i>
-                            </button>
-                            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-                            <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
-                        </form>
-                    </div>
-                    <div class="column">
-                        <form action="/item/relaciones/ver/itemid={{ item.id }}/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/mensaje='' ">
-                            <button type="submit" class="btn blue darken-5 right"
-                                    title="Crear o remover relaciones del ítem {{ item.nombre }}"
-                            >
-                                Gestionar Relaciones
-                                <i class="material-icons white-text left">timeline</i>
                             </button>
                             <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
                             <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">

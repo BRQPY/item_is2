@@ -12,7 +12,8 @@
     <div class="container">
             <h3 style="text-align: center">Confirmar Usuarios</h3>
             <h5 style="text-align: center" class="grey-text">Selecciona un usuario para confirmar</h5><br>
-              <form action="/gestionUser/conf/" method="post">{% csrf_token %}
+              <form action="/gestionUser/conf/" method="post">
+                  {% csrf_token %}
                     {%for u in usuarios%}
                        <label>
                         <input  type="checkbox" class="filled-in"  value={{u.id}} id="username" name="users"/>

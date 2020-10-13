@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <style>
+        * {
+          box-sizing: border-box;
+        }
+
+        /* Create three equal columns that floats next to each other */
+        .column {
+          float: left;
+          width: 33.33%;
+          padding: 10px;
+        }
+        /* Clear floats after the columns */
+        .row_opciones:after {
+          content: "";
+          display: table;
+          clear: both;
+        }
+    </style>
+    <form action="/fase/FaseProyectoInicializado/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/mensaje=' '">
+        <button type="submit" class="waves-effect waves-teal btn-flat">
+            Volver a la vista general de la fase
+            <i class="material-icons dark blue-text left">keyboard_return</i>
+        </button>
+    </form>
+    {{mensaje}}
+    <div class="container">
+        <section>
+            <h3 style="text-align: center">Item: {{item.nombre}}</h3>
+            <div style="position: relative;">
+                <div style="position: absolute; left: 0; top: 0; text-align: left">
+                    <b><h6 style="text-align: left">Datos del ítem</h6></b>
+                </div>
+                <div style="position: absolute; right: 0; top: 0; text-align: left">
+                    {% if proyecto.estado != "cancelado" %}
+                        {% if item.estado == "en linea base" %}
+                            <button
+                                title="El ítem no puede modificarse porque forma parte de una Línea Base."
+                                style="cursor: default"
+                                class="btn btn-small #eeeeee grey lighten-3 black-text right"
+                            >
+                                Modificar datos y estado del Ítem
+                                <i class="material-icons white-text left">add_circle</i>
+                            </button><br>
+                        {% else %}
+                            <form action="/item/modify/">
+                                <button type="submit" class="btn-small blue darken-2 right">
+                                    Modificar datos y estado del Ítem
+                                   <i class="material-icons white-text left">edit</i>
+                                </button>
+                                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                                <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div><br>
+            <ul class="z-depth-1">
+                <li>
+                    <div class="card-panel z-depth-4 expense">
+                        <div class="row">
+                            <div class="col l4 left">
+                                <b>Observación:</b>
+                                {{item.observacion}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col l4 left">
+                                <b>Estado:</b>
+                                {{item.estado}}
+                            </div>
+                            <div class="col l4 left">
+                                <b>Fecha:</b>
+                                {{item.fecha}}
+                            </div>
+                            <div class="col l4 left">
+                                <b>Costo en horas:</b>
+                                {{item.costo}}h
+                            </div>
+                        </div>
+                        {%for c, c2 in campos%}
+                            <div class="row">
+                                <div class="col l4 left">
+                                    <b>{{ c }}:</b>
+                                    {{ c2 }}
+                                </div>
+                            </div>
+                        {%endfor%}
+                        <div class="row">
+                            <div class="col l4 left">
+                                <b>Archivos cargados dentro del ítem:</b>
+                            </div>
+                        </div>
+                        {% if archivos %}
+                            {% for a in archivos %}
+                                <div class="row">
+                                    <div class="col l4 left">
+                                        <i class="material-icons dark black-text left">insert_drive_file</i>
+                                        {{ a }}
+                                        <a href="{%url 'download' a item.id fase.id proyecto.id %}"
+                                           title="Descargar"
+                                        >
+                                            <i class="material-icons dark blue-text right">file_download</i>
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <h8>El ítem no cuenta con archivos.</h8>
+                        {% endif %}
+                    </div>
+                </li>
+            </ul>
+        </section>
+    </div>
+
+{% endblock%}

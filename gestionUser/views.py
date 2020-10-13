@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission
 from django.http import HttpResponse
@@ -7,6 +7,12 @@ from django.core.mail import  EmailMultiAlternatives
 from django.conf import settings
 from django.contrib import messages
 from django.template.loader import get_template
+from gestionUser.tasks import sendEmailView
+
+
+
+
+
 
 
 @login_required
@@ -23,7 +29,27 @@ def gestionUserView(request):
     """
     Template a renderizar: gestionUser.html
     """
-    return render(request, 'gestionUser/gestionUser.html')
+    if request.method == 'GET':
+        users = User.objects.all().exclude(username="AnonymousUser")
+        user_confirmados = []
+        user_deshabilitados = []
+        user_pendientes = []
+        for u in users:
+            if u.is_staff == False and u.is_active and u.username != "AnonymousUser" and u.has_perm("perms.view_menu"):
+                user_confirmados.append(u)
+            if u.has_perm("perms.view_menu") == False and u.is_active:
+                user_pendientes.append(u)
+            if u.is_staff == False and u.is_active == False:
+                user_deshabilitados.append(u)
+
+        return render(request, 'gestionUser/gestionUser.html',{'confirmados':user_confirmados,
+                                                               'pendientes': user_pendientes,
+                                                               'deshabilitados': user_deshabilitados,
+                                                               'usuarios':users,
+                                                               'perm_confirmar_user' : request.user.has_perm("perms.assign_perms"),
+                                                               'perm_enable_user': request.user.has_perm("perms.perms.unable_user"),
+                                                               'perm_unable_user': request.user.has_perm("perms.unable_user"),
+                                                               })
 
 
 
@@ -48,7 +74,7 @@ def confUserView(request):
         Filtrar solamente los usuarios que tengan el acceso restringido. Tambien que
         el usuario este activo.
         """
-        if user.has_perm("perms.view_menu") == False and user.is_active:
+        if user.has_perm("perms.view_menu") == False and user.is_active and user.username != "AnonymousUser":
             usuarios.append(user)
 
     """
@@ -73,30 +99,17 @@ def confUserView(request):
             usuario = User.objects.get(id=u)
             usuario.user_permissions.add(permiso)
             usuario.save()
-            mail = usuario.email
-            name = usuario.username
-            messages.success(request, "Permisos asignados exitosamente!")
-            sendEmailView(mail, name)
+            #mail = usuario.email
+            #name = usuario.username
+            #messages.success(request, "Permisos asignados exitosamente!")
+            #sendEmailView.delay(mail, name)
+            
         """
         Template a renderizar: gestionUser.html.
         """
-        return render(request, 'gestionUser/gestionUser.html')
+        return redirect('gestionUserView')
 
-def sendEmailView(mail,name):
 
-    context = {'name': name}
-
-    template = get_template('gestionUser/correo.html')
-    content = template.render(context)
-
-    email = EmailMultiAlternatives(
-        'Noficacion de acceso',
-        'item',
-        settings.EMAIL_HOST_USER,
-        [mail]
-    )
-    email.attach_alternative(content, 'text/html')
-    email.send()
 
 @permission_required('perms.assign_perms', login_url='/permissionError/')
 def gestionPermsView(request):
@@ -162,6 +175,7 @@ def addPermsView(request):
                             return render(request, "gestionUser/already.html")
 
                     usuario.user_permissions.add(permiso)
+                    usuario.save()
                 elif int(p) == 2:
                     """Permiso id=2 corresponde a Asignar Permisos"""
                     permiso = Permission.objects.get(codename="assign_perms")
@@ -173,7 +187,7 @@ def addPermsView(request):
                             return render(request, "gestionUser/already.html")
 
                     usuario.user_permissions.add(permiso)
-
+                    usuario.save()
                 elif int(p) == 3:
                     """Permiso id=3 corresponde a Agregar Usuarios"""
                     permiso = Permission.objects.get(codename="add_user")
@@ -185,7 +199,7 @@ def addPermsView(request):
                             return render(request, "gestionUser/already.html")
 
                     usuario.user_permissions.add(permiso)
-
+                    usuario.save()
                 elif int(p) == 4:
                     """Permiso id=4 corresponde a Modificar Usuarios"""
                     permiso = Permission.objects.get(codename="change_user")
@@ -197,7 +211,7 @@ def addPermsView(request):
                             return render(request, "gestionUser/already.html")
 
                     usuario.user_permissions.add(permiso)
-
+                    usuario.save()
                 elif int(p) == 5:
                     """Permiso id=5 corresponde a Deshabilitar Usuarios"""
                     permiso = Permission.objects.get(codename="unable_user")
@@ -209,7 +223,7 @@ def addPermsView(request):
                             return render(request, "gestionUser/already.html")
 
                     usuario.user_permissions.add(permiso)
-
+                    usuario.save()
                 elif int(p) == 6:
                     """Permiso id=6 corresponde a Ver Usuarios"""
                     permiso = Permission.objects.get(codename="view_user")
@@ -221,7 +235,7 @@ def addPermsView(request):
                             return render(request, "gestionUser/already.html")
 
                     usuario.user_permissions.add(permiso)
-
+                    usuario.save()
                 elif int(p) == 7:
                     """Permiso id=7 corresponde a Ver Reporte"""
                     permiso = Permission.objects.get(codename="view_report")
@@ -233,7 +247,7 @@ def addPermsView(request):
                             return render(request, "gestionUser/already.html")
 
                     usuario.user_permissions.add(permiso)
-
+                    usuario.save()
                 elif int(p) == 8:
                     """Permiso id=8 corresponde a Agregar Proyecto"""
                     permiso = Permission.objects.get(codename="add_proyecto")
@@ -245,7 +259,7 @@ def addPermsView(request):
                             return render(request, "gestionUser/already.html")
 
                     usuario.user_permissions.add(permiso)
-
+                    usuario.save()
             """Template a renderizar: permisos.html"""
             return render(request, "gestionUser/permisos.html")
 
@@ -262,7 +276,7 @@ def addPermsView(request):
     for user in u:
         """Filtrar que usuarios no sean staff ni el mismo usuario que ha realizado el request. Tambien
         que no sea un usuario deshabilitado."""
-        if user.is_staff == False and user != request.user and user.is_active:
+        if user.is_staff == False and user != request.user and user.is_active and user.username != "AnonymousUser" and user.has_perm("perms.view_menu"):
             usuarios.append(user)
     """Template a renderizar: addPerms.html"""
     return render(request, "gestionUser/addPerms.html", {'usuarios':usuarios, 'select':seleccion, })
@@ -324,7 +338,7 @@ def removePermsView(request):
     for user in u:
         """Filtrar que los usuarios nos sean staff o igual al usuario que realizar el request. Tambien
         que no sea un usuario deshabilitado"""
-        if user.is_staff == False and user != request.user and user.is_active:
+        if user.is_staff == False and user != request.user and user.is_active and user.username != "AnonymousUser" and user.has_perm("perms.view_menu"):
             usuarios.append(user)
 
     """Template a renderizar: removePerms.html"""
@@ -343,6 +357,7 @@ def verUserView(request):
         cuente con el permiso para ver usuarios y
         que (indirectamente) haya iniciado sesion
     """
+
     seleccion = None
     permisos = None
     """POST request, captura un usuario y la informacion del mismo para mostrar."""
@@ -365,7 +380,7 @@ def verUserView(request):
     u = User.objects.all()
     for user in u:
         """Filtrar que el usuario no sea staff"""
-        if user.is_staff == False:
+        if user.is_staff == False and user.has_perm("perms.view_menu") == True and user.username != "AnonymousUser":
             usuarios.append(user)
 
     """Template a renderizar: verUser.html"""
@@ -403,7 +418,7 @@ def changeUserView(request):
             usuario.save()
 
             """Template a renderizar: gestionUser.html."""
-            return render(request, "gestionUser/gestionUser.html")
+            return redirect('gestionUserView')
 
         else:
             """Boton Modificar no presionado en el template."""
@@ -417,7 +432,7 @@ def changeUserView(request):
     u = User.objects.all()
     for user in u:
         """Filtrar que el usuario no sea staff. Tambien que no este deshabilitado"""
-        if user.is_staff == False and user.is_active:
+        if user.is_staff == False and user.is_active and user.username != "AnonymousUser" and user.has_perm("perms.view_menu"):
             usuarios.append(user)
 
     """Template a renderizar: changeUser.html"""
@@ -441,7 +456,7 @@ def unableUserView(request):
         for user in u:
             """Filtrar que el usuario no sea staff, que no sea el usuario que realizo el request y
             que no este ya deshabilitado."""
-            if user.is_staff == False and user != request.user and user.is_active:
+            if user.is_staff == False and user != request.user and user.is_active and user.username != "AnonymousUser" and user.has_perm("perms.view_menu"):
                 usuarios.append(user)
         """Template a renderizar: unableUser.html"""
         return render(request, "gestionUser/unableUser.html", {'usuarios': usuarios, })
@@ -456,7 +471,7 @@ def unableUserView(request):
         usuario.save()
 
     """Template a renderizar gestionUser.html"""
-    return render(request, "gestionUser/gestionUser.html")
+    return redirect('gestionUserView')
 
 
 @permission_required('perms.unable_user', login_url='/permissionError/')
@@ -490,4 +505,13 @@ def enableUserView(request):
         usuario.save()
 
     """Template a renderizar gestionUser.html"""
-    return render(request, "gestionUser/gestionUser.html")
+    return redirect('gestionUserView')
+
+def ConfigView(request):
+    if request.method == 'GET':
+        user = request.POST.get('usuario')
+        users = request.POST.getlist('usuario')
+        print(users)
+        for u in User.objects.all():
+            print(u.username, u.id)
+        return render(request, 'gestionUser/ConfigurarUser.html',{'user':user})
