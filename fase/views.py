@@ -1225,7 +1225,7 @@ def itemCambiarEstado(request):
                 if u.user.has_perm("aprove_item", fase):
                     mail = u.user.email
                     name = u.user.username
-                    #sendEmailViewFase.delay(mail, name, item.nombre, fase.nombre)
+                    sendEmailViewFase.delay(mail, name, item.nombre, fase.nombre)
 
 
         """Si el nuevo estado es en desarrollo."""

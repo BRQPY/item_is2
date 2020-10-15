@@ -54,10 +54,10 @@ def proyectoCrear(request):
         """Guardar"""
         proyecto.save()
         #Envio de Correo al gerente del proyecto
-        #mail = gerente.email
-        #name = gerente.username
-        #messages.success(request, "Permisos asignados exitosamente!")
-        #sendEmailViewProyecto.delay(mail, name, proyecto.nombre,0)
+        mail = gerente.email
+        name = gerente.username
+        messages.success(request, "Permisos asignados exitosamente!")
+        sendEmailViewProyecto.delay(mail, name, proyecto.nombre,0)
         """
         #Vista a redirigir: homeView"""
         return redirect("/home/")
@@ -705,10 +705,10 @@ def proyectoComiteAdd(request):
                 miembros.append(u)
 
                 """Notificar a los miembros del comite"""
-                #mail = u.email
-                #name = u.username
-                #messages.success(request, "Permisos asignados exitosamente!")
-                #sendEmailViewProyecto.delay(mail, name, proyecto.nombre,1)
+                mail = u.email
+                name = u.username
+                messages.success(request, "Permisos asignados exitosamente!")
+                sendEmailViewProyecto.delay(mail, name, proyecto.nombre,1)
 
 
         """
