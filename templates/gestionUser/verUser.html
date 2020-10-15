@@ -2,40 +2,93 @@
 {% load static %}
 {% block title %}Ver Usuario{% endblock %}
 {% block content %}
-    <form action="/gestionUser/">
+    <form action="/gestionUser/Usuario/userid={{ usuario.id }}/mensaje=''">
            <button type="submit" class="waves-effect waves-teal btn-flat">
                     Volver a Gestión de Usuarios
                     <i class="material-icons dark blue-text left">keyboard_return</i>
             </button>
      </form>
     <div class="container">
-        <h3 style="text-align: center">Información de Usuarios</h3>
-        <h5 style="text-align: center" class="grey-text">Seleccione un usuario para consultar su información</h5>
-        <form action="." method="POST">{% csrf_token %}
-                            <div class="input-field col s12">
-                               <select id="usuarios" class="browser-default" name="usuarios" >
-                                   <option value="" disabled selected>Seleccionar Usuario</option>
-                                   {% for u in usuarios %}
-                                        <option value="{{u.id}}">{{u.username}}</option>
-                                   {% endfor %}
-                               </select>
-                            </div><br>
-                            <button id="but"  type="submit"  class="btn-small blue darken-3 right" name="seleccion" value="Seleccionar Usuario">
-                              Confirmar
-                            </button>
-        </form><br><br>
-        {% if select is not None %}
-             <h5 style="text-align: center" class="grey-text">Información del Usuario {{select.username}}</h5>
-                            <p><b>Email:</b> {{select.email}}</p>
-                            <p><b>Permisos:</b></p>
-                            {%for p in permisos%}
-                                <p>{{p}}</p>
-                            {%endfor%}
-        {% endif %}
-
+        <h3 style="text-align: center">{{ usuario.username }}</h3>
+        <h5 style="text-align: center" class="grey-text">Datos del usuario: {{ usuario.username }} dentro del sistema</h5>
+        <ul class="z-depth-1">
+            <li>
+                <div class="card-panel z-depth-4 expense">
+                    <h6 style="text-align: center"><b>Datos personales</b></h6>
+                    <div class="row">
+                        <div class="col 14 left">
+                            <b>Username:</b>
+                            {{usuario.username}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col 14 left">
+                            <b>Nombre y Apellido:</b>
+                            {{usuario.first_name}}
+                            {{usuario.last_name }}
+                        </div>
+                        <div class="col 14 left">
+                            <b>Email:</b>
+                            {{usuario.email}}
+                        </div>
+                    </div>
+                    <br>
+                    <h6 style="text-align: center"><b>Permisos dentro del Sistema</b></h6>
+                    <div class="row">
+                        {%if "view_user" in permisos%}
+                            <div class="col 14 left">
+                                 <span style="color:black">Visualizar Usuarios.</span>
+                            </div>
+                        {%endif%}
+                        {%if "add_user" in permisos%}
+                            <div class="col 14 left">
+                                 <span style="color:black">Agregar Usuarios.</span>
+                            </div>
+                        {%endif%}
+                        {%if "change_user" in permisos%}
+                            <div class="col 14 left">
+                                 <span style="color:black">Modificar Usuarios.</span>
+                            </div>
+                        {%endif%}
+                        {%if "unable_user" in permisos%}
+                            <div class="col 14 left">
+                                 <span style="color:black">Deshabilitar Usuarios.</span>
+                            </div>
+                        {%endif%}
+                        {%if "view_report" in permisos%}
+                            <div class="col 14 left">
+                                 <span style="color:black">Consultar reporte.</span>
+                            </div>
+                        {%endif%}
+                        {%if "add_proyecto" in permisos%}
+                            <div class="col 14 left">
+                                 <span style="color:black">Crear Proyecto.</span>
+                            </div>
+                        {%endif%}
+                        {%if "assign_perms" in permisos%}
+                            <div class="col 14 left">
+                                 <span style="color:black">Asignar Permisos.</span>
+                            </div>
+                        {%endif%}
+                    </div>
+                    <h6 style="text-align: center"><b>Proyectos en los que forma parte el usuario</b></h6>
+                    {% for p in proyectos %}
+                        <div class="row">
+                            <div class="col 14 left">
+                                {{ p.nombre }}
+                                <i class="material-icons dark blue-text left">folder</i>
+                                {% if p.creador == usuario  %}
+                                    <b>(Creador)</b>
+                                {% endif %}
+                                {% if p.gerente == usuario  %}
+                                    <b>(Gerente)</b>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </li>
+        </ul>
     </div>
-
-
-
 {% endblock %}
 

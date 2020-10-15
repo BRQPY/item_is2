@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}Cambiar Usuario{% endblock %}
 {% block content %}
-    <form action="/gestionUser/">
+    <form action="/gestionUser/Usuario/userid={{ usuario.id }}/mensaje=''">
            <button type="submit" class="waves-effect waves-teal btn-flat">
                     Volver a Gestión de Usuarios
                     <i class="material-icons dark blue-text left">keyboard_return</i>
@@ -10,43 +10,20 @@
      </form>
     <div class="container">
         <h3 style="text-align: center">Modificar Usuarios</h3>
-        <form action="." method="POST">{% csrf_token %}
-                            <div class="input-field col s12">
-                                <select id="usuarios" class="browser-default" name="usuarios">
-                                    <option value="" disabled selected>Seleccione un Usuario para modificar su información</option>
-                                    {% for u in usuarios %}
-                                        <option value="{{u.id}}">{{u.username}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <button id="but"  type="submit"  class="btn-small blue darken-3 right" name="seleccion" value="Seleccionar Usuario">
-                              Confirmar
-                            </button>
-                        </form><br>
-                        {% if select is not None %}
-                            <div action="." method="POST"> {% csrf_token %}
-
-                                    <label><p>Username:</p>
-                                        <input type="text" id="nombre" name="nombre" value={{select.username}}>
-                                    </label>
-
-                                    <label for="firstname"><p>Nombre:</p>
-                                        <input type="text" id="firstname" name="firstname" value={{select.first_name}}>
-                                    </label>
-                                    <label for="lastname"><p>Apellido:</p>
-                                        <input type="text" id="lastname" name="lastname" value={{select.last_name}}>
-                                    </label>
-                                <input type="hidden" id="usuario" name="usuario" value="{{select.id}}">
-                            </div>
-                        {% endif %}
-                            <form action="/gestionUser/">
-                                <br><button id ="guar" class="btn-small blue darken-3 right" type="submit" name="changeuser"  value="Modificar">
-                                    <i class="material-icons left">edit</i>MODIFICAR información
-                                </button>
-                            </form>
-
-                    </div>
-
-
-
+        <form action="." method="POST"> {% csrf_token %}
+            <label><p>Username:</p>
+                <input type="text" id="nombre" name="nombre" value="{{usuario.username}}">
+            </label>
+            <label for="firstname"><p>Nombre:</p>
+                <input type="text" id="firstname" name="firstname" value="{{usuario.first_name}}">
+            </label>
+            <label for="lastname"><p>Apellido:</p>
+                <input type="text" id="lastname" name="lastname" value="{{usuario.last_name}}">
+            </label>
+            <input type="hidden" id="usuario" name="usuario" value="{{usuario.id}}">
+            <br><button id ="guar" class="btn-small blue darken-3 right" type="submit" name="changeuser"  value="Modificar">
+                <i class="material-icons left">edit</i>MODIFICAR información
+            </button>
+        </form>
+    </div>
 {% endblock %}

@@ -24,15 +24,21 @@
 
               {%if p.estado != "deshabilitado"%}
                     <div class="col s4 md6 xl3">
-                        <div class="card-panel"
+                        <div
                                 {% if p.estado == "pendiente" %}
                                     style= "border:1px solid #03a9f4;"
+                                    class="card-panel"
                                 {% endif %}
                                 {% if p.estado == "inicializado" %}
                                     style= "border:1.5px solid #1b5e20;"
+                                    class="card-panel"
                                 {% endif %}
                                 {% if p.estado == "cancelado" %}
                                     style= "border:1px solid #c62828;"
+                                    class="card-panel"
+                                {% endif %}
+                                {% if p.gerente == request.user.username %}
+                                    class="card-panel"
                                 {% endif %}
                         >
 

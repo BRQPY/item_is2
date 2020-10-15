@@ -34,6 +34,24 @@
           color: white;
         }
     </style>
+    {% if mensaje == "Se removió correctamente al usuario." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "Usuario reincorporado correctamente dentro del sistema." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "Usuario agregado correctamente al sistema." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
     <form action="/home/">
             <button type="submit" class="waves-effect waves-teal btn-flat">
                     Volver a Home
@@ -62,37 +80,23 @@
                                     </div>
                                     {% if perm_unable_user %}
                                         <div class="col l4 right">
-                                            <form action="/gestionUser/deshabilitar/"
-                                                  method="post"
-                                                  id="formDes"
+                                            <a href="{%url 'unableUser' c.id %}"
+                                               title="Remover al usuario del sistema."
+                                               onclick="return confirm('Está seguro de remover a {{ c.username }} al sistema?');"
+                                               style="color: red"
                                             >
-                                                <a href="#"
-                                                   onClick="submitDes();"
-                                                   title="Remover al usuario del sistema."
-                                                   style="color: red"
-                                                >
-                                                    Deshabilitar Usuario
-                                                    <i class="material-icons dark red-text left">delete</i>
-                                                    {% csrf_token %}
-                                                    <input  type="hidden" value={{c.id}} id="username" name="users"/>
-                                                </a>
-                                            </form>
+                                                Deshabilitar Usuario
+                                                <i class="material-icons dark red-text left">delete</i>
+                                            </a>
                                         </div>
                                     {% endif %}
-                                    {% if perm_unable_user %}
+                                    {% if perm_view_user %}
                                         <div class="col l4 right">
-                                            <form action="/gestionUser/config/"
-                                                  id="formConfig"
-                                            >
-                                                <a href="#"
-                                                   onClick="document.getElementById('formConfig').submit();"
+                                            <a href="{%url 'ConfigView' c.id 'a' %}"
                                                    title="Ver datos, agregar o remover permisos"
-                                                >
-                                                    Gestionar Usuario
-                                                    <i class="material-icons dark blue-text left">settings</i>
-                                                    {% csrf_token %}
-                                                    <input  type="hidden" value="{{c.id}}" id="usuario" name="usuario"/>
-                                                </a>
+                                            >
+                                                Gestionar Usuario
+                                            </a>
                                             </form>
                                         </div>
                                     {% endif %}
@@ -129,20 +133,13 @@
                                     </div>
                                     {% if perm_confirmar_user %}
                                         <div class="col l4 right">
-                                            <form action="/gestionUser/conf/"
-                                                  method="post"
-                                                  id="formConf"
+                                            <a href="{%url 'confUserView' p.id %}"
+                                               title="Agregar al usuario al sistema."
+                                               onclick="return confirm('Está seguro de agregar a {{ p.username }} al sistema?');"
                                             >
-                                                <a href="#"
-                                                   onClick="submitConf();"
-                                                   title="Agregar al usuario al sistema."
-                                                >
-                                                    Confirmar Usuario
-                                                    <i class="material-icons dark blue-text left">person_add</i>
-                                                    {% csrf_token %}
-                                                    <input  type="hidden" value={{p.id}} id="username" name="users"/>
-                                                </a>
-                                            </form>
+                                                Confirmar Usuario
+                                                <i class="material-icons dark blue-text left">person_add</i>
+                                            </a>
                                         </div>
                                     {% endif %}
                                 </div>
@@ -178,21 +175,13 @@
                                     </div>
                                     <div class="col l4 right">
                                         {% if perm_enable_user %}
-                                            <form
-                                                    action="/gestionUser/habilitar/" method="post"
-                                                    id="formEnable"
+                                            <a href="{%url 'enableUser' d.id %}"
+                                               title="Agregar al usuario deshabilitado de vuelta al Sistema."
+                                               onclick="return confirm('Está seguro de reincorporar a {{ d.username }} al sistema?');"
                                             >
-                                                {% csrf_token %}
-                                                <a href="#"
-                                                   onClick="submitEnable();"
-                                                   title="Agregar al usuario deshabilitado de vuelta al Sistema."
-                                                >
-                                                    Reincoporar Usuario al Sistema
-                                                    <i class="material-icons dark blue-text left">security</i>
-                                                    {% csrf_token %}
-                                                </a>
-                                                <input type="hidden" value={{d.id}} id="username" name="users">
-                                            </form>
+                                                Reincoporar Usuario al Sistema
+                                                <i class="material-icons dark blue-text left">security</i>
+                                            </a>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -222,37 +211,6 @@
         </section>
     </div>
 
-        <form action="/gestionUser/conf/">
-            <br><button id ="guar" class="btn blue darken-3 left" type="submit" value="Confirmar Usuarios">
-                    <i class="material-icons left">assignment_turned_in</i>CONFIRMAR USUARIOS
-                </button>
-        </form><br><br>
-        <form action="/gestionUser/permisos/">
-            <br><button id ="guar" class="btn blue darken-3 left"  type="submit" value="Permisos del Sistema">
-                    <i class="material-icons left">vpn_key</i>PERMISOS DEL SISTEMA
-                </button>
-        </form><br><br>
-        <form action="/gestionUser/ver/">
-            <br><button id ="guar" class="btn blue darken-3 left" type="submit" value="Ver Usuarios">
-                    <i class="material-icons left">assignment_ind</i> VER USUARIOS
-                </button>
-        </form><br><br>
-        <form action="/gestionUser/modify/">
-            <br><button id ="guar" class="btn blue darken-3 left"  type="submit" value="Modificar Usuarios">
-                    <i class="material-icons left">create</i>MODIFICAR USUARIOS
-                </button>
-        </form><br><br>
-        <form action="/gestionUser/deshabilitar/">
-            <br><button id ="guar" class="btn blue darken-3 left"  type="submit" value="Deshabilitar Usuarios">
-                    <i class="material-icons left">person_outline</i> DESHABILITAR USUARIOS
-                </button>
-        </form><br><br>
-        <form action="/gestionUser/habilitar/">
-            <br><button id ="guar" class="btn blue darken-3 left" type="submit" value="Deshabilitar Usuarios">
-                    <i class="material-icons left">person</i> VOLVER A HABILITAR USUARIOS
-                </button>
-        </form><br>
-    </div>
     <script>
         filterSelection("all")
         function filterSelection(c) {
@@ -305,25 +263,6 @@
             div.style.opacity = "0";
             setTimeout(function(){ div.style.display = "none"; }, 600);
           }
-        }
-
-        function submitConf() {
-            if (confirm("¿Está seguro de agregar a éste usuario al sistema?"))
-              {
-                document.getElementById('formConf').submit();
-              }
-        }
-        function submitEnable() {
-            if (confirm("¿Está seguro de agregar a éste usuario al sistema?"))
-              {
-                document.getElementById('formEnable').submit();
-              }
-        }
-        function submitDes() {
-            if (confirm("¿Está seguro Remover al usuario del Sistema?")) {
-                document.getElementById('formDes').submit();
-            }
-
         }
     </script>
 
