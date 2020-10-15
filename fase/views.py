@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User, Group, Permission
-from proyecto.models import Proyecto, Fase, TipodeItem, Item, FaseUser, User, Rol, Relacion, LineaBase, Files, RoturaLineaBase, RoturaLineaBaseComprometida
+from proyecto.models import Proyecto, Fase, TipodeItem, Item, FaseUser, User, Rol, Relacion, LineaBase, Files, \
+    RoturaLineaBase, RoturaLineaBaseComprometida
 from guardian.shortcuts import assign_perm, remove_perm
 from proyecto.views import proyectoView, faseView
 import boto3
@@ -17,7 +18,8 @@ from django.core.mail import EmailMultiAlternatives
 import reversion
 from django.db import transaction
 import threading
-from fase.tasks import sendEmailViewFase
+from fase.tasks import sendEmailViewFase, sendEmailViewFaseSolicitud
+
 
 
 def gestionFase(request):
@@ -126,7 +128,7 @@ def faseCrear(request):
         proyecto = Proyecto.objects.get(id=proyectoid)
 
         """Verificar que el usuario sea el gerente del proyecto."""
-        if not (request.user.has_perm("is_gerente", proyecto) ):
+        if not (request.user.has_perm("is_gerente", proyecto)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
 
@@ -140,7 +142,7 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
         proyecto = Proyecto.objects.get(id=proyectoid)
         fase = Fase.objects.get(id=faseid)
         items = fase.items.exclude(estado="deshabilitado").order_by('id')
-        item9 = Item.objects.get(id=9)
+
         items_desarrollo = items.filter(estado="en desarrollo")
         items_pendiente = items.filter(estado="pendiente de aprobacion")
         items_aprobado = items.filter(estado="aprobado")
@@ -154,12 +156,13 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
                 items_LB_abierta.append(i)
         tipos = fase.tipoItem.all()
         return render(request, 'fase/FaseProyectoInicializado.html', {'proyecto': proyecto, 'fase': fase,
-                                                                      'items': items, 'tipos':tipos,
-                                                                      'items_desarrollo':items_desarrollo, 'items_pendiente':items_pendiente,
+                                                                      'items': items, 'tipos': tipos,
+                                                                      'items_desarrollo': items_desarrollo,
+                                                                      'items_pendiente': items_pendiente,
                                                                       'items_aprobado': items_aprobado,
-                                                                      'items_LB_cerrada':items_LB_cerrada,
-                                                                      'items_LB_abierta':items_LB_abierta,
-                                                                      'mensaje':mensaje})
+                                                                      'items_LB_cerrada': items_LB_cerrada,
+                                                                      'items_LB_abierta': items_LB_abierta,
+                                                                      'mensaje': mensaje})
 
 
 def faseUsers(request, faseid, proyectoid):
@@ -294,7 +297,7 @@ def faseModificar(request):
     """Actualizar descripcion de fase"""
     fase.descripcion = descripcion
     """Guardar"""
-    #fase._history_date = datetime.now()
+    # fase._history_date = datetime.now()
     fase.save()
 
     """Template a renderizar: gestionFase con parametro -> proyectoid, faseid"""
@@ -337,7 +340,7 @@ def faseDeshabilitar(request):
 
     """Establecer el estado de la fase como deshabilitada."""
     fase.estado = "deshabilitada"
-    #fase._history_date = datetime.now()
+    # fase._history_date = datetime.now()
     """Guardar"""
     fase.save()
     fases = proyecto.fases.all()
@@ -450,9 +453,9 @@ def FaseAddUser(request):
             print(c)
 
             """Asignar los permisos del rol al grupo, en la fase correspondiente"""
-            #assign_perm(c, grupo, fase)
+            # assign_perm(c, grupo, fase)
             """Asignar el grupo al usuario"""
-            #user.groups.add(grupo)
+            # user.groups.add(grupo)
         user.save()
         """Agregar asociacion al rol"""
         rol.faseUser.add(faseUser)
@@ -560,14 +563,14 @@ def faseRolAsignar(request, proyectoid, faseid, userid):
         codenames.append(p.codename)
 
     """Crear asociacion entre fase y usuario"""
-    #faseUser = FaseUser.objects.create(user=user, fase=fase)
+    # faseUser = FaseUser.objects.create(user=user, fase=fase)
 
     for c in codenames:
         """Asignar los permisos del rol al grupo, en la fase correspondiente"""
         assign_perm(c, user, fase)
         print(c)
         """Asignar el grupo al usuario"""
-    print(user.has_perm("change_fase"),fase)
+    print(user.has_perm("change_fase"), fase)
     user.save()
     """Agregar asociacion al rol"""
     rol.faseUser.add(faseUser)
@@ -576,7 +579,8 @@ def faseRolAsignar(request, proyectoid, faseid, userid):
         """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
         return redirect('faseUsers', faseid=faseid, proyectoid=proyectoid)
     elif proyecto.estado == "inicializado":
-        return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje="Rol asignado correctamente")
+        return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid,
+                        mensaje="Rol asignado correctamente")
 
 
 def faseRolRemover(request, proyectoid, faseid, userid):
@@ -626,7 +630,6 @@ def faseRolRemover(request, proyectoid, faseid, userid):
     """Rol a remover"""
     rol = Rol.objects.get(id=rolid)
 
-
     """Permisos del rol"""
     grupo = rol.perms
     permisos = grupo.permissions.all()
@@ -657,7 +660,7 @@ def faseRolRemover(request, proyectoid, faseid, userid):
 
     usuario.save()
     """Eliminar asociacion entre fase y usuario"""
-    #rol.faseUser.filter(user=usuario, fase=fase).delete()
+    # rol.faseUser.filter(user=usuario, fase=fase).delete()
     faseUserdelRol = FaseUser.objects.get(user=usuario, fase=fase)
 
     rol.faseUser.remove(faseUserdelRol)
@@ -671,7 +674,8 @@ def faseRolRemover(request, proyectoid, faseid, userid):
         """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
         return redirect('faseUsers', faseid=faseid, proyectoid=proyectoid)
     elif proyecto.estado == "inicializado":
-        return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje="Rol removido correctamente")
+        return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid,
+                        mensaje="Rol removido correctamente")
 
 
 def FaseGestionTipoItem(request, faseid, proyectoid):
@@ -731,13 +735,14 @@ def FaseAddTipoItem(request):
         tipoItem = request.POST.get('tipoItem')
         tipo = TipodeItem.objects.get(id=tipoItem)
         fase.tipoItem.add(tipo)
-        #fase._history_date = datetime.now()
+        # fase._history_date = datetime.now()
         fase.save()
         if proyecto.estado == "pendiente":
             """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
             return redirect('faseTipoItem', faseid=faseid, proyectoid=proyectoid)
 
         return redirect('faseTipoItem', faseid=faseid, proyectoid=proyectoid)
+
 
 def FaseRemoveTipoItem(request, proyectoid, faseid, tipoid):
     if request.method == 'GET':
@@ -763,7 +768,6 @@ def FaseRemoveTipoItem(request, proyectoid, faseid, tipoid):
             return redirect('faseTipoItem', faseid=faseid, proyectoid=proyectoid)
 
         return redirect('faseTipoItem', faseid=faseid, proyectoid=proyectoid)
-
 
 
 def fasesDeshabilitadas(request):
@@ -857,7 +861,8 @@ def itemCrear(request):
             """Agregar item a fase."""
             fase.items.add(item)
             """Redirigir a la vista de la fase correspondiente."""
-            return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje="Item creado correctamente")
+            return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid,
+                            mensaje="Item creado correctamente")
         else:
             """POST para seleccionar tipo de item"""
             """ID del proyecto correspondiente."""
@@ -1109,7 +1114,7 @@ def itemModificar(request):
             pues estos fueron eliminados por el usuario.
             """
             archivos_no_borrados.append(aa)
-    print("Archivos a borrar",archivos_borrados)
+    print("Archivos a borrar", archivos_borrados)
     print("Archivos a no borrar", archivos_no_borrados)
     for a in item.archivos:
         if not a in archivos_no_borrados:
@@ -1228,7 +1233,6 @@ def itemCambiarEstado(request):
                     name = u.user.username
                     sendEmailViewFase.delay(mail, name, item.nombre, fase.nombre)
 
-
         """Si el nuevo estado es en desarrollo."""
         if dato['estado'] == "en desarrollo":
             """Verificar que el usuario cuente con los permisos para asignar ese estado."""
@@ -1330,7 +1334,7 @@ def itemCambiarEstado(request):
         mensaje = "Estado actualizado correctamente."
         """Actualiza estado del item."""
         item.estado = dato['estado']
-        #item._history_date = datetime.now()
+        # item._history_date = datetime.now()
         """Guardar."""
         item.save()
 
@@ -1430,7 +1434,7 @@ def itemDeshabilitar(request):
 
         """Establece estado de item como deshabilitado."""
         item.estado = "deshabilitado"
-        #item._history_date = datetime.now()
+        # item._history_date = datetime.now()
         """Guardar."""
         item.save()
         """Redirige a la vista de la fase correspondiente."""
@@ -1808,7 +1812,6 @@ def itemAddRelacion(request):
 
             adj[int(iP.id)] = relaciones_por_item
 
-
         print(adj)
         """SI TIENE UN CICLO ELIMINAR RELACIONES Y REDIRIGIR A VISUALIZACION DE RELACIONES"""
         if isCyclicDisconnected(adj, V):
@@ -1930,8 +1933,9 @@ def faseGestionLineaBase(request):
         """Renderizar fase/faseGestionLineaBase.html"""
         return render(request, "fase/faseGestionLineaBase.html",
                       {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, 'crear_lb': crear_lb,
-                       'es_comite': es_comite, 'puede_solicitar':puede_solicitar,
-                       'lb_abierta':lb_abierta, 'lb_cerrada':lb_cerrada, 'lb_comprometida':lb_comprometida, 'lb_rota':lb_rota,
+                       'es_comite': es_comite, 'puede_solicitar': puede_solicitar,
+                       'lb_abierta': lb_abierta, 'lb_cerrada': lb_cerrada, 'lb_comprometida': lb_comprometida,
+                       'lb_rota': lb_rota,
                        })
 
 
@@ -1985,7 +1989,7 @@ def faseAddLineaBase(request):
             item = Item.objects.get(id=i)
             """Actualizar estado de item."""
             item.estado = "en linea base"
-            #item._history_date = datetime.now()
+            # item._history_date = datetime.now()
             """Guardar item."""
             item.save()
             """Agregar item a linea base."""
@@ -2143,7 +2147,7 @@ def lineaBaseAddItem(request):
             """Actualizar estado del item."""
             item.estado = "en linea base"
             """Actualizar history date del item."""
-            #item._history_date = datetime.now()
+            # item._history_date = datetime.now()
             """Guardar item."""
             item.save()
             """Agregar item a linea base."""
@@ -2195,7 +2199,7 @@ def lineaBaseRemoveItem(request, proyectoid, faseid, lineaBaseid, itemid):
         """Actualizar estado de item."""
         item_remover.estado = "aprobado"
         """Actualizar history date de item para version."""
-        #item_remover._history_date = datetime.now()
+        # item_remover._history_date = datetime.now()
         """Guardar item."""
         item_remover.save()
         """Obtener items de la linea base ordenados por id."""
@@ -2272,6 +2276,7 @@ def itemHistorial(request):
                        'item': item,
                        'campos': prueba, 'versions': versions})
 
+
 @transaction.atomic()
 @reversion.create_revision()
 def itemReversionar(request, proyectoid, faseid, itemid, history_date):
@@ -2305,14 +2310,14 @@ def itemReversionar(request, proyectoid, faseid, itemid, history_date):
             versions = Version.objects.get_for_object(item)
             total = len(versions)
             for f in versions:
-                verNum=verNum+1
+                verNum = verNum + 1
                 aux = str(f.revision.date_created)
                 if (aux == history_date):
                     print("yei")
                     break
                 else:
                     print("nou")
-            versions[verNum-1].revision.revert()
+            versions[verNum - 1].revision.revert()
             item.refresh_from_db()
 
             item.save()
@@ -2370,7 +2375,7 @@ def cerrarFase(request, proyectoid, faseid):
         fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
         fase_list = list(fasesProyecto)
         ultima_fase = fase_list.pop()
-        print("Ultimafase:",ultima_fase)
+        print("Ultimafase:", ultima_fase)
         cont = 0
 
         esPrimeraFase = False
@@ -2397,10 +2402,9 @@ def cerrarFase(request, proyectoid, faseid):
                     if relacion.tipo == "antecesor":
                         bandera_antecesor = True
 
-
         if esPrimeraFase == False:
             if int(ultima_fase.id) == int(fase.id):
-                if cerrar  and bandera:
+                if cerrar and bandera:
                     fase.estado = "cerrada"
                     fase.save()
                     return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
@@ -2419,16 +2423,11 @@ def cerrarFase(request, proyectoid, faseid):
 
         return redirect('faseConfinicializada', proyectoid=proyectoid, faseid=faseid)
 
-
         if cerrar == True:
             fase.estado = "cerrada"
             fase.save()
             mensaje = "Éxito! La fase se cerró correctamente."
             return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
-
-
-
-
 
 
 def itemCalculoImpacto(request):
@@ -2564,15 +2563,16 @@ def itemCalculoImpacto(request):
             itemsFase = fp.items.exclude(estado="deshabilitado").order_by('id')
             for i in itemsFase:
                 suma_total = suma_total + int(i.costo)
-        print("calculo imp",calculo)
-        print("total",suma_total)
-        porcentaje = float((calculo*100)/suma_total)
+        print("calculo imp", calculo)
+        print("total", suma_total)
+        porcentaje = float((calculo * 100) / suma_total)
         return render(request, 'item/itemCalculoImpacto.html',
                       {'faseid': faseid, 'proyectoid': proyectoid,
                        'item': itemCalculo,
                        'calculo': porcentaje, })
 
-def gestionRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, mensaje):
+
+def gestionRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, mensaje):
     if request.method == "GET":
         """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
@@ -2590,9 +2590,14 @@ def gestionRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, mensaje):
             es_comite = True
         puede_solicitar = request.user.has_perm("solicitar_roturaLineaBase", fase)
         return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
-                                                                'lineaBase': lineaBase, 'solicitudes': solicitudes,
-                                                                'es_comite': es_comite, 'puede_solicitar':puede_solicitar, 'mensaje':mensaje })
-def gestionRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid):
+                                                                        'lineaBase': lineaBase,
+                                                                        'solicitudes': solicitudes,
+                                                                        'es_comite': es_comite,
+                                                                        'puede_solicitar': puede_solicitar,
+                                                                        'mensaje': mensaje})
+
+
+def gestionRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid):
     if request.method == "GET":
         """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
@@ -2609,9 +2614,12 @@ def gestionRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid):
         if request.user in comite_miembros:
             es_comite = True
         return render(request, "fase/faseGestionRoturaLBComprometida.html", {'proyecto': proyecto, 'fase': fase,
-                                                                'lineaBase': lineaBase, 'solicitudes': solicitudes, 'es_comite': es_comite })
+                                                                             'lineaBase': lineaBase,
+                                                                             'solicitudes': solicitudes,
+                                                                             'es_comite': es_comite})
 
-def formRoturaLineaBase(request,proyectoid,faseid,lineaBaseid):
+
+def formRoturaLineaBase(request, proyectoid, faseid, lineaBaseid):
     if request.method == "GET":
         """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
@@ -2625,7 +2633,7 @@ def formRoturaLineaBase(request,proyectoid,faseid,lineaBaseid):
         """Obtener items de linea base."""
         items = lineaBase.items.all()
         return render(request, "fase/FormularioRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
-                                                                'lineaBase': lineaBase, 'items':items})
+                                                                       'lineaBase': lineaBase, 'items': items})
     if request.method == "POST":
         """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
@@ -2637,7 +2645,7 @@ def formRoturaLineaBase(request,proyectoid,faseid,lineaBaseid):
         descripcion = request.POST.get('descripcion')
         """Se crea un objeto de tipo Rotura de Linea Base"""
         solicitud = RoturaLineaBase.objects.create(solicitante=request.user, descripcion_solicitud=descripcion,
-                                                   fecha= datetime.now())
+                                                   fecha=datetime.now())
         """Recupera los items a modificar seleccionados por el usuario"""
         items_a_modificar = request.POST.getlist('items')
         for i in items_a_modificar:
@@ -2652,9 +2660,11 @@ def formRoturaLineaBase(request,proyectoid,faseid,lineaBaseid):
         mensaje = "Su solicitud se envió correctamente. El Comité de Control de Cambios decidirá romper o no la Línea Base."
         # VERIFICAR SI EL USUARIO QUE ENTRA A ESA PAGINA YA EMITIO O NO SU VOTO PARA NO MOSTRARLE ESE TEMPLATE
 
-        return redirect('gestionRoturaLineaBase', proyectoid=proyecto.id, faseid=fase.id, lineaBaseid=lineaBase.id, mensaje=mensaje)
+        return redirect('gestionRoturaLineaBase', proyectoid=proyecto.id, faseid=fase.id, lineaBaseid=lineaBase.id,
+                        mensaje=mensaje)
 
-def votacionRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
+
+def votacionRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid):
     if request.method == "GET":
         """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
@@ -2667,10 +2677,11 @@ def votacionRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
         lineaBase = LineaBase.objects.get(id=lineaBaseid)
         solicitud = RoturaLineaBase.objects.get(id=solicituid)
         return render(request, "fase/faseRoturaLineaBaseVotar.html", {'proyecto': proyecto, 'fase': fase,
-                                                                        'lineaBase': lineaBase,
-                                                                        'solicitud': solicitud,})
+                                                                      'lineaBase': lineaBase,
+                                                                      'solicitud': solicitud, })
 
-def AprobarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
+
+def AprobarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid):
     if request.method == "GET":
         """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
@@ -2748,7 +2759,7 @@ def AprobarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
                     en_revision_lb = []
                     for i in lineaBase.items.all():
                         i.estado = "en revision"
-                        #i._history_date = datetime.now()
+                        # i._history_date = datetime.now()
                         """Guardar"""
                         i.save()
                         en_revision.append(i)
@@ -2756,7 +2767,7 @@ def AprobarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
                             relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
                             if not relacionItem:
                                 r.estado = "en revision"
-                                #r._history_date = datetime.now()
+                                # r._history_date = datetime.now()
                                 """Guardar"""
                                 r.save()
                                 esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
@@ -2769,19 +2780,20 @@ def AprobarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
                                         lineaBaseItem.estado = "comprometida"
                                         r.estado = "en linea base"
                                         r.save()
-                                        solicitud = RoturaLineaBaseComprometida.objects.create(comprometida_estado="pendiente")
+                                        solicitud = RoturaLineaBaseComprometida.objects.create(
+                                            comprometida_estado="pendiente")
                                         solicitud.save()
                                         lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
                                         lineaBaseItem.save()
                                     if lineaBaseItem.estado == "comprometida":
-                                        solicitud = RoturaLineaBaseComprometida.objects.create(comprometida_estado="pendiente")
+                                        solicitud = RoturaLineaBaseComprometida.objects.create(
+                                            comprometida_estado="pendiente")
                                         solicitud.save()
                                         lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
                                         lineaBaseItem.save()
                                     if lineaBaseItem.estado == "abierta":
                                         lineaBaseItem.items.remove(r)
                                         lineaBaseItem.save()
-
 
                         print("EL INICIO DE LA CADENA PA")
                         print(en_revision)
@@ -2796,13 +2808,12 @@ def AprobarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
                                         if not r in en_revision:
                                             seguir = True
 
-
                         while seguir:
                             for i in en_revision:
                                 if not i in en_revision_lb:
                                     for r in i.relaciones.all():
                                         relacionItem = Relacion.objects.filter(item_from=r, item_to=i,
-                                                                          tipo="antecesor").exists()
+                                                                               tipo="antecesor").exists()
                                         if not relacionItem:
                                             if not r in en_revision:
                                                 r.estado = "en revision"
@@ -2817,14 +2828,14 @@ def AprobarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
                                                     """Si el estado de la linea base es cerrada."""
                                                     if lineaBaseItem.estado == "cerrada":
                                                         lineaBaseItem.estado = "comprometida"
-                                                        solicitud = RoturaLineaBaseComprometida.objects.create(comprometida_estado="pendiente")
+                                                        solicitud = RoturaLineaBaseComprometida.objects.create(
+                                                            comprometida_estado="pendiente")
                                                         solicitud.save()
                                                         lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
                                                         lineaBaseItem.save()
                                                     if lineaBaseItem.estado == "abierta":
                                                         lineaBaseItem.items.remove(r)
                                                         lineaBaseItem.save()
-
 
                             seguir = False
                             for i in en_revision:
@@ -2835,10 +2846,6 @@ def AprobarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
                                         if not relacionItem:
                                             if not r in en_revision:
                                                 seguir = True
-
-
-
-
 
                     mensaje = "Su voto se registro correctamente. Se aprobo la rotura de la Línea Base."
                     return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
@@ -2856,7 +2863,8 @@ def AprobarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
                 return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
                                                                                 'lineaBase': lineaBase,
                                                                                 'solicitudes': solicitudes,
-                                                                                'es_comite': es_comite, 'mensaje': mensaje})
+                                                                                'es_comite': es_comite,
+                                                                                'mensaje': mensaje})
         else:
             mensaje = " "
             # VERIFICAR SI EL USUARIO QUE ENTRA A ESA PAGINA YA EMITIO O NO SU VOTO PARA NO MOSTRARLE ESE TEMPLATE
@@ -2865,7 +2873,8 @@ def AprobarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
                                                                             'solicitudes': solicitudes,
                                                                             'es_comite': es_comite, 'mensaje': mensaje})
 
-def RechazarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
+
+def RechazarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid):
     if request.method == "GET":
         """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
@@ -3035,10 +3044,10 @@ def RechazarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
 
                 mensaje = "Su voto se registro correctamente. Se aprobo la rotura de la Línea Base."
                 return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
-                                                                                    'lineaBase': lineaBase,
-                                                                                    'solicitudes': solicitudes,
-                                                                                    'es_comite': es_comite,
-                                                                                    'mensaje': mensaje})
+                                                                                'lineaBase': lineaBase,
+                                                                                'solicitudes': solicitudes,
+                                                                                'es_comite': es_comite,
+                                                                                'mensaje': mensaje})
 
             else:
                 """Aún no votaron todos los miembros"""
@@ -3049,7 +3058,8 @@ def RechazarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
                 return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
                                                                                 'lineaBase': lineaBase,
                                                                                 'solicitudes': solicitudes,
-                                                                                'es_comite': es_comite, 'mensaje': mensaje})
+                                                                                'es_comite': es_comite,
+                                                                                'mensaje': mensaje})
         else:
             mensaje = " "
             # VERIFICAR SI EL USUARIO QUE ENTRA A ESA PAGINA YA EMITIO O NO SU VOTO PARA NO MOSTRARLE ESE TEMPLATE
@@ -3058,7 +3068,8 @@ def RechazarRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
                                                                             'solicitudes': solicitudes,
                                                                             'es_comite': es_comite, 'mensaje': mensaje})
 
-def votacionRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid):
+
+def votacionRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid):
     if request.method == "GET":
         """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
@@ -3081,10 +3092,13 @@ def votacionRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid):
         solicitud_romper = lineaBase.roturaLineaBaseComprometida.all()
         solicitud_romper = list(solicitud_romper)
         solicitud = solicitud_romper.pop()
-        return render(request, "fase/faseRoturaLineaBaseVotarComprometida.html", {'proyecto': proyecto, 'fase': fase,'lineaBase': lineaBase,
-                                                                                  'items_aprobados': items_aprobados,
-                                                                                  'items_en_revision': items_en_revision, 'solicitud':solicitud})
-def AprobarRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid,solicituid):
+        return render(request, "fase/faseRoturaLineaBaseVotarComprometida.html",
+                      {'proyecto': proyecto, 'fase': fase, 'lineaBase': lineaBase,
+                       'items_aprobados': items_aprobados,
+                       'items_en_revision': items_en_revision, 'solicitud': solicitud})
+
+
+def AprobarRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid, solicituid):
     if request.method == "GET":
         """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
@@ -3250,7 +3264,7 @@ def AprobarRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid,sol
 
                 lineasBase = fase.lineasBase.all()
                 return render(request, "fase/faseGestionLineaBase.html",
-                                  {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+                              {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
 
             else:
                 """Aún no votaron todos los miembros"""
@@ -3264,7 +3278,8 @@ def AprobarRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid,sol
             return render(request, "fase/faseGestionLineaBase.html",
                           {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
 
-def RechazarRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid, solicituid):
+
+def RechazarRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid, solicituid):
     if request.method == "GET":
         """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
@@ -3484,7 +3499,6 @@ def itemTrazabilidad(request):
 
         adj[int(itemTrazabilidad.id)] = hijos
 
-
         seguir = False
         for c in confirmados:
             confirmado = Item.objects.get(id=c)
@@ -3494,7 +3508,6 @@ def itemTrazabilidad(request):
                         if int(r.id) not in confirmados:
                             seguir = True
 
-
         while seguir:
             for c in confirmados:
                 confirmado = Item.objects.get(id=c)
@@ -3502,7 +3515,7 @@ def itemTrazabilidad(request):
                     if r in itemsFase:
                         if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="hijo").exists():
                             if int(r.id) not in confirmados:
-                                #print("confirmado", confirmado.id, "falta", r.id)
+                                # print("confirmado", confirmado.id, "falta", r.id)
                                 confirmados.append(int(r.id))
                                 adj[int(r.id)] = []
                                 adj[int(confirmado.id)].append(int(r.id))
@@ -3517,11 +3530,8 @@ def itemTrazabilidad(request):
                                 if int(r.id) not in confirmados:
                                     seguir = True
 
-
         """FIltrar fases del proyecto apropiadas."""
         fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
-
-
 
         """Aqui sigue el codigo normal de calculo de impacto."""
         for fp in fasesProyecto:
@@ -3538,7 +3548,6 @@ def itemTrazabilidad(request):
                             if Relacion.objects.filter(item_from_id=c, item_to=iF, tipo="antecesor").exists():
                                 adj[int(c)].append(int(iF.id))
 
-
                         if not int(iF.id) in confirmadosAux:
                             confirmadosAux.append(int(iF.id))
 
@@ -3551,8 +3560,7 @@ def itemTrazabilidad(request):
                                         adj[int(r.id)] = []
 
                         adj[int(iF.id)] = hijos
-                      #  adj[int(iF.id)] = confirmadosAux
-
+                    #  adj[int(iF.id)] = confirmadosAux
 
                 """Para relaciones indirectas."""
                 for iF in itemsFase:
@@ -3595,7 +3603,7 @@ def itemTrazabilidad(request):
                         lista_item.append(int(itemTrazabilidad.id))
                         adj[int(r.id)] = lista_item
 
-        #adj[int(itemTrazabilidad.id)] = padres
+        # adj[int(itemTrazabilidad.id)] = padres
 
         seguir = False
         for c in confirmados:
@@ -3621,7 +3629,6 @@ def itemTrazabilidad(request):
                                     lista_item = []
                                     lista_item.append(int(confirmado.id))
                                     adj[int(r.id)] = lista_item
-
 
                 """Volver a verificar"""
                 seguir = False
@@ -3654,9 +3661,7 @@ def itemTrazabilidad(request):
                                 else:
                                     lista_item = []
                                     lista_item.append(c)
-                                    adj[int(iF.id)]= lista_item
-
-
+                                    adj[int(iF.id)] = lista_item
 
                         if not int(iF.id) in confirmadosAux:
                             confirmadosAux.append(int(iF.id))
@@ -3674,7 +3679,7 @@ def itemTrazabilidad(request):
                                             lista_item.append(int(iF.id))
                                             adj[int(r.id)] = lista_item
 
-                     #   adj[int(iF.id)] = padres
+                    #   adj[int(iF.id)] = padres
                     #  adj[int(iF.id)] = confirmadosAux
 
                 """Para relaciones indirectas."""
@@ -3699,7 +3704,7 @@ def itemTrazabilidad(request):
                                                 lista_item.append(int(iF.id))
                                                 adj[int(r.id)] = lista_item
 
-                         #   adj[int(iF.id)] = padres
+                        #   adj[int(iF.id)] = padres
                         #  adj[int(iF.id)] = confirmadosAux
 
                 confirmados = confirmadosAux
@@ -3707,7 +3712,7 @@ def itemTrazabilidad(request):
 
         fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
         lista_items = []
-        for key,value in adj.items():
+        for key, value in adj.items():
             item_key = Item.objects.get(id=key)
             if not item_key in lista_items:
                 lista_items.append(item_key)
@@ -3718,14 +3723,13 @@ def itemTrazabilidad(request):
 
         relaciones = []
         for r in Relacion.objects.all():
-            if r.tipo == "antecesor" or r.tipo== "padre":
+            if r.tipo == "antecesor" or r.tipo == "padre":
                 relaciones.append(r)
 
-
-
-        return render(request, 'item/TrazabilidadItem.html',{'fasesProyecto': fasesProyecto, 'proyecto':proyecto,
-                                                             'lista_item': sorted(lista_items, key=lambda x: x.id,reverse=False),
-                                                             'relaciones':relaciones})
+        return render(request, 'item/TrazabilidadItem.html', {'fasesProyecto': fasesProyecto, 'proyecto': proyecto,
+                                                              'lista_item': sorted(lista_items, key=lambda x: x.id,
+                                                                                   reverse=False),
+                                                              'relaciones': relaciones})
 
 
 def itemVerDatos(request, itemid, faseid, proyectoid):
@@ -3745,3 +3749,26 @@ def itemVerDatos(request, itemid, faseid, proyectoid):
                       {'fase': fase, 'item': item, 'proyecto': proyecto, 'archivos': list(item.archivos),
                        'campos': zip(item.tipoItem.campo_extra,
                                      item.campo_extra_valores), })
+
+
+def solicitarCambioEstado(request, itemid, faseid, proyectoid):
+    if request.method == "GET":
+        fase = Fase.objects.get(id=faseid)
+        item = Item.objects.get(id=itemid)
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        # fuser = FaseUser.objects.filter(fase=faseid)
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        rolProyecto = proyecto.roles.all()
+        if proyecto.roles.filter(nombre="QA").exists():
+            for r in rolProyecto:
+                if r.nombre == "QA":
+                    rol = Rol.objects.get(id=r.id)
+        fuser = []
+        for fu in rol.faseUser.all():
+            fuser.append(fu)
+        for u in fuser:
+            mail = u.user.email
+            name = u.user.username
+            sendEmailViewFaseSolicitud.delay(mail, name, item.nombre, fase.nombre)
+
+    return render(request, "home.html")

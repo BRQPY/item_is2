@@ -160,4 +160,5 @@ urlpatterns = [
          viewsFase.RechazarRoturaLineaBaseComprometida, name="RechazarRoturaLineaBaseComprometida"),
     path('item/trazabilidad/',viewsFase.itemTrazabilidad),
     path('item/verDatos/itemid=<str:itemid>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', viewsFase.itemVerDatos, name="itemVerDatos"),
+    path('item/SolicitudCambio/itemid=<str:itemid>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', viewsFase.solicitarCambioEstado, name="SolicitudCambio"),
 ]
