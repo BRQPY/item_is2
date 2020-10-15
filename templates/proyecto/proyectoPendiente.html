@@ -191,7 +191,7 @@
                 </button>
                 <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
             </form>
-            <form action="/proyecto/proyectoComite/add/">
+            <form action="/proyecto/proyectoComite/proyectoid={{ proyecto.id }}/mensaje=''/">
                 <button type="submit"
                         class="btn blue darken-3 center"
                         title="Permite agregar o remover miembros del Comité de Control de Cambios"

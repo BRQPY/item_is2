@@ -1,32 +1,32 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Agregar Miembros al Comite</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/proyectoComiteAdd.css' %}">
-</head>
-<body>
-    <style> body{background-color: lavender }</style>
-    <form action="/proyecto/proyectoComite/">
-        <input type="submit" value="Atras" />
+
+{% block content %}
+    <form action="/proyecto/proyectoComite/proyectoid={{ proyectoid }}/mensaje=''/">
+        <button type="submit" class="waves-effect waves-teal btn-flat">
+            Volver a Gestión del Comité de Control de Cambios
+            <i class="material-icons dark blue-text left">keyboard_return</i>
+        </button>
         <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
     </form>
-    <section>
+    <div class="container">
         <form action="/proyecto/proyectoComite/add/" method="post">
             {% csrf_token %}
-            {{mensaje}}
-            <h2>Selecciona Miembros</h2>
-             <div class="form-check">
-                 {% for m in miembros %}
-                    <input class="form-check-input" type="checkbox" value={{m.id}} id="username" name="miembros">
-                    <label class="form-check-label" for="username">{{m.username}}</label>
-                 {% endfor %}
-                 <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-            </div>
-
-            <button type="submit"">Agregar Miembro al Comite</button>
+            <h3 style="text-align: center">Comité de Control de Cambios</h3>
+            <h5 style="text-align: center" class="grey-text">Panel para añadir miembros al Comité</h5><br>
+            <h6 style="text-align: left" class="grey-text">Seleccione a un usuario que desea agregar al Comité.</h6><br>
+            {% for m in miembros %}
+                <label>
+                    <input class="filled-in" type="radio" value={{m.id}} id="username" name="miembros">
+                    <span style="color:black">{{m.username}}</span>
+                </label>
+            {% endfor %}
+            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+            <br>
+            <button class="btn-small blue darken-3 right" type="submit">
+                <i class="material-icons left">person_add</i>
+                Agregar miembro
+            </button>
         </form>
-    </section>
-</body>
-</html>
+    </div>
+{% endblock %}

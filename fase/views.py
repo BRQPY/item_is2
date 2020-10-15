@@ -575,7 +575,7 @@ def faseRolAsignar(request, proyectoid, faseid, userid):
         """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
         return redirect('faseUsers', faseid=faseid, proyectoid=proyectoid)
     elif proyecto.estado == "inicializado":
-        return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
+        return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje="Rol asignado correctamente")
 
 
 def faseRolRemover(request, proyectoid, faseid, userid):
@@ -670,7 +670,7 @@ def faseRolRemover(request, proyectoid, faseid, userid):
         """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
         return redirect('faseUsers', faseid=faseid, proyectoid=proyectoid)
     elif proyecto.estado == "inicializado":
-        return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
+        return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje="Rol removido correctamente")
 
 
 def FaseGestionTipoItem(request, faseid, proyectoid):
@@ -856,7 +856,7 @@ def itemCrear(request):
             """Agregar item a fase."""
             fase.items.add(item)
             """Redirigir a la vista de la fase correspondiente."""
-            return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
+            return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje="Item creado correctamente")
         else:
             """POST para seleccionar tipo de item"""
             """ID del proyecto correspondiente."""
@@ -1918,9 +1918,20 @@ def faseGestionLineaBase(request):
         else:
             """Sino, setear bandera en false."""
             crear_lb = False
+        es_comite = False
+        if request.user in proyecto.comite.all():
+            es_comite = True
+        puede_solicitar = request.user.has_perm("solicitar_roturaLineaBase", fase)
+        lb_abierta = fase.lineasBase.filter(estado="abierta")
+        lb_cerrada = fase.lineasBase.filter(estado="cerrada")
+        lb_comprometida = fase.lineasBase.filter(estado="comprometida")
+        lb_rota = fase.lineasBase.filter(estado="rota")
         """Renderizar fase/faseGestionLineaBase.html"""
         return render(request, "fase/faseGestionLineaBase.html",
-                      {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, 'crear_lb': crear_lb})
+                      {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, 'crear_lb': crear_lb,
+                       'es_comite': es_comite, 'puede_solicitar':puede_solicitar,
+                       'lb_abierta':lb_abierta, 'lb_cerrada':lb_cerrada, 'lb_comprometida':lb_comprometida, 'lb_rota':lb_rota,
+                       })
 
 
 def consultarLineaBase(request, proyectoid, faseid, lineaBaseid):
@@ -2560,7 +2571,7 @@ def itemCalculoImpacto(request):
                        'item': itemCalculo,
                        'calculo': porcentaje, })
 
-def gestionRoturaLineaBase(request,proyectoid,faseid,lineaBaseid):
+def gestionRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, mensaje):
     if request.method == "GET":
         """Obtener proyecto."""
         proyecto = Proyecto.objects.get(id=proyectoid)
@@ -2576,7 +2587,27 @@ def gestionRoturaLineaBase(request,proyectoid,faseid,lineaBaseid):
         comite_miembros = proyecto.comite.all()
         if request.user in comite_miembros:
             es_comite = True
+        puede_solicitar = request.user.has_perm("solicitar_roturaLineaBase", fase)
         return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
+                                                                'lineaBase': lineaBase, 'solicitudes': solicitudes,
+                                                                'es_comite': es_comite, 'puede_solicitar':puede_solicitar, 'mensaje':mensaje })
+def gestionRoturaLineaBaseComprometida(request,proyectoid,faseid,lineaBaseid):
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Obtener fase."""
+        fase = Fase.objects.get(id=faseid)
+        if not (request.user.has_perm("ver_lineaBase", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
+        """Obtener linea base."""
+        lineaBase = LineaBase.objects.get(id=lineaBaseid)
+        solicitudes = lineaBase.roturaLineaBaseComprometida.all()
+        es_comite = False
+        comite_miembros = proyecto.comite.all()
+        if request.user in comite_miembros:
+            es_comite = True
+        return render(request, "fase/faseGestionRoturaLBComprometida.html", {'proyecto': proyecto, 'fase': fase,
                                                                 'lineaBase': lineaBase, 'solicitudes': solicitudes, 'es_comite': es_comite })
 
 def formRoturaLineaBase(request,proyectoid,faseid,lineaBaseid):
@@ -2616,18 +2647,11 @@ def formRoturaLineaBase(request,proyectoid,faseid,lineaBaseid):
         """Se agrega la solicitud a la linea base"""
         lineaBase.roturaslineasBase.add(solicitud)
         lineaBase.save()
-        solicitudes = lineaBase.roturaslineasBase.all()
-        es_comite = False
-        comite_miembros = proyecto.comite.all()
-        if request.user in comite_miembros:
-            es_comite = True
 
         mensaje = "Su solicitud se envió correctamente. El Comité de Control de Cambios decidirá romper o no la Línea Base."
         # VERIFICAR SI EL USUARIO QUE ENTRA A ESA PAGINA YA EMITIO O NO SU VOTO PARA NO MOSTRARLE ESE TEMPLATE
-        return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
-                                                                        'lineaBase': lineaBase,
-                                                                        'solicitudes': solicitudes,
-                                                                        'es_comite': es_comite, 'mensaje': mensaje})
+
+        return redirect('gestionRoturaLineaBase', proyectoid=proyecto.id, faseid=fase.id, lineaBaseid=lineaBase.id, mensaje=mensaje)
 
 def votacionRoturaLineaBase(request,proyectoid,faseid,lineaBaseid, solicituid):
     if request.method == "GET":

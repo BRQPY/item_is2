@@ -24,7 +24,7 @@ SECRET_KEY = 'lr-*05lo3)c4s!7!ubt+68i(^bq0&q4l1@hr54$#-pkek4^ecw'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-ALLOWED_HOSTS = ["itemis2.localhost","localhost"]
+ALLOWED_HOSTS = ["itemis2.localhost","localhost", "itemis2"]
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = None
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

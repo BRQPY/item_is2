@@ -37,13 +37,19 @@
                 </li>
             </ul>
         </div>
-        <form action="/fase/roturaLineaBase/votacion/aprobado/proyectoid={{ proyecto.id }}/faseid= {{ fase.id }}/lineaBaseid={{ lineaBase.id }}/solicituid={{ solicitud.id }}">
+        <form
+                action="/fase/roturaLineaBase/votacion/aprobado/proyectoid={{ proyecto.id }}/faseid= {{ fase.id }}/lineaBaseid={{ lineaBase.id }}/solicituid={{ solicitud.id }}"
+                onsubmit="return confirm('Está seguro de votar a favor de la rotura de la Linea Base?');"
+        >
             <button type="submit" class="btn btn-small green darken-1 right">
                 Aprobar Rotura de Línea Base
                 <i class="material-icons white-text left">check</i>
             </button>
         </form>
-        <form action="/fase/roturaLineaBase/votacion/rechazado/proyectoid={{ proyecto.id }}/faseid= {{ fase.id }}/lineaBaseid={{ lineaBase.id }}/solicituid={{ solicitud.id }}">
+        <form
+                action="/fase/roturaLineaBase/votacion/rechazado/proyectoid={{ proyecto.id }}/faseid= {{ fase.id }}/lineaBaseid={{ lineaBase.id }}/solicituid={{ solicitud.id }}"
+                onsubmit="return confirm('Está seguro de votar en contra de la rotura de la Linea Base?');"
+        >
             <button type="submit" class="btn btn-small red darken-1 left">
                 Rechazar Rotura de Línea Base
                 <i class="material-icons white-text left">close</i>

@@ -2,6 +2,38 @@
 {% load static %}
 
 {% block content %}
+    <style>
+        .filterDiv {
+            float: left;
+            width: 100%;
+            line-height: 20px;
+            text-align: left;
+            margin: 2px;
+            display: none;
+        }
+
+        .show {
+          display: block;
+        }
+
+        /* Style the buttons */
+        .btnItem {
+            border: none;
+            outline: none;
+            padding: 12px 16px;
+            background-color: #f1f1f1;
+            cursor: pointer;
+        }
+
+        .btnItem:hover {
+          background-color: #ddd;
+        }
+
+        .btnItem.active {
+          background-color: #039be5;
+          color: white;
+        }
+    </style>
     <form action="{%url 'faseConfinicializada' proyecto.id fase.id  %}">
         <button type="submit" class="waves-effect waves-teal btn-flat">
             Volver a la configuración de la fase {{ fase.nombre }}
@@ -31,84 +63,234 @@
                     <i class="material-icons white-text left">add_circle</i>
                 </button><br>
             {% endif %}
-
+    </div>
+    <div class="container" id="myBtnContainer">
+        <button class="btnItem active" onclick="filterSelection('all')"> Todas</button>
+        <button class="btnItem" onclick="filterSelection('abierta')">Abiertas</button>
+        <button class="btnItem" onclick="filterSelection('cerrada')"> Cerradas</button>
+        <button class="btnItem" onclick="filterSelection('comprometida')"> Comprometidas</button>
+        <button class="btnItem" onclick="filterSelection('rota')">Rotas</button>
+    </div>
+    <div class="container">
         {% if lineasBase %}
-            <div class="col s12 md6 x8">
+            <section class="section section-expenses">
                 <ul class="z-depth-1">
-                    {% for lb in lineasBase %}
-                        <li>
-                            <div class="card-panel z-depth-4 expense">
-                                <div class="row">
-                                    <div class="col 14 left">
-                                        <b>Nombre:</b>
-                                        {{lb.nombre}}
+                    <div class="filterDiv abierta">
+                        {% for lb in lb_abierta %}
+                            <li>
+                                <div class="card-panel" style= "border:1px solid #03a9f4;">
+                                    <div class="row">
+                                        <div class="col 14 left">
+                                            <b>Nombre:</b>
+                                            {{lb.nombre}}
+                                        </div>
+                                        {% if lb.estado == "abierta" %}
+                                            <div class="col 14 right">
+                                                <a href="{%url 'faseConfigLineaBase' proyecto.id fase.id lb.id%}"
+                                                   title="Añadir o remover ítems de la Línea Base"
+                                                >
+                                                    Administrar Línea Base
+                                                    <i class="material-icons blue-text left">settings</i>
+                                                </a>
+                                            </div>
+                                        {% endif %}
                                     </div>
-                                    {% if lb.estado == "abierta" %}
-                                        <div class="col 14 right">
-                                            <a href="{%url 'faseConfigLineaBase' proyecto.id fase.id lb.id%}"
-                                               title="Añadir o remover ítems de la Línea Base"
-                                            >
-                                                Administrar Línea Base
-                                                <i class="material-icons blue-text left">settings</i>
-                                            </a>
+                                    <div class="row">
+                                        <div class="col 14 left">
+                                            <b>Estado:</b>
+                                            {{lb.estado}}
                                         </div>
-                                    {% endif %}
-                                    {% if lb.estado == "cerrada" %}
-                                        <div class="col 14 right">
-                                            <a href="{%url 'gestionRoturaLineaBase' proyecto.id fase.id lb.id%}"
-                                               title="En una Línea Base Cerrada sólo se puede consultar sus ítems."
-                                               style="color: red"
-                                            >
-                                                Gestionar Rotura de Línea Base
-                                                <i class="material-icons red-text left">lock_open</i>
-                                            </a>
+                                        <div class="col 14 left">
+                                            <b>Creador:</b>
+                                            {{lb.creador}}
                                         </div>
-                                        <div class="col 14 right">
-                                            <a href="{%url 'consultarLineaBase' proyecto.id fase.id lb.id%}"
-                                               title="En una Línea Base Cerrada sólo se puede consultar sus ítems."
-                                            >
-                                                Consultar Línea Base
-                                                <i class="material-icons blue-text left">info_outline</i>
-                                            </a>
-                                        </div>
-                                    {% endif %}
-                                    {% if lb.estado == "comprometida" %}
-                                        <div class="col 14 right">
-                                            <a href="{%url 'votacionRoturaLineaBaseComprometida' proyecto.id fase.id lb.id%}"
-                                               title="En una Línea Base Cerrada sólo se puede consultar sus ítems."
-                                               style="color: red"
-                                            >
-                                                Gestionar Rotura de Línea Base
-                                                <i class="material-icons red-text left">lock_open</i>
-                                            </a>
-                                        </div>
-                                        <div class="col 14 right">
-                                            <a href="{%url 'consultarLineaBase' proyecto.id fase.id lb.id%}"
-                                               title="En una Línea Base Cerrada sólo se puede consultar sus ítems."
-                                            >
-                                                Consultar Línea Base
-                                                <i class="material-icons blue-text left">info_outline</i>
-                                            </a>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="row">
-                                    <div class="col 14 left">
-                                        <b>Estado:</b>
-                                        {{lb.estado}}
-                                    </div>
-                                    <div class="col 14 left">
-                                        <b>Creador:</b>
-                                        {{lb.creador}}
                                     </div>
                                 </div>
-                            </div>
-                        </li>
-                    {% endfor %}
+                            </li>
+                        {% endfor %}
+                    </div>
+                    <div class="filterDiv cerrada">
+                        {% for lbc in lb_cerrada %}
+                            <li>
+                                <div class="card-panel" style="border:2px solid #00b0ff ;">
+                                    <div class="row">
+                                        <div class="col 14 left">
+                                            <b>Nombre:</b>
+                                            {{lbc.nombre}}
+                                        </div>
+                                        {% if lbc.estado == "cerrada" %}
+                                            {% if puede_solicitar or es_comite %}
+                                                <div class="col 14 right">
+                                                    <a href="{%url 'gestionRoturaLineaBase' proyecto.id fase.id lbc.id 'd' %}"
+                                                       title="Gestionar rotura de la Línea Base."
+
+                                                    >
+                                                        Gestionar Rotura de Línea Base
+                                                        <i class="material-icons blue-text left">lock_open</i>
+                                                    </a>
+                                                </div>
+                                            {% endif %}
+                                            <div class="col 14 right">
+                                                <a href="{%url 'consultarLineaBase' proyecto.id fase.id lbc.id%}"
+                                                   title="En una Línea Base Cerrada sólo se puede consultar sus ítems."
+                                                >
+                                                    Consultar Línea Base
+                                                    <i class="material-icons blue-text left">info_outline</i>
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="row">
+                                        <div class="col 14 left">
+                                            <b>Estado:</b>
+                                            {{lbc.estado}}
+                                        </div>
+                                        <div class="col 14 left">
+                                            <b>Creador:</b>
+                                            {{lbc.creador}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </div>
+                    <div class="filterDiv comprometida">
+                        {% for c in lb_comprometida %}
+                            <li>
+                                <div class="card-panel" style="border:1px solid #ffd600;">
+                                    <div class="row">
+                                        <div class="col 14 left">
+                                            <b>Nombre:</b>
+                                            {{c.nombre}}
+                                        </div>
+                                        {% if c.estado == "comprometida" and es_comite  %}
+                                            <div class="col 14 right">
+                                                <a href="{%url 'gestionRoturaLineaBaseComprometida' proyecto.id fase.id c.id%}"
+                                                   title="Decidir sobre la rotura de la Línea Base."
+                                                >
+                                                    Gestionar Rotura de Línea Base
+                                                    <i class="material-icons blue-text left">lock_open</i>
+                                                </a>
+                                            </div>
+                                            <div class="col 14 right">
+                                                <a href="{%url 'consultarLineaBase' proyecto.id fase.id c.id%}"
+                                                   title="En una Línea Base Cerrada sólo se puede consultar sus ítems."
+                                                >
+                                                    Consultar Línea Base
+                                                    <i class="material-icons blue-text left">info_outline</i>
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="row">
+                                        <div class="col 14 left">
+                                            <b>Estado:</b>
+                                            {{c.estado}}
+                                        </div>
+                                        <div class="col 14 left">
+                                            <b>Creador:</b>
+                                            {{c.creador}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </div>
+                    <div class="filterDiv rota">
+                        {% for r in lb_rota %}
+                            <li>
+                                <div class="card-panel" style= "border:1px solid #e57373;">
+                                    <div class="row">
+                                        <div class="col 14 left">
+                                            <b>Nombre:</b>
+                                            {{r.nombre}}
+                                        </div>
+                                        {% if r.estado == "rota" %}
+                                            <div class="col 14 right">
+                                                <a href="{%url 'consultarLineaBase' proyecto.id fase.id r.id%}"
+                                                   title="En una Línea Base Cerrada sólo se puede consultar sus ítems."
+                                                >
+                                                    Consultar Línea Base
+                                                    <i class="material-icons blue-text left">info_outline</i>
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="row">
+                                        <div class="col 14 left">
+                                            <b>Estado:</b>
+                                            {{r.estado}}
+                                        </div>
+                                        <div class="col 14 left">
+                                            <b>Creador:</b>
+                                            {{r.creador}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </div>
                 </ul>
-            </div>
+            </section>
         {% else %}
             <h5>Aún no hay Lineas Base en esta fase :(</h5>
         {% endif %}
     </div>
+    <script>
+        filterSelection("all")
+        function filterSelection(c) {
+          var x, i;
+          x = document.getElementsByClassName("filterDiv");
+          if (c == "all") c = "";
+          for (i = 0; i < x.length; i++) {
+            w3RemoveClass(x[i], "show");
+            if (x[i].className.indexOf(c) > -1) w3AddClass(x[i], "show");
+          }
+        }
+
+        function w3AddClass(element, name) {
+          var i, arr1, arr2;
+          arr1 = element.className.split(" ");
+          arr2 = name.split(" ");
+          for (i = 0; i < arr2.length; i++) {
+            if (arr1.indexOf(arr2[i]) == -1) {element.className += " " + arr2[i];}
+          }
+        }
+
+        function w3RemoveClass(element, name) {
+          var i, arr1, arr2;
+          arr1 = element.className.split(" ");
+          arr2 = name.split(" ");
+          for (i = 0; i < arr2.length; i++) {
+            while (arr1.indexOf(arr2[i]) > -1) {
+              arr1.splice(arr1.indexOf(arr2[i]), 1);
+            }
+          }
+          element.className = arr1.join(" ");
+        }
+
+        // Add active class to the current button (highlight it)
+        var btnContainer = document.getElementById("myBtnContainer");
+        var btns = btnContainer.getElementsByClassName("btnItem");
+        for (var i = 0; i < btns.length; i++) {
+          btns[i].addEventListener("click", function(){
+            var current = document.getElementsByClassName("active");
+            current[0].className = current[0].className.replace(" active", "");
+            this.className += " active";
+          });
+        }
+        var close = document.getElementsByClassName("closebtn");
+        var i;
+
+        for (i = 0; i < close.length; i++) {
+          close[i].onclick = function(){
+            var div = this.parentElement;
+            div.style.opacity = "0";
+            setTimeout(function(){ div.style.display = "none"; }, 600);
+          }
+        }
+    </script>
 {% endblock%}
+
+
+

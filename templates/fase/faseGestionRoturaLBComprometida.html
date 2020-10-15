@@ -37,14 +37,6 @@
     <div class="container">
         <h4 style="text-align: center"> Linea Base {{ lineaBase.nombre }}</h4>
         <h5 style="text-align: center"> Listado de Solicitudes de Rotura</h5><br>
-        {% if puede_solicitar %}
-            <form action="/fase/roturaLineaBase/form/proyectoid={{ proyecto.id }}/faseid= {{ fase.id }}/lineaBaseid={{ lineaBase.id }}/">
-                <button type="submit" class="btn btn-small blue darken-1 right">
-                    Solicitar Rotura de Línea Base
-                    <i class="material-icons white-text left">add_circle</i>
-                </button>
-            </form><br>
-        {% endif %}
         {% if solicitudes %}
             <div class="col s12 md6 x8">
                 <ul class="z-depth-1">
@@ -53,12 +45,12 @@
                             <div class="card-panel z-depth-4 expense">
                                 <div class="row">
                                     <div class="col 14 left">
-                                        <b>Solicitante:</b>
-                                        {{s.solicitante}}
+                                        <b>Estado:</b>
+                                        {{s.comprometida_estado}}
                                     </div>
-                                    {% if es_comite and s.estado == "pendiente" %}
+                                    {% if es_comite and s.comprometida_estado == "pendiente" %}
                                         <div class="col 14 right">
-                                            <a href="{%url 'votacionRoturaLineaBase' proyecto.id fase.id lineaBase.id s.id%}"
+                                            <a href="{%url 'votacionRoturaLineaBaseComprometida' proyecto.id fase.id lineaBase.id%}"
                                                title="Votar para romper o no la Línea Base."
                                             >
                                                 Resolver rotura de Línea Base
@@ -66,16 +58,6 @@
                                             </a>
                                         </div>
                                     {% endif %}
-                                </div>
-                                <div class="row">
-                                    <div class="col 14 right">
-                                        <b>Fecha:</b>
-                                        {{s.fecha}}
-                                    </div>
-                                    <div class="col 14 left">
-                                        <b>Estado:</b>
-                                        {{s.estado}}
-                                    </div>
                                 </div>
                             </div>
                         </li>

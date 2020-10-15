@@ -632,7 +632,7 @@ def proyectoUserRemove(request, proyectoid, userid):
                                                           'cant_user': cant_user, })
 
 
-def proyectoComite(request):
+def proyectoComite(request, proyectoid, mensaje):
     """
        **proyectoComite:**
         Vista utilizada para mostrar Gestion de Comite
@@ -642,7 +642,7 @@ def proyectoComite(request):
         y que (indirectamente) haya iniciado sesion
     """
     """ID del proyecto"""
-    proyectoid = request.GET.get('proyectoid')
+    #proyectoid = request.GET.get('proyectoid')
     """Proyecto correspondiente"""
     proyecto = Proyecto.objects.get(id=proyectoid)
     """Verificar permiso necesario en el proyecto correspondiente"""
@@ -655,8 +655,20 @@ def proyectoComite(request):
 
     """Lista de miembros del comite para mostrar en el template"""
     comite = proyecto.comite.all()
+    agregar_mas_users = False
+    miembros_no_comite = proyecto.usuarios.exclude(is_active=False)
+    if int(len(comite)) < 3:
+        for m in miembros_no_comite:
+            if not m in comite:
+                """Setea en TRUE la bandera y corta el ciclo cuando encuentra hay al menos algun miembro del proyecto 
+                    que se pueda agregar al comite
+                """
+                agregar_mas_users = True
+                break;
+
     """Template a renderizar: proyectoComite.html con parametros -> proyectoid y comite de control de cambios"""
-    return render(request, 'proyecto/proyectoComite.html', {'proyectoid': proyectoid, 'comite': comite, })
+    return render(request, 'proyecto/proyectoComite.html', {'proyecto': proyecto, 'comite': comite,
+                                                            'agregar_mas_users': agregar_mas_users, 'mensaje': mensaje})
 
 
 def proyectoComiteAdd(request):
@@ -743,12 +755,15 @@ def proyectoComiteAdd(request):
                 assign_perm("ver_lineaBase", user, f)
                 assign_perm("view_fase", user, f)
 
-
+    if len(users) == 0:
+        mensaje="Error, no se añadio a ningún miembro al Comité."
+    else:
+        mensaje = "Se agregó correctamente al usuario dentro del Comité"
     """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
-    return redirect('proyectoView', id=proyectoid)
+    return redirect('Comite', proyectoid=proyectoid, mensaje=mensaje)
 
 
-def proyectoComiteRemove(request):
+def proyectoComiteRemove(request, proyectoid, userid):
     """
        **proyectoComiteRemove:**
         Vista utilizada para remover miembros
@@ -759,44 +774,21 @@ def proyectoComiteRemove(request):
     """
     """GET request, muestra el template correspondiente para remover miembros del comite."""
     if request.method == 'GET':
-        """ID del proyecto"""
-        proyectoid = request.GET.get('proyectoid')
+
 
         """Proyecto en el cual remover miembros del comite"""
         proyecto = Proyecto.objects.get(id=proyectoid)
-        """Verificar permiso necesario en el proyecto correspondiente"""
-        if not (request.user.has_perm("is_gerente", proyecto)):
-            return redirect('/permissionError/')
 
-        """Verifica que el proyecto no se encuentre cancelado"""
-        if proyecto.estado == "cancelado":
-            return redirect('proyectoView', id=proyectoid)
-        """Lista de miembros del comite"""
-        miembros = proyecto.comite.all()
-        """
-         Template a renderizar: proyectoComiteRemove.html con parametros ->
-         miembros del comite y proyectoid
-         """
-        return render(request, "proyecto/proyectoComiteRemove.html", {'miembros': miembros, 'proyectoid': proyectoid, })
+        """POST request, captura una lista de miembros para remover del comite"""
+        """Lista de miembros"""
+        user = User.objects.get(id=userid)
+        fases = proyecto.fases.all().exclude(estado="deshabilitada")
+        linea_base_norota = []
+        for f in fases:
+            for l in f.lineasBase.all().exclude(estado="rota"):
+                linea_base_norota.append(l)
+        solicitudes = []
 
-    """POST request, captura una lista de miembros para remover del comite"""
-    """Lista de miembros"""
-    users = request.POST.getlist('miembros')
-    """ID del proyecto"""
-    proyectoid = request.POST.get('proyectoid')
-    """Proyecto del cual remover los miembros del comite"""
-    proyecto = Proyecto.objects.get(id=proyectoid)
-    fases = proyecto.fases.all().exclude(estado="deshabilitada")
-    linea_base_norota = []
-    for f in fases:
-        for l in f.lineasBase.all().exclude(estado="rota"):
-            linea_base_norota.append(l)
-    solicitudes = []
-
-    for u in users:
-        """Usuario a remover del comite"""
-        user = User.objects.get(id=u)
-        """Remover usuario del comite"""
         proyecto.comite.remove(user)
         proyecto.save()
         """Remover permisos para aprobar rotura de linea base"""
@@ -806,43 +798,43 @@ def proyectoComiteRemove(request):
                 remove_perm("ver_lineaBase", user, f)
                 remove_perm("view_fase", user, f)
 
-        usuarios_votantes = []
-        for lb in linea_base_norota:
-            for s in lb.roturaslineasBase.all().filter(estado="pendiente"):
-                for v in s.votos_registrados.all():
-                    usuarios_votantes.append(int(v.id))
-                if int(user.id) in usuarios_votantes:
-                    posicion_user = usuarios_votantes.index(int(user.id))
-                    """Solo se puede remover los primeros dos votos, porque si hay 3 votos ya se cerró la votación"""
-                    if posicion_user == 0:
-                        s.voto_uno = s.voto_dos
-                        s.voto_dos= -1
-                        s.votos_registrados.remove(user)
-                        s.save()
-                    if posicion_user == 1:
-                        s.voto_dos = -1
-                        s.votos_registrados.remove(user)
-                        s.save()
-            usuarios_votantes_comprometida = []
-            for s in lb.roturaLineaBaseComprometida.all().filter(comprometida_estado="pendiente"):
-                print("Solicitud", s)
-                for v in s.registrados_votos_comprometida.all():
-                    print("Voto xdxdxd:",v)
-                    usuarios_votantes_comprometida.append(int(v.id))
-                if int(user.id) in usuarios_votantes_comprometida:
-                    posicion_user = usuarios_votantes_comprometida.index(int(user.id))
-                    """Solo se puede remover los primeros dos votos, porque si hay 3 votos ya se cerró la votación"""
-                    if posicion_user == 0:
-                        s.uno_voto_comprometida = s.dos_voto_comprometida
-                        s.dos_voto_comprometida= -1
-                        s.registrados_votos_comprometida.remove(user)
-                        s.save()
-                    if posicion_user == 1:
-                        s.dos_voto_comprometida = -1
-                        s.registrados_votos_comprometida.remove(user)
-                        s.save()
-    """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
-    return redirect('proyectoView', id=proyectoid)
+            usuarios_votantes = []
+            for lb in linea_base_norota:
+                for s in lb.roturaslineasBase.all().filter(estado="pendiente"):
+                    for v in s.votos_registrados.all():
+                        usuarios_votantes.append(int(v.id))
+                    if int(user.id) in usuarios_votantes:
+                        posicion_user = usuarios_votantes.index(int(user.id))
+                        """Solo se puede remover los primeros dos votos, porque si hay 3 votos ya se cerró la votación"""
+                        if posicion_user == 0:
+                            s.voto_uno = s.voto_dos
+                            s.voto_dos= -1
+                            s.votos_registrados.remove(user)
+                            s.save()
+                        if posicion_user == 1:
+                            s.voto_dos = -1
+                            s.votos_registrados.remove(user)
+                            s.save()
+                usuarios_votantes_comprometida = []
+                for s in lb.roturaLineaBaseComprometida.all().filter(comprometida_estado="pendiente"):
+                    print("Solicitud", s)
+                    for v in s.registrados_votos_comprometida.all():
+                        print("Voto xdxdxd:",v)
+                        usuarios_votantes_comprometida.append(int(v.id))
+                    if int(user.id) in usuarios_votantes_comprometida:
+                        posicion_user = usuarios_votantes_comprometida.index(int(user.id))
+                        """Solo se puede remover los primeros dos votos, porque si hay 3 votos ya se cerró la votación"""
+                        if posicion_user == 0:
+                            s.uno_voto_comprometida = s.dos_voto_comprometida
+                            s.dos_voto_comprometida= -1
+                            s.registrados_votos_comprometida.remove(user)
+                            s.save()
+                        if posicion_user == 1:
+                            s.dos_voto_comprometida = -1
+                            s.registrados_votos_comprometida.remove(user)
+                            s.save()
+        """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
+        return redirect('Comite', proyectoid=proyectoid ,mensaje="Se removió correctamente al usuario del Comité")
 
 
 def proyectoRol(request):
