@@ -143,6 +143,7 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
         items_desarrollo = items.filter(estado="en desarrollo")
         items_pendiente = items.filter(estado="pendiente de aprobacion")
         items_aprobado = items.filter(estado="aprobado")
+        items_revision = items.filter(estado="en revision")
         items_LB_cerrada = []
         items_LB_abierta = []
         for i in items.filter(estado="en linea base"):
@@ -158,7 +159,8 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
                                                                       'items_aprobado': items_aprobado,
                                                                       'items_LB_cerrada':items_LB_cerrada,
                                                                       'items_LB_abierta':items_LB_abierta,
-                                                                      'mensaje':mensaje})
+                                                                      'mensaje': mensaje,
+                                                                      'items_revision':items_revision})
 
 
 def faseUsers(request, faseid, proyectoid):
@@ -205,13 +207,17 @@ def faseUsers(request, faseid, proyectoid):
             agregar_mas_users = False
         else:
             agregar_mas_users = True
+
+        """Verificar que exista por lo menos un rol para agregar dentro de la fase"""
+        hay_roles = proyecto.roles.exists()
         """Template a renderizar: fase.html con parametros -> fase, proyecto, items de fase."""
         return render(request, 'fase/faseUsers.html', {'fase': fase, 'proyecto': proyecto,
                                                        'userRol': zip(user_sin_repetidos, roles_por_user,
                                                                       cant_roles_por_user),
                                                        'cant_user': cant_user,
                                                        'cant_roles_proyecto': cant_roles_proyecto,
-                                                       'agregar_mas_users': agregar_mas_users})
+                                                       'agregar_mas_users': agregar_mas_users,
+                                                       'hay_roles':hay_roles})
     return render(request, "fase/faseUsers.html")
 
 

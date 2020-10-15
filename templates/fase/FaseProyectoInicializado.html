@@ -217,6 +217,43 @@
                             </li>
                         {% endfor %}
                     </div>
+                    <div class="filterDiv en revision">
+                        {% for i in items_revision %}
+                            <li>
+                                <div class="card-panel" style="border:1.5px solid #ef6c00;">
+                                    <div class="row">
+                                        <div class="col l4 left">
+                                            <b>{{ i.nombre }}</b>
+                                        </div>
+                                        {% if  fase.estado != "cerrada" %}
+                                            <div class="col l4 right">
+                                                <a href="{%url 'itemConfigurar' i.id fase.id proyecto.id%}"
+                                                   title="Ver y/o modificar datos del ítem, relacionar, reversionar."
+                                                >
+                                                    Gestionar Ítem
+                                                    <i class="material-icons dark blue-text left">settings</i>
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="row">
+                                        <div class="col 1">
+                                            <b>Estado:</b>
+                                            {{ i.estado}}
+                                        </div>
+                                        <div class="col l4 left">
+                                            <b>Costo en horas:</b>
+                                            {{ i.costo }}h
+                                        </div>
+                                        <div class="col 3">
+                                            <b>Tipo de ítem:</b>
+                                            {{ i.tipoItem.nombreTipo}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </div>
                     <div class="filterDiv abierta">
                         {% for i in items_LB_abierta %}
                             <li>

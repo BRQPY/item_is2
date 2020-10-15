@@ -467,10 +467,13 @@ def faseView(request, faseid, proyectoid):
             roles_por_user.append(cadena)
 
     cant_user = len(user_sin_repetidos)
+    hay_roles = proyecto.roles.exists()
+    hay_tipos_item = proyecto.tipoItem.exists()
     """Template a renderizar: fase.html con parametros -> fase, proyecto, items de fase."""
     return render(request, 'fase/fase.html', {'fase': fase, 'proyecto': proyecto, 'items': items,
                                               'userRol': zip(user_sin_repetidos, roles_por_user),
-                                              'cant_user': cant_user,
+                                              'cant_user': cant_user, 'hay_roles':hay_roles,
+                                              'hay_tipos_item':hay_tipos_item,
                                               })
 
 
