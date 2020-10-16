@@ -17,7 +17,7 @@ then
 fi
 echo "Se ha creado itemdev"
 
-source is2virtual/bin/activate
+#source is2virtual/bin/activate
 PGPASSWORD="postgres"
 psql -h localhost -p 5432 -U postgres -d itemdev -f db.backup
 echo "devbd se cargó exitosamente."
