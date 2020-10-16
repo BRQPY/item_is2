@@ -860,7 +860,7 @@ def itemCrear(request):
                 item.archivos.append(f)
             """Guardar."""
             item.save()
-            reversion.set_comment("holibb...")
+
 
             """Agregar item a fase."""
             fase.items.add(item)
