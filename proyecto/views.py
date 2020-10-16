@@ -576,7 +576,7 @@ def proyectoUserRemove(request, proyectoid, userid):
         cuente con los permisos de gerente del proyecto
         y que (indirectamente) haya iniciado sesion
     """
-    '''
+
     """GET request, muestra el template correspondiente para remover miembros del proyecto"""
     if request.method == 'GET':
         """ID del proyecto"""
@@ -607,7 +607,7 @@ def proyectoUserRemove(request, proyectoid, userid):
         """
         return render(request, "proyecto/proyectoUserRemove.html", {'usuarios': user, 'proyectoid': proyectoid,
                                                                     'eliminar':eliminable})
-    '''
+
     """POST request, captura la lista de usuarios para remover del proyecto"""
     """Lista de usuarios a remover"""
     # users = request.POST.getlist('users')
@@ -625,7 +625,7 @@ def proyectoUserRemove(request, proyectoid, userid):
         """Si el usuario era miembro del Comite de Control de Cambio. removerlo."""
         proyecto.comite.remove(user)
         """Remover permiso para aprobar la rotura de linea base."""
-        remove_perm("aprobar_rotura_lineaBase", user, proyecto)
+        remove_perm("break_lineaBase", user, proyecto)
     usuarios = proyecto.usuarios.all()
     cant_user = len(usuarios)
     return render(request, 'proyecto/proyectoUser.html', {'proyecto': proyecto, 'usuarios': usuarios,
@@ -774,11 +774,11 @@ def proyectoComiteRemove(request, proyectoid, userid):
     """
     """GET request, muestra el template correspondiente para remover miembros del comite."""
     if request.method == 'GET':
-
-
         """Proyecto en el cual remover miembros del comite"""
         proyecto = Proyecto.objects.get(id=proyectoid)
-
+        """Verificar permiso necesario en el proyecto correspondiente"""
+        if not (request.user.has_perm("is_gerente", proyecto)):
+            return redirect('/permissionError/')
         """POST request, captura una lista de miembros para remover del comite"""
         """Lista de miembros"""
         user = User.objects.get(id=userid)
@@ -793,7 +793,7 @@ def proyectoComiteRemove(request, proyectoid, userid):
         proyecto.save()
         """Remover permisos para aprobar rotura de linea base"""
         if proyecto.estado == "inicializado":
-            assign_perm("break_lineaBase", user, proyecto)
+            remove_perm("break_lineaBase", user, proyecto)
             for f in proyecto.fases.all().exclude(estado="deshabilitado"):
                 remove_perm("ver_lineaBase", user, f)
                 remove_perm("view_fase", user, f)
