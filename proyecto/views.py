@@ -131,7 +131,7 @@ def proyectoInicializar(request):
     return redirect('proyectoView', id=proyectoid)
 
 
-def proyectoCancelar(request):
+def proyectoCancelar(reoquest):
     """
                **proyectoCancelar:**
                 Vista utilizada para cancelar proyectos.
