@@ -34,6 +34,18 @@
           color: white;
         }
     </style>
+    {% if mensaje == "La Línea Base se creo correctamente." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "La Línea Base se cerro correctamente." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
     <form action="{%url 'faseConfinicializada' proyecto.id fase.id  %}">
         <button type="submit" class="waves-effect waves-teal btn-flat">
             Volver a la configuración de la fase {{ fase.nombre }}

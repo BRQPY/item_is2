@@ -62,29 +62,49 @@
                 <div class="col s5 m3">
                     <div class="card">
                         <div class="card-image" style= "border:1px solid #03a9f4;">
-                            <a href="#" onclick="document.getElementById('formTrazabilidad').submit()">
-                                <img src="{% static 'img/Trazabilidad.jpg' %}" alt="trazabilidaditem" width="80" height="180">
-                                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-                                <input  type="hidden" value={{item.id}} id="itemIdTrazabilidad" name="itemIdTrazabilidad">
-                            </a>
+                            {% if puede_calculo_impacto %}
+                                <a href="#" onclick="document.getElementById('formTrazabilidad').submit()">
+                                    <img src="{% static 'img/Trazabilidad.jpg' %}" alt="trazabilidaditem" width="80" height="180">
+                                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                                    <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                                    <input  type="hidden" value={{item.id}} id="itemIdTrazabilidad" name="itemIdTrazabilidad">
+                                </a>
+                            {% else %}
+                                <a
+                                        href="#"
+                                        title="Usted no cuenta con el permiso para obtener la trazabilidad del ítem."
+                                        style="cursor: default"
+                                >
+                                    <img src="{% static 'img/Trazabilidad.jpg' %}" alt="trazabilidaditem" width="80" height="180">
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
             </form>
             <form action="/item/calculoImpacto/" id="formImpacto">
-            <div class="col s5 m3">
-                <div class="card">
-                    <div class="card-image" style= "border:1px solid #03a9f4;">
-                        <a href="#" onclick="document.getElementById('formImpacto').submit()">
-                            <img src="{% static 'img/calculodeimpacto .jpg' %}" alt="calculodeimpacto" width="80" height="180">
-                            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-                            <input  type="hidden" value={{item.id}} id="itemIdCalculo" name="itemIdCalculo">
-                        </a>
+                <div class="col s5 m3">
+                    <div class="card">
+                        <div class="card-image" style= "border:1px solid #03a9f4;">
+                            {% if puede_calculo_impacto %}
+                                <a href="#" onclick="document.getElementById('formImpacto').submit()">
+                                    <img src="{% static 'img/calculodeimpacto .jpg' %}" alt="calculodeimpacto" width="80" height="180">
+                                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                                    <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                                    <input  type="hidden" value={{item.id}} id="itemIdCalculo" name="itemIdCalculo">
+                                </a>
+                            {% else %}
+                                <a
+                                        href="#"
+                                        title="Usted no cuenta con el permiso para obtener el Cálculo de Impacto del."
+                                        style="cursor: default"
+                                >
+                                    <img src="{% static 'img/calculodeimpacto .jpg' %}" alt="calculodeimpacto" width="80" height="180">
+                                </a>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
-            </div>
             </form>
             <form action="/item/history/" id="formHistorial">
                 <div class="col s5 m3">

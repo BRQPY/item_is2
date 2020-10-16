@@ -8,6 +8,13 @@
             <i class="material-icons dark blue-text left">keyboard_return</i>
         </button>
     </form>
+     <form action="{%url 'SolicitudCambio' item.id faseid proyectoid%}">
+        <button type="submit" class="waves-effect waves-teal btn-flat">
+            Solicitar cambio de Estado
+            <i class="material-icons dark blue-text left">keyboard_return</i>
+        </button>
+    </form>
+
 	<div class="container">
         {%if proyecto.estado != "cancelado"%}
             {% if item.estado != "en linea base" %}

@@ -54,10 +54,10 @@ def proyectoCrear(request):
         """Guardar"""
         proyecto.save()
         #Envio de Correo al gerente del proyecto
-        #mail = gerente.email
-        #name = gerente.username
-        #messages.success(request, "Permisos asignados exitosamente!")
-        #sendEmailViewProyecto.delay(mail, name, proyecto.nombre,0)
+        mail = gerente.email
+        name = gerente.username
+        messages.success(request, "Permisos asignados exitosamente!")
+        sendEmailViewProyecto.delay(mail, name, proyecto.nombre,0)
         """
         #Vista a redirigir: homeView"""
         return redirect("/home/")
@@ -840,7 +840,7 @@ def proyectoComiteRemove(request, proyectoid, userid):
         return redirect('Comite', proyectoid=proyectoid ,mensaje="Se removió correctamente al usuario del Comité")
 
 
-def proyectoRol(request):
+def proyectoRol(request, proyectoid, mensaje):
     """
        **proyectoRol:**
         Vista utilizada para mostrar Gestion de Roles en el proyecto.
@@ -848,7 +848,7 @@ def proyectoRol(request):
         y que (indirectamente) haya iniciado sesion
     """
     """ID del proyecto"""
-    proyectoid = request.GET.get('proyectoid')
+    #proyectoid = request.GET.get('proyectoid')
     """Proyecto correspondiente"""
     proyecto = Proyecto.objects.get(id=proyectoid)
     """Verificar permiso necesario en el proyecto correspondiente"""
@@ -865,7 +865,7 @@ def proyectoRol(request):
     Template a renderizar: proyectoRol.html con parametros -> peroyectoid
     y roles del proyecto
     """
-    return render(request, 'proyecto/proyectoRol.html', {'proyecto': proyecto, 'roles': roles, })
+    return render(request, 'proyecto/proyectoRol.html', {'proyecto': proyecto, 'roles': roles,'mensaje':mensaje })
 
 
 def proyectoRolCrear(request):
@@ -1005,7 +1005,8 @@ def proyectoRolCrear(request):
         proyecto.roles.add(rol)
         roles = proyecto.roles.all()
         """Template a renderizar: gestion Proyecto.html con parametro -> proyectoid"""
-        return render(request, 'proyecto/proyectoRol.html', {'proyecto': proyecto, 'roles': roles, })
+        mensaje= "Rol creado correctamente."
+        return redirect('ProyectoRol', proyectoid=proyectoid, mensaje=mensaje)
     else:
         """GET request, muestra el template correspondiente para la creacion del rol"""
         """ID Proyecto"""
@@ -1219,7 +1220,8 @@ def proyectoRolModificar(request, proyectoid, rolid):
         rol.save()
         roles = proyecto.roles.all()
         """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
-        return render(request, 'proyecto/proyectoRol.html', {'proyecto': proyecto, 'roles': roles, })
+        mensaje = "Rol modificado correctamente."
+        return redirect('ProyectoRol', proyectoid=proyectoid, mensaje=mensaje)
 
 
 def proyectoRolEliminar(request, proyectoid, rolid):
@@ -1276,7 +1278,8 @@ def proyectoRolEliminar(request, proyectoid, rolid):
     proyecto.roles.remove(rol)
 
     """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
-    return render(request, 'proyecto/proyectoRol.html', {'proyecto': proyecto, 'roles': roles, })
+    mensaje = "Rol removido correctamente."
+    return redirect('ProyectoRol', proyectoid=proyectoid, mensaje=mensaje)
 
 
 def crear_tipo_form(request):

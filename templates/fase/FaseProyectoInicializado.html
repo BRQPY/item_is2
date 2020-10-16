@@ -35,12 +35,42 @@
         }
     </style>
 
-            {% if mensaje == "Éxito! La fase se cerró correctamente." %}
-                <div class="exito_mensaje" >
-                  <span class="closebtn">&times;</span>
-                  <strong> {{ mensaje }}</strong>
-                </div>
-            {% endif %}
+    {% if mensaje == "La Fase se cerro correctamente." %}
+        <div class="exito_mensaje" >
+            <span class="closebtn">&times;</span>
+            <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "Error! La Fase no se pudo cerrar. La fase debe poseer al menos un item relacionado con la fase siguiente y todos sus ítems deben pertenecer a una Línea Base Cerrada." %}
+        <div class="alert_message" >
+            <span class="closebtn">&times;</span>
+            <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "Item creado correctamente." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "El ítem fue modificado correctamente." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "El estado del Ítem fue actualizado correctamente." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "Error, ya existe un ítem con ese nombre." %}
+        <div class="alert_message" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
     <div class="container"><br>
         <div style="position: relative;">
             <div style="position: absolute; left: 0; top: 0; text-align: left">
@@ -99,7 +129,7 @@
         <button class="btnItem" onclick="filterSelection('desarrollo')">Desarrollo</button>
         <button class="btnItem" onclick="filterSelection('pendiente')"> Pendientes</button>
         <button class="btnItem" onclick="filterSelection('aprobado')"> Aprobados</button>
-        <button class="btnItem" onclick="filterSelection('en revisión')">En revisión</button>
+        <button class="btnItem" onclick="filterSelection('en revision')">En revisión</button>
         <button class="btnItem" onclick="filterSelection('abierta')"> Línea Base abierta</button>
         <button class="btnItem" onclick="filterSelection('cerrada')"> Línea Base cerrada</button>
     </div>

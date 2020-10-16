@@ -2,6 +2,24 @@
 {% load static %}
 
 {% block content %}
+    {% if mensaje == "Rol creado correctamente." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "Rol modificado correctamente." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "Rol removido correctamente." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
     {% if proyecto.estado == "pendiente" %}
         <form action="/proyecto/proyectoVer/proyectoid={{proyecto.id}}">
              <button type="submit" class="waves-effect waves-teal btn-flat">
@@ -80,4 +98,16 @@
         {% endif %}
 
 	</div>
+    <script>
+        var close = document.getElementsByClassName("closebtn");
+        var i;
+
+        for (i = 0; i < close.length; i++) {
+          close[i].onclick = function(){
+            var div = this.parentElement;
+            div.style.opacity = "0";
+            setTimeout(function(){ div.style.display = "none"; }, 600);
+          }
+        }
+    </script>
 {% endblock%}

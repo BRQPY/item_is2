@@ -78,10 +78,10 @@ def confUserView(request, userid):
         usuario = User.objects.get(id=userid)
         usuario.user_permissions.add(permiso)
         usuario.save()
-        #mail = usuario.email
-        #name = usuario.username
-        #messages.success(request, "Permisos asignados exitosamente!")
-        #sendEmailView.delay(mail, name)
+        mail = usuario.email
+        name = usuario.username
+        messages.success(request, "Permisos asignados exitosamente!")
+        sendEmailView.delay(mail, name)
         mensaje = "Usuario agregado correctamente al sistema."
 
         """Template a renderizar gestionUser.html"""
