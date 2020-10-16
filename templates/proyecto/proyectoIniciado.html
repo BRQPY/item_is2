@@ -25,8 +25,17 @@
             </div>
         </div>
         <br>
-        <h3 style="text-align: center">{{ proyecto.nombre }}</h3>
-        <h5 style="text-align: left" class="bold grey-text">Fases del Proyecto</h5>
+        {% if proyecto.estado == "finalizado" %}
+            <h3 style="text-align: center">
+                {{ proyecto.nombre }}
+            </h3>
+            <h5 style="text-align: center; color:#028839"><b>Proyecto Finalizado</b></h5><br>
+            <h5 style="text-align: left" class="bold grey-text">Fases del Proyecto</h5>
+        {% else %}
+            <h3 style="text-align: center">{{ proyecto.nombre }}</h3>
+            <h5 style="text-align: left" class="bold grey-text">Fases del Proyecto</h5>
+        {% endif %}
+
     </div>
     <div class="container">
         <div class="row">
@@ -55,7 +64,7 @@
             {%endif%}
         </div>
         <br><br>
-        {%if proyecto.estado != "cancelado"%}
+        {%if proyecto.estado == "inicializado"%}
             <form action="/proyecto/proyectoCancelar/">
                 <button type="submit" class="btn-small red darken-3 right">
                     Cancelar Proyecto

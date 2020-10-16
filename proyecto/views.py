@@ -131,7 +131,7 @@ def proyectoInicializar(request):
     return redirect('proyectoView', id=proyectoid)
 
 
-def proyectoCancelar(reoquest):
+def proyectoCancelar(request):
     """
                **proyectoCancelar:**
                 Vista utilizada para cancelar proyectos.
@@ -319,11 +319,15 @@ def gestionProyecto(request):
     """Solicitar permiso asociado al proyecto correspondiente"""
     if not (request.user.has_perm("view_proyecto", proyecto)):
         return redirect('/permissionError/')
-
+    fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+    finalizar = True
+    for f in fasesProyecto:
+        if not f.estado == "cerrada":
+            finalizar = False
+            break
     """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
     return render(request, 'proyecto/ProyectoInicializadoConfig.html',
-                  {'proyecto': proyecto, 'fases': proyecto.fases.all(),
-                   'proyecto': proyecto, })
+                  {'proyecto': proyecto, 'fases': proyecto.fases.all(), 'finalizar':finalizar})
 
 
 def proyectoModificar(request):
@@ -1558,3 +1562,20 @@ def remover_tipo_de_item(request, proyectoid, tipoid):
         return render(request, "proyecto/gestionartipodeitem.html",
                       {'proyecto': proyecto, 'tipos_modificable': tipos_modificable,
                        'tipos_no_modificable': tipos_no_modificable, })
+
+def ProyectoFinalizar(request, proyectoid):
+    if request.method == "GET":
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+        finalizar = True
+        for f in fasesProyecto:
+            if not f.estado == "cerrada":
+                finalizar = False
+                break
+
+        if finalizar:
+            proyecto.estado = "finalizado"
+            proyecto.save()
+
+        return redirect('proyectoView', id=proyectoid)
+

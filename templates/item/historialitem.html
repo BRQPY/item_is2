@@ -61,79 +61,34 @@
                     Version
                     <i class="material-icons blue-text left">update</i>
                 </h8>
-
-                 {% for field_name, field_value in i.field_dict.items %}
-                    <p></p>{{ field_name }} : {{ field_value }}<p>
-                {% endfor %}
-
                 <i class="material-icons blue-text left"></i>
             </button>
             <div class="panel">
                 <section class="DescripcionProyecto">
-                    <p style="font-size:18px; padding-left: 50px">
-                        <div class="col s12 md6 xl3">
-                            <div class="card-panel">
+                    <div class="col s12 md6 xl3">
+                        <div class="card-panel">
+                            {% for field_name, field_value in i.field_dict.items %}
                                 <div class="row">
                                     <div class="col l4 left">
-                                        <b>Nombre:</b>  {{ i.nombre }}
+                                        <b>{{ field_name }}</b>  {{ field_value }}
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col l4 left">
-                                        <b>Observacion:</b>   {{ i.observacion }}
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col l4 left">
-                                        <b>Estado:</b> {{i.estado}}
-                                    </div>
-                                    <div class="col l4 left">
-                                        <b>Costo:</b>  {{ i.costo }}h
-                                    </div>
-                                    <div class="col l4 left">
-                                        <b>Fecha:</b>  {{ i.fecha }}
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    {%for key, value in campos.items %}
-                                            <div class="col l4 left">
-                                                <b>{{key}}:</b>  {{value}}
-                                            </div>
-                                    {%endfor%}
-                                </div>
-                                <div class="row">
-                                    <div class="col l4 left">
-                                        <b>Archivos cargados dentro del ítem:</b>
-                                    </div>
-                                </div>
-                                {% if i.archivos %}
-                                    {% for a in i.archivos %}
-                                        <div class="row">
-                                            <div class="col l4 left">
-                                                <i class="material-icons dark black-text left">insert_drive_file</i>
-                                                {{ a }}
-                                            </div>
-                                        </div>
-                                    {% endfor %}
-                                {% else %}
-                                    <h8>El ítem no cuenta con archivos.</h8>
-                                {% endif %}
-                            </div>
+                            {% endfor %}
                         </div>
-                        {% if item.estado == "en desarrollo" %}
-                            <form action="{%url 'itemRev'  proyectoid faseid item.id i.revision.date_created %}"
-                                  onsubmit="return confirm('Está seguro de volver a esta versión del ítem?');"
+                    </div>
+                    {% if item.estado == "en desarrollo" %}
+                        <form action="{%url 'itemRev'  proyectoid faseid item.id i.revision.date_created %}"
+                              onsubmit="return confirm('Está seguro de volver a esta versión del ítem?');"
+                        >
+                            <button
+                                    type="submit" class="btn btn-small blue darken-5 right"
+                                    title="Volver a ésta versión del ítem"
                             >
-                                <button
-                                        type="submit" class="btn btn-small blue darken-5 right"
-                                        title="Volver a ésta versión del ítem"
-                                >
-                                    Reversionar
-                                    <i class="material-icons white-text left">autorenew</i>
-                                </button><br>
-                            </form>
-                        {% endif %}
-                    </p>
+                                Reversionar
+                                <i class="material-icons white-text left">autorenew</i>
+                            </button><br>
+                        </form>
+                    {% endif %}
                 </section>
             </div>
        {% endfor %}

@@ -149,11 +149,13 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
         items_LB_cerrada = []
         items_LB_abierta = []
         for i in items.filter(estado="en linea base"):
-            lineaBaseItem = LineaBase.objects.get(items__id=i.id)
-            if lineaBaseItem.estado == "cerrada":
-                items_LB_cerrada.append(i)
-            else:
-                items_LB_abierta.append(i)
+            lb_no_rota = fase.lineasBase.exclude(estado="rota")
+            for lb in lb_no_rota:
+                if i in lb.items.all():
+                    if lb.estado == "cerrada":
+                        items_LB_cerrada.append(i)
+                    else:
+                        items_LB_abierta.append(i)
         tipos = fase.tipoItem.all()
         return render(request, 'fase/FaseProyectoInicializado.html', {'proyecto': proyecto, 'fase': fase,
                                                                       'items': items, 'tipos': tipos,
@@ -456,7 +458,7 @@ def FaseAddUser(request):
             """Asignar los permisos del rol al grupo, en la fase correspondiente"""
             assign_perm(c, user, fase)
             """Asignar el grupo al usuario"""
-            print(c)
+
 
             """Asignar los permisos del rol al grupo, en la fase correspondiente"""
             # assign_perm(c, grupo, fase)
@@ -489,7 +491,7 @@ def FaseRemoveUser(request, proyectoid, faseid, userid):
             for fu in fasesUser_rol:
                 if fu.fase == fase and fu.user == usuario:
                     roles_del_user.append(r)
-        print(roles_del_user)
+
         for ru in roles_del_user:
             """Eliminar asociacion entre fase y usuario"""
             ru.faseUser.filter(user=usuario, fase=fase).delete()
@@ -574,9 +576,9 @@ def faseRolAsignar(request, proyectoid, faseid, userid):
     for c in codenames:
         """Asignar los permisos del rol al grupo, en la fase correspondiente"""
         assign_perm(c, user, fase)
-        print(c)
+
         """Asignar el grupo al usuario"""
-    print(user.has_perm("change_fase"), fase)
+
     user.save()
     """Agregar asociacion al rol"""
     rol.faseUser.add(faseUser)
@@ -647,7 +649,7 @@ def faseRolRemover(request, proyectoid, faseid, userid):
         for fu in fasesUserRol:
             if fu.fase == fase and fu.user == usuario:
                 roles_usuario.append(r)
-    print(roles_usuario)
+
     roles_usuario.remove(rol)
     codenames = []
     for p in permisos:
@@ -1111,7 +1113,7 @@ def itemModificar(request):
     """
     doc = request.FILES.getlist("file[]")
     archivos_borrados = request.POST.getlist('archivo')
-    print("Archivos a borrar", archivos_borrados)
+
     archivos_no_borrados = []
     for aa in archivos_borrados:
         if not aa == "":
@@ -1120,8 +1122,7 @@ def itemModificar(request):
             pues estos fueron eliminados por el usuario.
             """
             archivos_no_borrados.append(aa)
-    print("Archivos a borrar", archivos_borrados)
-    print("Archivos a no borrar", archivos_no_borrados)
+
     for a in item.archivos:
         if not a in archivos_no_borrados:
             item.archivos.remove(a)
@@ -1654,10 +1655,10 @@ def itemRelacionesRemover(request, itemid, item_rm, faseid, proyectoid):
             relaciones_dos.delete()
             """Redirigir a la vista itemVerRelaciones."""
             return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid,
-                            mensaje=' ')
+                            mensaje='La relación se removió correctamente.')
 
         """Redirigir a la vista itemVerRelaciones sin romper la relacion."""
-        return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid, mensaje=' ')
+        return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid, mensaje='Error. No se pudo remover la relación.')
 
 
 @transaction.atomic()
@@ -1820,7 +1821,7 @@ def itemAddRelacion(request):
 
             adj[int(iP.id)] = relaciones_por_item
 
-        print(adj)
+
         """SI TIENE UN CICLO ELIMINAR RELACIONES Y REDIRIGIR A VISUALIZACION DE RELACIONES"""
         if isCyclicDisconnected(adj, V):
             relaciones_uno = Relacion.objects.get(item_from=itemActual, item_to=itemRelacion)
@@ -1832,7 +1833,7 @@ def itemAddRelacion(request):
         """SINO MANTENER RELACIONES Y REDIRIGIR A LA VISTA DE RELACIONES."""
 
         return redirect('itemVerRelaciones', itemid=itemActual.id, faseid=faseid, proyectoid=proyectoid,
-                        mensaje=' ')
+                        mensaje='La relación se añadio correctamente.')
 
 
 """Funcion para agregar Edge"""
@@ -2320,10 +2321,9 @@ def itemReversionar(request, proyectoid, faseid, itemid, history_date):
                 verNum = verNum + 1
                 aux = str(f.revision.date_created)
                 if (aux == history_date):
-                    print("yei")
+
                     break
-                else:
-                    print("nou")
+
             versions[verNum - 1].revision.revert()
             item.refresh_from_db()
 
@@ -2382,7 +2382,7 @@ def cerrarFase(request, proyectoid, faseid):
         fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
         fase_list = list(fasesProyecto)
         ultima_fase = fase_list.pop()
-        print("Ultimafase:", ultima_fase)
+
         cont = 0
 
         esPrimeraFase = False
@@ -2650,8 +2650,7 @@ def itemCalculoImpacto(request):
                         #  adj[int(iF.id)] = confirmadosAux
                 """Actualizar como confirmados de la fase anterior a los confirmados de la fase, antes de pasar a la sgte fase."""
                 confirmados = confirmadosAux
-        print(adj)
-        print(calculo)
+
         """Auxiliar para la suma total del proyecto"""
         suma_total = 0
         """Recorrer fases del proyecto"""
@@ -2663,8 +2662,7 @@ def itemCalculoImpacto(request):
                 """Aumentar la suma total de costos"""
                 suma_total = suma_total + int(i.costo)
 
-        print("calculo imp", calculo)
-        print("total", suma_total)
+
         """Obtener porcentaje mediante la suma total y el calculo de impacto del item"""
 
         porcentaje = round(float((calculo*100)/suma_total), 2)
@@ -3012,9 +3010,7 @@ def AprobarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid)
                                         lineaBaseItem.items.remove(r)
                                         lineaBaseItem.save()
 
-                        print("EL INICIO DE LA CADENA PA")
-                        print(en_revision)
-                        print("ELfin del INICIO DE LA CADENA PA")
+
                         """Verificar si el algoritmo debe seguir"""
                         seguir = False
                         """Recorrer los items en revision"""
@@ -3282,9 +3278,7 @@ def RechazarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid
                                         lineaBaseItem.items.remove(r)
                                         lineaBaseItem.save()
 
-                        print("EL INICIO DE LA CADENA PA")
-                        print(en_revision)
-                        print("ELfin del INICIO DE LA CADENA PA")
+
 
                         """Verificar si el algoritmo debe seguir"""
                         seguir = False
@@ -3604,9 +3598,7 @@ def AprobarRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid,
                                         """Guardar"""
                                         lineaBaseItem.save()
 
-                        print("EL INICIO DE LA CADENA PA")
-                        print(en_revision)
-                        print("ELfin del INICIO DE LA CADENA PA")
+
 
                         """Verificar si el algoritmo debe seguir"""
                         seguir = False
@@ -3656,8 +3648,7 @@ def AprobarRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid,
 
                             """Verificar si el algoritmo debe continuar"""
                             seguir = False
-                            print("FEROZ CADENA PA")
-                            print(en_revision)
+
                             """Recorrer items en revision"""
                             for i in en_revision:
                                 """Si no esta en linea base"""
@@ -3861,9 +3852,7 @@ def RechazarRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid
                                         """Guardar"""
                                         lineaBaseItem.save()
 
-                        print("EL INICIO DE LA CADENA PA")
-                        print(en_revision)
-                        print("ELfin del INICIO DE LA CADENA PA")
+
                         """Verificar si el algoritmo debe seguir"""
                         seguir = False
                         """Recorrer los items en revision"""
@@ -3912,8 +3901,7 @@ def RechazarRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid
 
                             """Verificar si el algoritmo debe continuar"""
                             seguir = False
-                            print("FEROZ CADENA PA")
-                            print(en_revision)
+
                             """Recorrer items en revision"""
                             for i in en_revision:
                                 """Si no esta en linea base"""
@@ -4010,7 +3998,7 @@ def itemTrazabilidad(request):
                     if r in itemsFase:
                         if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="hijo").exists():
                             if int(r.id) not in confirmados:
-                                # print("confirmado", confirmado.id, "falta", r.id)
+
                                 confirmados.append(int(r.id))
                                 adj[int(r.id)] = []
                                 adj[int(confirmado.id)].append(int(r.id))
@@ -4116,7 +4104,7 @@ def itemTrazabilidad(request):
                     if r in itemsFase:
                         if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="padre").exists():
                             if int(r.id) not in confirmados:
-                                # print("confirmado", confirmado.id, "falta", r.id)
+
                                 confirmados.append(int(r.id))
                                 if int(r.id) in adj.keys():
                                     adj[int(r.id)].append(int(confirmado.id))
@@ -4203,7 +4191,7 @@ def itemTrazabilidad(request):
                         #  adj[int(iF.id)] = confirmadosAux
 
                 confirmados = confirmadosAux
-        print(adj)
+
 
         fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
         lista_items = []
@@ -4224,7 +4212,7 @@ def itemTrazabilidad(request):
         return render(request, 'item/TrazabilidadItem.html', {'fasesProyecto': fasesProyecto, 'proyecto': proyecto,
                                                               'lista_item': sorted(lista_items, key=lambda x: x.id,
                                                                                    reverse=False),
-                                                              'relaciones': relaciones})
+                                                              'relaciones': relaciones, 'item':itemTrazabilidad, 'faseid':faseid})
 
 
 def itemVerDatos(request, itemid, faseid, proyectoid):

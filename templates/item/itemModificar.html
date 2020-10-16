@@ -8,19 +8,13 @@
             <i class="material-icons dark blue-text left">keyboard_return</i>
         </button>
     </form>
-     <form action="{%url 'SolicitudCambio' item.id faseid proyectoid%}">
-        <button type="submit" class="waves-effect waves-teal btn-flat">
-            Solicitar cambio de Estado
-            <i class="material-icons dark blue-text left">keyboard_return</i>
-        </button>
-    </form>
+
 
 	<div class="container">
         {%if proyecto.estado != "cancelado"%}
             {% if item.estado != "en linea base" %}
                 {% if item.estado == "en desarrollo" %}
                     <section>
-
                             <form action="/item/itemCambiarEstado/">
                                 <div>
                                     <h5 style="text-align: left" class="grey-text">Estado:</h5>
@@ -190,11 +184,17 @@
                                     </button>
                                 </div>
                             </form>
-                        {%endif%}
+                        {%else%}
+                            <form action="{%url 'SolicitudCambio' item.id faseid proyectoid%}">
+                                <button type="submit" class="btn-small blue darken-3 left">
+                                    Solicitar cambio de Estado
+                                    <i class="material-icons dark white-text left">email</i>
+                                </button>
+                            </form>
+                        {% endif %}
                     {% endif %}
                 {% endif %}
                 {% if item.estado == "en revision" %}
-                    {{ desarrolloPermiso }}
                     <form action="/item/itemCambiarEstado/">
                         <div>
                             <select id="estado" name="estado" class="browser-default">

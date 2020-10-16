@@ -1185,7 +1185,7 @@ class TestViews(TestCase):
         self.assertEquals(item2 in item.relaciones.all(), True, "Se elimino la relacion.")
         self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
         self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
-            fase_dos.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + '%20' + '/',
+            fase_dos.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + 'Error.%20No%20se%20pudo%20remover%20la%20relaci%C3%B3n.' + '/',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido a la vista esperada.")
 
@@ -1256,7 +1256,7 @@ class TestViews(TestCase):
         self.assertEquals(item2 in item.relaciones.all(), True, "Se elimino la relacion.")
         self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
         self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
-            fase_dos.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + '%20' + '/',
+            fase_dos.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + 'Error.%20No%20se%20pudo%20remover%20la%20relaci%C3%B3n.' + '/',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido a la vista esperada.")
 
@@ -1328,7 +1328,7 @@ class TestViews(TestCase):
         self.assertEquals(item2 in item.relaciones.all(), False, "No se elimino la relacion.")
         self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
         self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
-            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + '%20' + '/',
+            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + 'La%20relaci%C3%B3n%20se%20removi%C3%B3%20correctamente.' + '/',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido a la vista esperada.")
 
@@ -1397,7 +1397,7 @@ class TestViews(TestCase):
         self.assertEquals(item2 in item.relaciones.all(), False, "No se elimino la relacion.")
         self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
         self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
-            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + '%20' + '/',
+            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + 'La%20relaci%C3%B3n%20se%20removi%C3%B3%20correctamente.' + '/',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido a la vista esperada.")
 
@@ -1469,7 +1469,7 @@ class TestViews(TestCase):
         self.assertEquals(item2 in item.relaciones.all(), False, "No se elimino la relacion.")
         self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
         self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
-            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + '%20' + '/',
+            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + 'La%20relaci%C3%B3n%20se%20removi%C3%B3%20correctamente.' + '/',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido a la vista esperada.")
 
@@ -2034,7 +2034,7 @@ class TestViews(TestCase):
         self.assertEquals(item in item2.relaciones.all(), True, "No se ha establecido la relacion en item destino.")
         self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
         self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
-            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + '%20' + '/',
+            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + 'La%20relaci%C3%B3n%20se%20a%C3%B1adio%20correctamente.' + '/',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido a la vista esperada.")
 
