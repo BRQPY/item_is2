@@ -1564,18 +1564,39 @@ def remover_tipo_de_item(request, proyectoid, tipoid):
                        'tipos_no_modificable': tipos_no_modificable, })
 
 def ProyectoFinalizar(request, proyectoid):
+    """
+         **ProyectoFinalizar:**
+         View para finalizar el proyecto. Es necesario que el usuario
+         sea gerente del proyecto y que (indirectamente) haya iniciado
+         sesion.
+    """
     if request.method == "GET":
+        """Obtener proyecto"""
         proyecto = Proyecto.objects.get(id=proyectoid)
+        """Verificar permiso necesario en el proyecto correspondiente"""
+        if not (request.user.has_perm("is_gerente", proyecto)):
+            """Redireccionar al no contar con los permisos"""
+            return redirect('/permissionError/')
+        """Obtener fases del proyecto"""
         fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
+        """Verificar que el proyecto pueda ser finalizado"""
         finalizar = True
+        """Recorrer fases del proyecto"""
         for f in fasesProyecto:
+            """Si la fase no esta cerrada"""
             if not f.estado == "cerrada":
+                """No es posible finalizar el proyecto"""
                 finalizar = False
+                """Romper ciclo"""
                 break
 
+        """Si es posible finalizar el proyecto"""
         if finalizar:
+            """Actualizar estado"""
             proyecto.estado = "finalizado"
+            """Guardar"""
             proyecto.save()
 
+        """Redireccionar a vista de proyecto"""
         return redirect('proyectoView', id=proyectoid)
 
