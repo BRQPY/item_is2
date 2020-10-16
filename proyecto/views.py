@@ -704,12 +704,6 @@ def proyectoComiteAdd(request):
                 """Agregar usuarios al comite"""
                 miembros.append(u)
 
-                """Notificar a los miembros del comite"""
-                mail = u.email
-                name = u.username
-                messages.success(request, "Permisos asignados exitosamente!")
-                sendEmailViewProyecto.delay(mail, name, proyecto.nombre,1)
-
 
         """
         Template a renderizar: proyectoComiteAdd.html con parametros -> 
@@ -748,6 +742,10 @@ def proyectoComiteAdd(request):
         user = User.objects.get(id=u)
         """Agregar miembro al Comite"""
         proyecto.comite.add(user)
+        """envio de notificacion"""
+        mail = user.email
+        name = user.username
+        sendEmailViewProyecto.delay(mail, name, proyecto.nombre, 1)
         """Agregar el permiso para aprobar rotura de linea base"""
         if proyecto.estado == "inicializado":
             assign_perm("break_lineaBase", user, proyecto)
@@ -758,6 +756,7 @@ def proyectoComiteAdd(request):
     if len(users) == 0:
         mensaje="Error, no se añadio a ningún miembro al Comité."
     else:
+        """Notificar a los miembros del comite"""
         mensaje = "Se agregó correctamente al usuario dentro del Comité"
     """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
     return redirect('Comite', proyectoid=proyectoid, mensaje=mensaje)
