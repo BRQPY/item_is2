@@ -65,17 +65,17 @@ do
             
             echo
             echo "Procederemos a cargar los requerimientos del proyecto a tu entorno virtual."
-            pip install -r requirements.txt ||{
-                pwd
-                echo "Ocurrió un error al cargar los requerimientos";
-                exit;
-            }
+            #pip install -r requirements.txt ||{
+            #    pwd
+            #   echo "Ocurrió un error al cargar los requerimientos";
+            #    exit;
+            #}
             
             echo
             echo "Tu entorno virtual ya está listo."
             echo "Poblando Base de Datos"
-            #chmod +x devbdconf.sh
-            #sudo -u postgres ./devbdconf.sh
+            chmod +x devbdconf.sh
+            sudo -u postgres ./devbdconf.sh
             echo "Guardando cambios como migraciones"
             python manage.py makemigrations
             echo "Migrando .."
