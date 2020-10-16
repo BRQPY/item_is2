@@ -21,7 +21,7 @@
     {% endif %}
     <div class="container">
         <h5 style="text-align: center"><b>Usuarios miembros de la Fase y sus roles</b></h5>
-        {% if agregar_mas_users %}
+        {% if agregar_mas_users and hay_roles %}
             <form action="/fase/addUser/">
                 <button type="submit" class="btn btn-small blue darken-1 right">
                     Añadir Usuario a la fase

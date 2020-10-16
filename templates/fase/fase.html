@@ -57,21 +57,42 @@
             </div>
         </div>
         <h5 style="text-align: left"><b>Opciones de Configuración de Fase</b></h5><br>
-
-        <form action="/fase/gestionTipoItem/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/">
-            <button type="submit" class="btn btn-small blue darken-2 left">
+        {% if hay_tipos_item %}
+            <form action="/fase/gestionTipoItem/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/">
+                <button type="submit" class="btn btn-small blue darken-2 left">
+                    Gestionar Tipos de Item
+                    <i class="material-icons white-text left">settings</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+             </form>
+        {% else %}
+            <button
+                    title="El proyecto aún no cuenta con Tipos de Ítem para asignar a la Fase."
+                    style="cursor: default"
+                    class="btn btn-small #eeeeee grey lighten-3 black-text left"
+            >
                 Gestionar Tipos de Item
                 <i class="material-icons white-text left">settings</i>
             </button>
-            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-         </form>
-        <form action="/fase/faseUsers/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/">
-            <button type="submit" class="btn btn-small blue darken-2 right">
+        {% endif %}
+        {% if hay_roles %}
+            <form action="/fase/faseUsers/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/">
+                <button type="submit" class="btn btn-small blue darken-2 right">
+                    Gestionar Usuarios de la fase
+                    <i class="material-icons white-text left">settings</i>
+                </button>
+             </form><br>
+        {% else %}
+            <button
+                    title="El proyecto aún no cuenta con roles para asignar a los usuarios dentro de la Fase."
+                    style="cursor: default"
+                    class="btn btn-small #eeeeee grey lighten-3 black-text right"
+            >
                 Gestionar Usuarios de la fase
                 <i class="material-icons white-text left">settings</i>
-            </button>
-         </form><br>
+            </button><br>
+        {% endif %}
 
     </div>
 {% endblock%}

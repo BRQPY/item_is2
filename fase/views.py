@@ -145,6 +145,7 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
         items_desarrollo = items.filter(estado="en desarrollo")
         items_pendiente = items.filter(estado="pendiente de aprobacion")
         items_aprobado = items.filter(estado="aprobado")
+        items_revision = items.filter(estado="en revision")
         items_LB_cerrada = []
         items_LB_abierta = []
         for i in items.filter(estado="en linea base"):
@@ -159,9 +160,10 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
                                                                       'items_desarrollo': items_desarrollo,
                                                                       'items_pendiente': items_pendiente,
                                                                       'items_aprobado': items_aprobado,
-                                                                      'items_LB_cerrada': items_LB_cerrada,
-                                                                      'items_LB_abierta': items_LB_abierta,
-                                                                      'mensaje': mensaje})
+                                                                      'items_LB_cerrada':items_LB_cerrada,
+                                                                      'items_LB_abierta':items_LB_abierta,
+                                                                      'mensaje': mensaje,
+                                                                      'items_revision':items_revision})
 
 
 def faseUsers(request, faseid, proyectoid):
@@ -208,13 +210,17 @@ def faseUsers(request, faseid, proyectoid):
             agregar_mas_users = False
         else:
             agregar_mas_users = True
+
+        """Verificar que exista por lo menos un rol para agregar dentro de la fase"""
+        hay_roles = proyecto.roles.exists()
         """Template a renderizar: fase.html con parametros -> fase, proyecto, items de fase."""
         return render(request, 'fase/faseUsers.html', {'fase': fase, 'proyecto': proyecto,
                                                        'userRol': zip(user_sin_repetidos, roles_por_user,
                                                                       cant_roles_por_user),
                                                        'cant_user': cant_user,
                                                        'cant_roles_proyecto': cant_roles_proyecto,
-                                                       'agregar_mas_users': agregar_mas_users})
+                                                       'agregar_mas_users': agregar_mas_users,
+                                                       'hay_roles':hay_roles})
     return render(request, "fase/faseUsers.html")
 
 
@@ -835,9 +841,9 @@ def itemCrear(request):
                 con parametros -> proyectoid, faseid, tipos de item, 
                 seleccion de tipo de item y mensaje de error.
                 """
-                return render(request, "item/itemCrear.html",
-                              {'proyectoid': proyectoid, 'faseid': faseid, 'tipos': tipos, 'select': seleccion,
-                               'mensaje': "Lo sentimos, el nombre ya pertenece a otro item en la fase."})
+                mensaje = "Error, ya existe un ítem con ese nombre."
+                """Redirigir a la vista de la fase correspondiente."""
+                return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
 
             """Creacion del item con los datos proveidos por el usuario."""
             item = Item.objects.create(tipoItem=obj, nombre=dato['nombre'], fecha=dato['fecha'],
@@ -858,9 +864,9 @@ def itemCrear(request):
 
             """Agregar item a fase."""
             fase.items.add(item)
+            mensaje="Item creado correctamente."
             """Redirigir a la vista de la fase correspondiente."""
-            return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid,
-                            mensaje="Item creado correctamente")
+            return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid,mensaje=mensaje)
         else:
             """POST para seleccionar tipo de item"""
             """ID del proyecto correspondiente."""
@@ -1017,11 +1023,13 @@ def itemConfigurar(request, itemid, faseid, proyectoid):
         if not (request.user.has_perm("ver_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
-
+        puede_calculo_impacto = request.user.has_perm("obtener_calculoImpacto")
+        puede_trazabilidad = request.user.has_perm("obtener_trazabilidadItem")
         return render(request, "item/itemConfiguracion.html",
                       {'fase': fase, 'item': item, 'proyecto': proyecto, 'archivos': list(item.archivos),
                        'campos': zip(item.tipoItem.campo_extra,
-                                     item.campo_extra_valores), })
+                                     item.campo_extra_valores),
+                       'puede_calculo_impacto':puede_calculo_impacto, 'puede_trazabilidad':puede_trazabilidad})
 
 
 @transaction.atomic()
@@ -1163,7 +1171,10 @@ def itemModificar(request):
     Template a renderizar: gestionItem con 
     parametro -> proyectoid, faseid, itemid
     """
-    return redirect('proyectoView', id=dato['proyectoid'])
+
+    mensaje = "El ítem fue modificado correctamente."
+    """Redirigir a la vista de la fase correspondiente."""
+    return redirect('faseViewInicializado', faseid=fase.id, proyectoid=dato['proyectoid'], mensaje=mensaje)
 
 
 def itemCambiarEstado(request):
@@ -1333,23 +1344,23 @@ def itemCambiarEstado(request):
             """En caso contrario, no permite cambiar el estado del item y redirige a la vista de fase."""
             return redirect('faseView', faseid=dato['faseid'], proyectoid=dato['proyectoid'])
 
-        mensaje = "Estado actualizado correctamente."
+        mensaje = "El estado del Ítem fue actualizado correctamente."
         """Actualiza estado del item."""
         item.estado = dato['estado']
         # item._history_date = datetime.now()
         """Guardar."""
         item.save()
 
-
-
-    return render(request, 'item/itemModificar.html',
-                  {'faseid': dato['faseid'], 'proyectoid': dato['proyectoid'], 'item': item,
-                   'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
-                   'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
-                   'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
-                   'desarrolloPermiso': request.user.has_perm("establecer_itemDesarrollo", fase),
-                   'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ],
-                   'mensaje_error': mensaje_error, })
+    """
+    Template a renderizar: item.html 
+    con parametros -> faseid, proyectoid, item, proyecto, campos extra de item,
+    permiso para establecer item como pendiente de aprobacion, 
+    permiso para establecer item como parobado, choices
+    con los distintos estados del item y el mensaje correspondiente.
+    """
+    """Redirigir a la vista de la fase correspondiente."""
+    return redirect('faseViewInicializado',faseid=dato['faseid'], proyectoid=dato['proyectoid'],
+                    mensaje=mensaje)
 
 
 def itemDeshabilitar(request):
@@ -1886,7 +1897,7 @@ def isCyclicDisconnected(adj: dict, V):
     return False
 
 
-def faseGestionLineaBase(request):
+def faseGestionLineaBase(request, proyectoid, faseid, mensaje):
     """
     **itemAddRelacion:**
     Vista utilizada para gestion de lineas base en Fase.
@@ -1897,9 +1908,9 @@ def faseGestionLineaBase(request):
     """
     if request.method == 'GET':
         """ID de pryecto."""
-        proyectoid = request.GET.get('proyectoid')
+        #proyectoid = request.GET.get('proyectoid')
         """ID de fase."""
-        faseid = request.GET.get('faseid')
+        #faseid = request.GET.get('faseid')
         """Obtener fase."""
         fase = Fase.objects.get(id=faseid)
         """Obtener proyecto."""
@@ -1932,7 +1943,7 @@ def faseGestionLineaBase(request):
                       {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, 'crear_lb': crear_lb,
                        'es_comite': es_comite, 'puede_solicitar': puede_solicitar,
                        'lb_abierta': lb_abierta, 'lb_cerrada': lb_cerrada, 'lb_comprometida': lb_comprometida,
-                       'lb_rota': lb_rota,
+                       'lb_rota': lb_rota, 'mensaje':mensaje,
                        })
 
 
@@ -2010,11 +2021,9 @@ def faseAddLineaBase(request):
         else:
             """Si no existen items disponibles, ya no se podra crear linea base."""
             crear_lb = False
-
+        mensaje= "La Línea Base se creo correctamente."
         """Renderizar fase/faseGestionLineaBase.html"""
-        return render(request, "fase/faseGestionLineaBase.html",
-                      {'fase': fase, 'proyecto': proyecto, 'linea'
-                                                           'sBase': lineasBase, 'crear_lb': crear_lb})
+        return redirect('LineaBase', proyectoid=proyecto.id, faseid=fase.id, mensaje=mensaje )
 
     """Se recibe el ID del proyecto en el cual se encuentra actualmente el Usuario"""
     """Recupera de la BD el proyecto en el que se encuentra el usuario."""
@@ -2241,8 +2250,9 @@ def faseCerrarLineaBase(request, proyectoid, faseid, lineaBaseid):
         """Obtener lineas base de fase, exluyendo las rotas (ncesario en el template a renderizar)"""
         lineasBase = fase.lineasBase.exclude(estado="rota")
         """Renderizar fase/faseGestionLineaBase.html"""
-        return render(request, "fase/faseGestionLineaBase.html",
-                      {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase})
+        mensaje = "La Línea Base se cerro correctamente."
+        """Renderizar fase/faseGestionLineaBase.html"""
+        return redirect('LineaBase', proyectoid=proyecto.id, faseid=fase.id, mensaje=mensaje)
 
 
 def itemHistorial(request):
@@ -2404,21 +2414,26 @@ def cerrarFase(request, proyectoid, faseid):
                 if cerrar and bandera:
                     fase.estado = "cerrada"
                     fase.save()
-                    return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
+                    mensaje= "La Fase se cerro correctamente."
+                    return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
             else:
                 if cerrar == True and bandera == True and bandera_antecesor:
                     fase.estado = "cerrada"
                     fase.save()
-                    return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
+                    mensaje = "La Fase se cerro correctamente."
+                    return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
 
-            return redirect('faseConfinicializada', proyectoid=proyectoid, faseid=faseid)
+            mensaje = "Error! La Fase no se pudo cerrar. La fase debe poseer al menos un item relacionado con la fase siguiente y todos sus ítems deben pertenecer a una Línea Base Cerrada."
+            return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
         else:
             if cerrar == True:
                 fase.estado = "cerrada"
                 fase.save()
-                return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid)
+                mensaje = "La Fase se cerro correctamente."
+                return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
 
-        return redirect('faseConfinicializada', proyectoid=proyectoid, faseid=faseid)
+        mensaje = "Error! La Fase no se pudo cerrar. La fase debe poseer al menos un item relacionado con la fase siguiente y todos sus ítems deben pertenecer a una Línea Base Cerrada."
+        return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
 
         if cerrar == True:
             fase.estado = "cerrada"
@@ -2654,12 +2669,13 @@ def itemCalculoImpacto(request):
         print("calculo imp", calculo)
         print("total", suma_total)
         """Obtener porcentaje mediante la suma total y el calculo de impacto del item"""
-        porcentaje = float((calculo * 100) / suma_total)
+
+        porcentaje = round(float((calculo*100)/suma_total), 2)
         """Renderizar al html"""
         return render(request, 'item/itemCalculoImpacto.html',
                       {'faseid': faseid, 'proyectoid': proyectoid,
                        'item': itemCalculo,
-                       'calculo': porcentaje, })
+                       'porcentaje': float(porcentaje), 'calculo':calculo, 'suma': suma_total})
 
 
 def gestionRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, mensaje):

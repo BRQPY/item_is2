@@ -19,6 +19,102 @@
           display: table;
           clear: both;
         }
+            .u-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .skills {
+            display: flex;
+            flex-direction: column;
+            align-self: center;
+        }
+
+        .skill {
+            margin: 1em 0;
+            position: relative;
+            width: 22.5em;
+        }
+
+        .skill__type {
+            color: #fff;
+            font-weight: 300;
+            font-size: .8em;
+            letter-spacing: .145em;
+            text-transform: uppercase;
+            width: 5em;
+        }
+
+        .skill__outer-bar, .skill__inner-bar {
+            height: .75em;
+        }
+
+        .skill__outer-bar {
+            margin-top: 1em;
+            background: #333;
+        }
+
+        .skill__inner-bar {
+            animation: fillBar 1s forwards;
+            transform: scaleX(0);
+            transform-origin: 0 0;
+        }
+
+        .skill__inner-bar--100 {
+            width: 100%;
+            background: #F8A518;
+        }
+        .skill__inner-bar--90 {
+            width: 90%;
+            background: #18A6F8;
+        }
+        .skill__inner-bar--80 {
+            width: 80%;
+            background: #F8DD18;
+        }
+        .skill__inner-bar--70 {
+            width: 70%;
+            background: #8718F8;
+        }
+        .skill__inner-bar--60 {
+            width: 60%;
+            background: #F818B5;
+        }
+        .skill__inner-bar--50 {
+            width: 50%;
+            background: #F818B5;
+        }
+        .skill__inner-bar--40 {
+            width: 40%;
+            background: #F818B5;
+        }
+        .skill__inner-bar--30 {
+            width: 30%;
+            background: #00e676;
+        }
+        .skill__inner-bar--20 {
+            width: 20%;
+            background: #00e676;
+        }
+        .skill__inner-bar--10 {
+            width: 10%;
+            background: #F818B5;
+        }
+        .skill__inner-bar--0 {
+            width: 0%;
+            background: #F818B5;
+        }
+
+        @keyframes fillBar {
+            to {
+                transform: scaleX(1);
+            }
+        }
+
+
+
     </style>
     <form action="/fase/FaseProyectoInicializado/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}">
         <button type="submit" class="waves-effect waves-teal btn-flat">
@@ -26,6 +122,56 @@
             <i class="material-icons dark blue-text left">keyboard_return</i>
         </button>
     </form>
-    {{ calculo }}
+    <div class="container">
+        <h3 style="text-align: center">{{ item.nombre}}</h3>
+        <h5 style="text-align: center" class="grey-text">Cálculo de Impacto del ítem "{{ item.nombre }}" dentro del Proyecto.</h5> <br>
+        <ul class="z-depth-1">
+            <li>
+                <div class="card-panel z-depth-4 expense">
+                    <div class="row">
+                        <div class="col l4 left">
+                            <b>Impacto de cambiar el ítem:</b>
+                            {{ calculo }} <b>horas.</b>
+                        </div>
+                    </div><br>
+                    <div class="row">
+                        <div class="col l4 left">
+                            <b>Tiempo total de trabajo en el Proyecto:</b>
+                            {{ suma }} <b>horas.</b>
+                        </div>
+                    </div><br>
+                    <div class="row">
+                        <div class="col l4 left">
+                            <b>Impacto del Ítem dentro del Proyecto:</b>
+                            {{ porcentaje }} <b>%.</b>
+                        </div><br>
+                        <div class="col l4 left">
+                            {% if porcentaje > 0 and porcentaje <= 10 %}
+                                <div class="skill">
+                                    <div class="skill__outer-bar">
+                                        <div class="skill__inner-bar skill__inner-bar--10"></div>
+                                    </div>
+                                </div>
+                            {% elif porcentaje > 10 and porcentaje <= 20 %}
+                                <div class="skill">
+                                    <div class="skill__outer-bar">
+                                        <div class="skill__inner-bar skill__inner-bar--20"></div>
+                                    </div>
+                                </div>
+                                Bajo Impacto (menor a 30%)
+                            {% elif porcentaje > 20 and porcentaje <= 30%}
+                                <div class="skill">
+                                    <div class="skill__outer-bar">
+                                        <div class="skill__inner-bar skill__inner-bar--30"></div>
+                                    </div>
+                                    Bajo Impacto (menor a 30%)
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
 
 {% endblock%}

@@ -26,13 +26,11 @@
                     <i class="material-icons white-text left">people</i>
                 </button>
              </form><br><br><br>
-        <form action="/fase/gestionLineaBase/">
+        <form action="/fase/gestionLineaBase/proyectoid={{ proyecto.id }}/faseid={{ fase.id }}/mensaje=' '/">
             <button type="submit" class="btn btn-small blue darken-2 left">
                 Lineas base
                 <i class="material-icons white-text left">timeline</i>
             </button>
-            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
         </form><br><br><br>
         <form action="{%url 'cerrarFaseView' proyecto.id fase.id  %}"
               onsubmit="return confirm('Está seguro de cerrar la fase?');"

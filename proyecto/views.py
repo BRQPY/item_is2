@@ -467,10 +467,13 @@ def faseView(request, faseid, proyectoid):
             roles_por_user.append(cadena)
 
     cant_user = len(user_sin_repetidos)
+    hay_roles = proyecto.roles.exists()
+    hay_tipos_item = proyecto.tipoItem.exists()
     """Template a renderizar: fase.html con parametros -> fase, proyecto, items de fase."""
     return render(request, 'fase/fase.html', {'fase': fase, 'proyecto': proyecto, 'items': items,
                                               'userRol': zip(user_sin_repetidos, roles_por_user),
-                                              'cant_user': cant_user,
+                                              'cant_user': cant_user, 'hay_roles':hay_roles,
+                                              'hay_tipos_item':hay_tipos_item,
                                               })
 
 
@@ -705,10 +708,10 @@ def proyectoComiteAdd(request):
                 miembros.append(u)
 
                 """Notificar a los miembros del comite"""
-                mail = u.email
-                name = u.username
-                messages.success(request, "Permisos asignados exitosamente!")
-                sendEmailViewProyecto.delay(mail, name, proyecto.nombre,1)
+                #mail = u.email
+                #name = u.username
+                #messages.success(request, "Permisos asignados exitosamente!")
+                #sendEmailViewProyecto.delay(mail, name, proyecto.nombre,1)
 
 
         """
@@ -837,7 +840,7 @@ def proyectoComiteRemove(request, proyectoid, userid):
         return redirect('Comite', proyectoid=proyectoid ,mensaje="Se removió correctamente al usuario del Comité")
 
 
-def proyectoRol(request):
+def proyectoRol(request, proyectoid, mensaje):
     """
        **proyectoRol:**
         Vista utilizada para mostrar Gestion de Roles en el proyecto.
@@ -845,7 +848,7 @@ def proyectoRol(request):
         y que (indirectamente) haya iniciado sesion
     """
     """ID del proyecto"""
-    proyectoid = request.GET.get('proyectoid')
+    #proyectoid = request.GET.get('proyectoid')
     """Proyecto correspondiente"""
     proyecto = Proyecto.objects.get(id=proyectoid)
     """Verificar permiso necesario en el proyecto correspondiente"""
@@ -862,7 +865,7 @@ def proyectoRol(request):
     Template a renderizar: proyectoRol.html con parametros -> peroyectoid
     y roles del proyecto
     """
-    return render(request, 'proyecto/proyectoRol.html', {'proyecto': proyecto, 'roles': roles, })
+    return render(request, 'proyecto/proyectoRol.html', {'proyecto': proyecto, 'roles': roles,'mensaje':mensaje })
 
 
 def proyectoRolCrear(request):
@@ -1002,7 +1005,8 @@ def proyectoRolCrear(request):
         proyecto.roles.add(rol)
         roles = proyecto.roles.all()
         """Template a renderizar: gestion Proyecto.html con parametro -> proyectoid"""
-        return render(request, 'proyecto/proyectoRol.html', {'proyecto': proyecto, 'roles': roles, })
+        mensaje= "Rol creado correctamente."
+        return redirect('ProyectoRol', proyectoid=proyectoid, mensaje=mensaje)
     else:
         """GET request, muestra el template correspondiente para la creacion del rol"""
         """ID Proyecto"""
@@ -1216,7 +1220,8 @@ def proyectoRolModificar(request, proyectoid, rolid):
         rol.save()
         roles = proyecto.roles.all()
         """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
-        return render(request, 'proyecto/proyectoRol.html', {'proyecto': proyecto, 'roles': roles, })
+        mensaje = "Rol modificado correctamente."
+        return redirect('ProyectoRol', proyectoid=proyectoid, mensaje=mensaje)
 
 
 def proyectoRolEliminar(request, proyectoid, rolid):
@@ -1273,7 +1278,8 @@ def proyectoRolEliminar(request, proyectoid, rolid):
     proyecto.roles.remove(rol)
 
     """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
-    return render(request, 'proyecto/proyectoRol.html', {'proyecto': proyecto, 'roles': roles, })
+    mensaje = "Rol removido correctamente."
+    return redirect('ProyectoRol', proyectoid=proyectoid, mensaje=mensaje)
 
 
 def crear_tipo_form(request):
