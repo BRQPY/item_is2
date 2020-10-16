@@ -3,7 +3,7 @@ mkdir -p media
 chmod 777 media
 mkdir -p static
 echo "Bienvenido a iTEM"
-echo "Éste script le permitirá desplegar automáticamente los entornos de Desarrollo o Producción, generar Documentacion o realizar Testing"
+echo "Éste script le permitirá desplegar automáticamente los entornos de Desarrollo o Producción, generar Documentacion"
 PS3='Ingrese un número para elegir una acción: ' 
 options=("Desarrollo" "Producción" "Generar Documentacion" "Salir")
 select opt in "${options[@]}"
