@@ -1025,8 +1025,8 @@ def itemConfigurar(request, itemid, faseid, proyectoid):
         if not (request.user.has_perm("ver_item", fase)) and not (request.user.has_perm("is_gerente", proyecto)):
             """Al no contar con los permisos, niega el acceso, redirigiendo."""
             return redirect('/permissionError/')
-        puede_calculo_impacto = request.user.has_perm("obtener_calculoImpacto")
-        puede_trazabilidad = request.user.has_perm("obtener_trazabilidadItem")
+        puede_calculo_impacto = request.user.has_perm("obtener_calculoImpacto", fase)
+        puede_trazabilidad = request.user.has_perm("obtener_trazabilidadItem", fase)
         return render(request, "item/itemConfiguracion.html",
                       {'fase': fase, 'item': item, 'proyecto': proyecto, 'archivos': list(item.archivos),
                        'campos': zip(item.tipoItem.campo_extra,

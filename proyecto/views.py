@@ -47,6 +47,7 @@ def proyectoCrear(request):
         """Agregar permisos de gerente y permiso para Ver Proyecto al gerente"""
         assign_perm("is_gerente", gerente, proyecto)
         assign_perm("view_proyecto", gerente, proyecto)
+        assign_perm("view_proyecto", creador, proyecto)
         """Agregar gerente a lista de usuarios"""
         proyecto.usuarios.add(gerente)
         """Estado de proyecto creado: pendiente"""
