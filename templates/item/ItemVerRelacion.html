@@ -34,6 +34,24 @@
           <strong> {{ mensaje }}</strong>
         </div>
     {% endif %}
+    {% if mensaje == "La relación se añadio correctamente." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "La relación se removió correctamente." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "Error. No se pudo remover la relación." %}
+        <div class="alert_message" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
     <form action="{%url 'itemConfigurar' item.id fase.id proyecto.id%}">
         <button type="submit" class="waves-effect waves-teal btn-flat">
             Volver a la Gestión del ítem

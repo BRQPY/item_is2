@@ -69,7 +69,7 @@ urlpatterns = [
     path('proyecto/proyectoCancelar/', views.proyectoCancelar),
     path('proyecto/proyectoVer/proyectoid=<str:id>/', views.proyectoView, name="proyectoView"),
     path('proyecto/proyectoFase/proyectoid=<str:id>/', views.proyectoFase, name="proyectoFase"),
-    path('proyecto/gestionProyecto/', views.gestionProyecto),
+    path('proyecto/gestionProyecto/', views.gestionProyecto, name="ProyectoGestion"),
     path('proyecto/modify/', views.proyectoModificar),
     path('proyecto/unable/', views.proyectoDeshabilitar),
     path('proyecto/proyectoUser/', views.proyectoUser),
@@ -161,4 +161,5 @@ urlpatterns = [
     path('item/trazabilidad/',viewsFase.itemTrazabilidad),
     path('item/verDatos/itemid=<str:itemid>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', viewsFase.itemVerDatos, name="itemVerDatos"),
     path('item/SolicitudCambio/itemid=<str:itemid>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', viewsFase.solicitarCambioEstado, name="SolicitudCambio"),
+    path('proyecto/finalizar/proyectoid=<str:proyectoid>/', views.ProyectoFinalizar, name="ProyectoFinalizar"),
 ]

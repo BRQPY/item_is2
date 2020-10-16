@@ -64,35 +64,35 @@
 
         .skill__inner-bar--100 {
             width: 100%;
-            background: #F8A518;
+            background: #b71c1c;
         }
         .skill__inner-bar--90 {
             width: 90%;
-            background: #18A6F8;
+            background: #b71c1c;
         }
         .skill__inner-bar--80 {
             width: 80%;
-            background: #F8DD18;
+            background: #b71c1c;
         }
         .skill__inner-bar--70 {
             width: 70%;
-            background: #8718F8;
+            background: #f44336;
         }
         .skill__inner-bar--60 {
             width: 60%;
-            background: #F818B5;
+            background: #f44336;
         }
         .skill__inner-bar--50 {
             width: 50%;
-            background: #F818B5;
+            background: #ff6d00;
         }
         .skill__inner-bar--40 {
             width: 40%;
-            background: #F818B5;
+            background: #ffff00;
         }
         .skill__inner-bar--30 {
             width: 30%;
-            background: #00e676;
+            background: #ffff00;
         }
         .skill__inner-bar--20 {
             width: 20%;
@@ -100,11 +100,11 @@
         }
         .skill__inner-bar--10 {
             width: 10%;
-            background: #F818B5;
+            background: #00e676;
         }
         .skill__inner-bar--0 {
             width: 0%;
-            background: #F818B5;
+            background: #00e676;
         }
 
         @keyframes fillBar {
@@ -116,9 +116,9 @@
 
 
     </style>
-    <form action="/fase/FaseProyectoInicializado/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}">
-        <button type="submit" class="waves-effect waves-teal btn-flat">
-            Volver a la vista general de la fase
+    <form action="/item/configurar/itemid={{ item.id }}/faseid={{ faseid }}/proyectoid={{ proyectoid }}/">
+        <button type="submit" class="waves-effecst waves-teal btn-flat">
+            Volver a Panel de Gestión del Ítem
             <i class="material-icons dark blue-text left">keyboard_return</i>
         </button>
     </form>
@@ -152,20 +152,70 @@
                                         <div class="skill__inner-bar skill__inner-bar--10"></div>
                                     </div>
                                 </div>
+                                Bajo Impacto (menor a 20%)
                             {% elif porcentaje > 10 and porcentaje <= 20 %}
                                 <div class="skill">
                                     <div class="skill__outer-bar">
                                         <div class="skill__inner-bar skill__inner-bar--20"></div>
                                     </div>
                                 </div>
-                                Bajo Impacto (menor a 30%)
+                                Bajo Impacto (menor a 20%)
                             {% elif porcentaje > 20 and porcentaje <= 30%}
                                 <div class="skill">
                                     <div class="skill__outer-bar">
                                         <div class="skill__inner-bar skill__inner-bar--30"></div>
                                     </div>
-                                    Bajo Impacto (menor a 30%)
                                 </div>
+                                Impacto medio (entre 20% y 40%)
+                            {% elif porcentaje > 30 and porcentaje <= 40%}
+                                <div class="skill">
+                                    <div class="skill__outer-bar">
+                                        <div class="skill__inner-bar skill__inner-bar--40"></div>
+                                    </div>
+                                </div>
+                                Impacto medio (entre 20% y 40%)
+                            {% elif porcentaje > 40 and porcentaje <= 50 %}
+                                <div class="skill">
+                                    <div class="skill__outer-bar">
+                                        <div class="skill__inner-bar skill__inner-bar--50"></div>
+                                    </div>
+                                </div>
+                                Impacto medio alto (entre 40% y 60%)
+                            {% elif porcentaje > 50 and porcentaje <= 60%}
+                                <div class="skill">
+                                    <div class="skill__outer-bar">
+                                        <div class="skill__inner-bar skill__inner-bar--60"></div>
+                                    </div>
+                                </div>
+                                Impacto medio alto (entre 40% y 60%)
+                            {% elif porcentaje > 60 and porcentaje <= 70%}
+                                <div class="skill">
+                                    <div class="skill__outer-bar">
+                                        <div class="skill__inner-bar skill__inner-bar--70"></div>
+                                    </div>
+                                </div>
+                                Impacto alto (entre 60% y 80%)
+                            {% elif porcentaje > 70 and porcentaje <= 80%}
+                                <div class="skill">
+                                    <div class="skill__outer-bar">
+                                        <div class="skill__inner-bar skill__inner-bar--80"></div>
+                                    </div>
+                                </div>
+                                Impacto alto (entre 60% y 80%)
+                            {% elif porcentaje > 80 and porcentaje <= 90%}
+                                <div class="skill">
+                                    <div class="skill__outer-bar">
+                                        <div class="skill__inner-bar skill__inner-bar--90"></div>
+                                    </div>
+                                </div>
+                                Impacto muy alto (entre 80% y 100%)
+                            {% elif porcentaje > 90 and porcentaje <= 100%}
+                                <div class="skill">
+                                    <div class="skill__outer-bar">
+                                        <div class="skill__inner-bar skill__inner-bar--100"></div>
+                                    </div>
+                                </div>
+                                Impacto muy alto (entre 80% y 100%)
                             {% endif %}
                         </div>
                     </div>

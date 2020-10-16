@@ -177,20 +177,6 @@
                     </div>
                  </div>
             </div>
-            <form action="/proyecto/proyectoComite/remove/">
-                <button type="submit" class="btn blue darken-3 right" >
-                    Remover Miembros
-                    <i class="material-icons white-text left">person_outline</i>
-                </button>
-                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            </form>
-            <form action="/proyecto/proyectoComite/add/">
-                <button type="submit" class="btn blue darken-2 center">
-                    Agregar Miembros
-                    <i class="material-icons white-text left">person_add</i>
-                </button>
-                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            </form>
             <form action="/proyecto/proyectoComite/proyectoid={{ proyecto.id }}/mensaje=''/">
                 <button type="submit"
                         class="btn blue darken-3 center"

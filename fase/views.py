@@ -1654,10 +1654,10 @@ def itemRelacionesRemover(request, itemid, item_rm, faseid, proyectoid):
             relaciones_dos.delete()
             """Redirigir a la vista itemVerRelaciones."""
             return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid,
-                            mensaje=' ')
+                            mensaje='La relación se removió correctamente.')
 
         """Redirigir a la vista itemVerRelaciones sin romper la relacion."""
-        return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid, mensaje=' ')
+        return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid, mensaje='Error. No se pudo remover la relación.')
 
 
 @transaction.atomic()
@@ -1832,7 +1832,7 @@ def itemAddRelacion(request):
         """SINO MANTENER RELACIONES Y REDIRIGIR A LA VISTA DE RELACIONES."""
 
         return redirect('itemVerRelaciones', itemid=itemActual.id, faseid=faseid, proyectoid=proyectoid,
-                        mensaje=' ')
+                        mensaje='La relación se añadio correctamente.')
 
 
 """Funcion para agregar Edge"""
@@ -4227,7 +4227,7 @@ def itemTrazabilidad(request):
         return render(request, 'item/TrazabilidadItem.html', {'fasesProyecto': fasesProyecto, 'proyecto': proyecto,
                                                               'lista_item': sorted(lista_items, key=lambda x: x.id,
                                                                                    reverse=False),
-                                                              'relaciones': relaciones})
+                                                              'relaciones': relaciones, 'item':itemTrazabilidad, 'faseid':faseid})
 
 
 def itemVerDatos(request, itemid, faseid, proyectoid):
