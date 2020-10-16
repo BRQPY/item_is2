@@ -16,7 +16,7 @@ class TestViews(TestCase):
 
         client = Client()
 
-    def proyectoFinalizar_OK(self):
+    def test_proyectoFinalizar_OK(self):
         user = User.objects.create(username="user", password="user")
         user.set_password("user")
         user.save()
@@ -24,7 +24,7 @@ class TestViews(TestCase):
                                            fecha_fin="10/12/2010", gerente=user)
         proyecto.estado = "inicializado"
         proyecto.save()
-        fase = Fase.objects.creaasasasate(nombre="Fase1", descripcion="Descripcion", estado="cerrada")
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="cerrada")
         proyecto.fases.add(fase)
         proyecto.save()
         assign_perm("is_gerente", user, proyecto)
@@ -41,7 +41,8 @@ class TestViews(TestCase):
                          status_code=302, fetch_redirect_response=False,
                          msg_prefix="No se ha redirigido a la vista esperada.")
 
-    def proyectoFinalizar_FAIL(self):
+
+    def test_proyectoFinalizar_FAIL(self):
         user = User.objects.create(username="user", password="user")
         user.set_password("user")
         user.save()
@@ -58,7 +59,7 @@ class TestViews(TestCase):
             reverse('ProyectoFinalizar', kwargs={'proyectoid': proyecto.id,  }))
 
         proyecto = Proyecto.objects.get(id=proyecto.id)
-        self.assertEquals(proyecto.estado, "finalizado", """No se actualizo el estado del proyecto""")
+        self.assertEquals(proyecto.estado, "inicializado", """Se actualizo el estado del proyecto""")
         self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
         self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
         self.assertRedirects(response, '/permissionError/',
