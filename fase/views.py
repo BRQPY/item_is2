@@ -149,11 +149,13 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
         items_LB_cerrada = []
         items_LB_abierta = []
         for i in items.filter(estado="en linea base"):
-            lineaBaseItem = LineaBase.objects.get(items__id=i.id)
-            if lineaBaseItem.estado == "cerrada":
-                items_LB_cerrada.append(i)
-            else:
-                items_LB_abierta.append(i)
+            lb_no_rota = fase.lineasBase.exclude(estado="rota")
+            for lb in lb_no_rota:
+                if i in lb.items.all():
+                    if lb.estado == "cerrada":
+                        items_LB_cerrada.append(i)
+                    else:
+                        items_LB_abierta.append(i)
         tipos = fase.tipoItem.all()
         return render(request, 'fase/FaseProyectoInicializado.html', {'proyecto': proyecto, 'fase': fase,
                                                                       'items': items, 'tipos': tipos,
