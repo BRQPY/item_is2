@@ -2411,12 +2411,14 @@ def cerrarFase(request, proyectoid, faseid):
 
         if esPrimeraFase == False:
             if int(ultima_fase.id) == int(fase.id):
+                """Linea base y antecesor"""
                 if cerrar and bandera:
                     fase.estado = "cerrada"
                     fase.save()
                     mensaje= "La Fase se cerro correctamente."
                     return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
             else:
+
                 if cerrar == True and bandera == True and bandera_antecesor:
                     fase.estado = "cerrada"
                     fase.save()
@@ -2435,11 +2437,6 @@ def cerrarFase(request, proyectoid, faseid):
         mensaje = "Error! La Fase no se pudo cerrar. La fase debe poseer al menos un item relacionado con la fase siguiente y todos sus ítems deben pertenecer a una Línea Base Cerrada."
         return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
 
-        if cerrar == True:
-            fase.estado = "cerrada"
-            fase.save()
-            mensaje = "Éxito! La fase se cerró correctamente."
-            return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
 
 
 def itemCalculoImpacto(request):
