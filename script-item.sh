@@ -5,7 +5,7 @@ mkdir -p static
 echo "Bienvenido a iTEM"
 echo "Éste script le permitirá desplegar automáticamente los entornos de Desarrollo o Producción, generar Documentacion o realizar Testing"
 PS3='Ingrese un número para elegir una acción: ' 
-options=("Desarrollo" "Producción" "Generar Documentacion" "Pruebas Unitarias" "Salir")
+options=("Desarrollo" "Producción" "Generar Documentacion" "Salir")
 select opt in "${options[@]}"
 do
     case $opt in
@@ -38,7 +38,10 @@ do
                 echo "Ocurrió un error al descargar el entorno virtual";
                 exit;
             }
-            
+            echo
+            echo "Poblando Base de Datos"
+            chmod +x devbdconf.sh
+            sudo -u postgres ./devbdconf.sh
             echo 
             echo "Creando entorno virtual 'is2virtual' para trabajar en el proyecto"
             python3.7 -m venv is2virtual ||{
@@ -54,28 +57,15 @@ do
                 echo "Ocurrió un error al activar el entorno virtual";
                 exit;
             }
-            
-            echo
-            echo "Actualizando el gestor de paquetes de Python 'pip'"
-            pip install --upgrade pip ||{
-                pwd
-                echo "Ocurrió un error al actualizar el pip";
-                exit;
-            }
-            
+            echo "Tu entorno virtual ya está listo."
             echo
             echo "Procederemos a cargar los requerimientos del proyecto a tu entorno virtual."
-            #pip install -r requirements.txt ||{
-            #    pwd
-            #   echo "Ocurrió un error al cargar los requerimientos";
-            #    exit;
-            #}
+            pip install -r requirements.txt ||{
+                pwd
+               echo "Ocurrió un error al cargar los requerimientos";
+                exit;
+            } 
             
-            echo
-            echo "Tu entorno virtual ya está listo."
-            echo "Poblando Base de Datos"
-            chmod +x devbdconf.sh
-            sudo -u postgres ./devbdconf.sh
             echo "Guardando cambios como migraciones"
             python manage.py makemigrations
             echo "Migrando .."
@@ -143,16 +133,14 @@ do
             #break
             #;;
             echo
-            # chmod +x prodbdconf.sh
-            # sudo -u postgres ./prodbdconf.sh
+            chmod +x prodbdconf.sh
+            sudo -u postgres ./prodbdconf.sh
             # cd ..
             # path=$(pwd)
             # cd poliproyectos
             echo "Configurando servidor httpd..."
             echo "<VirtualHost *:80>
                     ServerAdmin admin@myproject.localhost
-                    ServerName itemis2.localhost
-                    ServerAlias www.itemis2.localhost
                     DocumentRoot /var/www/item/item_is2
                     ErrorLog ${APACHE_LOG_DIR}/error.log
                     CustomLog ${APACHE_LOG_DIR}/access.log combined
@@ -181,10 +169,6 @@ do
         "Generar Documentacion")
             echo "Generando documentacion..."
 	        pycco -i **/*.py -p
-            break
-            ;;
-        "Pruebas Unitarias")
-            ./manage.py test
             break
             ;;
         "Salir")
