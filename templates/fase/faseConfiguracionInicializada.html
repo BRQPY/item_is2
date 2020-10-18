@@ -10,35 +10,67 @@
     </form>
     <div class="container">
         <h3 style="text-align: center">{{ fase.nombre }}</h3>
-        <h4 style="text-align: center" class="grey-text">Panel de Configuración de la fase</h4><br>
-        <h6 style="text-align: left" class="grey-text">Seleccione una opción para ir a su panel de configuración</h6><br>
-        <form action="/fase/gestionTipoItem/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/">
-                <button type="submit" class="btn btn-small blue darken-2 left">
-                    Gestionar Tipos de Item
-                    <i class="material-icons white-text left">settings</i>
-                </button>
-                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-             </form><br><br><br>
-            <form action="/fase/faseUsers/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/">
-                <button type="submit" class="btn btn-small blue darken-2 left">
-                    Gestionar Usuarios de la fase
-                    <i class="material-icons white-text left">people</i>
-                </button>
-             </form><br><br><br>
-        <form action="/fase/gestionLineaBase/proyectoid={{ proyecto.id }}/faseid={{ fase.id }}/mensaje=' '/">
-            <button type="submit" class="btn btn-small blue darken-2 left">
-                Lineas base
-                <i class="material-icons white-text left">timeline</i>
-            </button>
-        </form><br><br><br>
-        <form action="{%url 'cerrarFaseView' proyecto.id fase.id  %}"
-              onsubmit="return confirm('Está seguro de cerrar la fase?');"
-        >
-            <button type="submit" class="btn red darken-2 left">
-                Cerrar Fase
-                <i class="material-icons white-text left">lock</i>
-            </button>
+        <h4 style="text-align: center" class="grey-text">Panel de Configuración de la fase</h4>
+        <div class="row">
+            <form action="/fase/faseUsers/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/"
+                    id="formUsuarios"
+            >
+                <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style= "border:1px solid #024e82;">
+                                <a href="#" onclick="document.getElementById('formUsuarios').submit()" >
+                                    <img src="{% static 'img/Miembros.jpg' %}" alt="MiembrosProyecto" width="80" height="180">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+             </form>
+            <form action="/fase/gestionTipoItem/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/"
+                    id="FormTipoItem"
+            >
+                <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style= "border:1px solid #024e82;">
+                                <a href="#" onclick="document.getElementById('FormTipoItem').submit()" >
+                                    <img src="{% static 'img/tiposdeitem.jpg' %}" alt="TiposProyecto" width="80" height="180" style="padding-top: 25px">
+                                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                                    <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+            </form>
+            <form action="/fase/gestionLineaBase/proyectoid={{ proyecto.id }}/faseid={{ fase.id }}/mensaje=' '/"
+                    id="FormLB"
+            >
+                <div class="col s5 m3">
+                    <div class="card">
+                        <div class="card-image" style= "border:1px solid #024e82;">
+                            <a href="#" onclick="document.getElementById('FormLB').submit()" >
+                                <img src="{% static 'img/LineaBase.jpg' %}" alt="TiposProyecto" width="80" height="180" >
+                                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <form   action="{%url 'cerrarFaseView' proyecto.id fase.id  %}"
+                    onsubmit="return confirm('Está seguro de cerrar la fase?');"
+                    id="FormCerrarFase"
+            >
+                <div class="col s5 m3">
+                    <div class="card">
+                        <div class="card-image" style= "border:1px solid #ff3d00;">
+                            <a href="#" onclick="document.getElementById('FormCerrarFase').submit()" >
+                                <img src="{% static 'img/CerrarFase.jpg' %}" alt="CerrarFase" width="80" height="180" >
+                                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                            </a>
+                        </div>
+                    </div>
+                </div>
         </form>
+        </div>
     </div>
 {% endblock%}

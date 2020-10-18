@@ -42,7 +42,7 @@
             {%if fases%}
                 {%if fasesUser%}
                     {%for f in fasesUser%}
-                        <div class="col s4 md4 x8">
+                        <div class="col s4 m3 x8">
                             <div class="card-panel"
                                  {% if f.estado == "cerrada" %}
                                         style="border:2.5px solid black ;"
@@ -63,15 +63,6 @@
                 El proyecto aun no cuenta con fases creadas.
             {%endif%}
         </div>
-        <br><br>
-        {%if proyecto.estado == "inicializado"%}
-            <form action="/proyecto/proyectoCancelar/">
-                <button type="submit" class="btn-small red darken-3 right">
-                    Cancelar Proyecto
-                </button>
-                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            </form><br><br>
-        {%endif%}
     </div>
     <script>
         var close = document.getElementsByClassName("closebtn");

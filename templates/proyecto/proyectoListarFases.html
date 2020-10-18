@@ -9,47 +9,46 @@
                 </button>
     </form>
     <div class="container">
-        <section>
+        <h2 style="text-align: center">{{ proyecto.nombre}}</h2>
+        <h5 style="text-align: center" class="grey-text">Lista de Fases de  {{ proyecto.nombre}}</h5>
 
-            <h2 style="text-align: center">{{ proyecto.nombre}}</h2>
-            <h5 style="text-align: center" class="grey-text">Lista de Fases del Proyecto: {{ proyecto.nombre}}</h5>
-            <br>
-            <div class="container">
-                {% if proyecto.estado == 'pendiente' %}
-                    <form action="/fase/faseCrear/" >
-                        <button type="submit" class="btn blue darken-3 right">
-                            Crear Fase
-                            <i class="material-icons white-text left">playlist_add</i>
-                        </button>
-                        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                    </form> <br>
-                {% endif %}
-                <h6 style="text-align: left" class="grey-text"><i>Seleccione una fase para gestionarla:</i></h6>
-
-                <p style="text-align: left; font-size: 18px;">
-                    {%if fases%}
-                        {%if fasesUser %}
-                            {%for f in fasesUser%}
-                                {%if f.estado != "deshabilitada"%}
-                                    <a href="{%url 'faseView' f.id proyecto.id%}">{{f.nombre}} ({{f.estado}})</a><br>
-                                {%endif%}
-                            {%endfor%}
-                        {%else%}
-                            Aun no puede visualizar ninguna fase.
-                        {%endif%}
-                    {%else%}
-                        El proyecto aun no cuenta con fases creadas.
-                    {%endif%}
-                </p>
-                <form action="/fase/fasesDeshabilitadas/">
-                    <button type="submit">
-                        Fases Deshabilitadas
-                    </button>
-                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                </form>
-            </div>
-
-        </section>
+        {% if proyecto.estado == 'pendiente' %}
+            <form action="/fase/faseCrear/" >
+                <button type="submit" class="btn-small blue darken-3 right">
+                    Crear Fase
+                    <i class="material-icons white-text left">add_circle</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            </form> <br><br>
+        {% endif %}
+        <div class="row">
+            {%if fases%}
+                {%if fasesUser %}
+                    {%for f in fasesUser%}
+                        <div class="col s4 m3    x8">
+                            <div class="card-panel"
+                                    {% if f.estado == "cerrada" %}
+                                        style="border:2.5px solid black ;"
+                                    {% endif %}
+                                    {% if f.estado == "abierta" %}
+                                         style="border:2.5px solid #29b6f6;"
+                                    {% endif %}
+                                    {% if f.estado == "deshabilitada" %}
+                                         style="border:2.5px solid #ff3d00;"
+                                    {% endif %}>
+                                <h5>{{f.nombre}}</h5>
+                                <h7><b>Estado:</b> {{f.estado}}</h7><br><br>
+                                <a href="{%url 'faseView' f.id proyecto.id%}" class="btn blue darken-2 ">Ver</a>
+                            </div>
+                        </div>
+                    {%endfor%}
+                {%else%}
+                    Aun no puede visualizar ninguna fase.
+                {%endif%}
+            {%else%}
+                El proyecto aun no cuenta con fases creadas.
+            {%endif%}
+        </div>
     </div>
 {% endblock%}
 

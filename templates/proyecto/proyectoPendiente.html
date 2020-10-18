@@ -3,45 +3,61 @@
 
 {% block content %}
 <style>
-.accordion {
-  background-color: #F2F2F2;
-  color: 	#000000;
-  cursor: pointer;
-  padding: 18px;
-  width: 100%;
-  border: none;
-  text-align: left;
-  outline: none;
-  font-size: 18px;
-  transition: 0.1s;
-}
-.accordion:focus{
-    outline: none;
-    background-color: #F2F2F2;
-}
-.accordion:hover {
-  background-color: #E5E5E5;
-}
+    .progreso {
+            width: 90%;
+            position: absolute;
+            z-index: 1;
+        }
 
-.accordion:after {
-  content: '\002B';
-  color: #5AB9EA;
-  font-weight: bold;
-  float: right;
-  margin-left: 5px;
-}
-
-.active:after {
-  content: "\2212";
-}
-
-.panel {
-  padding: 0 18px;
-  background-color: white;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.2s ease-out;
-}
+  .progressbar {
+      counter-reset: step;
+      padding-right: 5%;
+  }
+  .progressbar li {
+      list-style-type: none;
+      width: 20%;
+      float: left;
+      font-size: 12px;
+      position: relative;
+      text-align: center;
+      text-transform: uppercase;
+      color: #7d7d7d;
+  }
+  .progressbar li:before {
+      width: 30px;
+      height: 30px;
+      content: counter(step);
+      counter-increment: step;
+      line-height: 30px;
+      border: 2px solid #7d7d7d;
+      display: block;
+      text-align: center;
+      margin: 0 auto 10px auto;
+      border-radius: 50%;
+      background-color: white;
+  }
+  .progressbar li:after {
+      width: 100%;
+      height: 2px;
+      content: '';
+      position: absolute;
+      background-color: #7d7d7d;
+      top: 15px;
+      left: -50%;
+      z-index: -1;
+  }
+  .progressbar li:first-child:after {
+      content: none;
+  }
+  .progressbar li.active {
+      color: #024e82;
+  }
+  .progressbar li.active:before {
+      border-color:  #024e82;
+  }
+  .progressbar li.active + li:after {
+      background-color: #024e82;
+  }
 
 </style>
     <form action="/home/">
@@ -53,192 +69,268 @@
     <div class="container">
         <h3 style="text-align: center">{{ proyecto.nombre }}</h3>
         <h5 style="text-align: center" class="grey-text">Panel de Configuración del Proyecto</h5>
-        <h8 style="text-align: left" class="grey-text">Haga click en el ícono + para desplegar la configuración de algún módulo del proyecto.</h8>
-        <button class="accordion" >
-            Información General del Proyecto
-            <i class="material-icons blue-text left">info_outline</i>
-        </button>
-        <div class="panel">
-            <section class="DescripcionProyecto">
-
-           <p style="font-size:18px; padding-left: 50px">
-              <div class="col s12 md6 xl3">
-                <div class="card-panel">
-                    <b>Nombre:</b>  {{ proyecto.nombre }}<br>
-                    <b>Descripción:</b>   {{ proyecto.descripcion }}<br>
-                    <b>Fecha de inicio:</b>   {{ proyecto.fecha_inicio }}<br>
-                    <b>Fecha de finalización:</b>   {{proyecto.fecha_fin}}<br>
-                </div>
-                <form action="/proyecto/modify/">
-                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                    <button type="submit" class="btn blue darken-2 right" >
-                        Modificar info
-                        <i class="material-icons white-text left">edit</i>
-                    </button>
-                </form>
-               </div>
-           </p>
-        <br><br>
-       </section>
+        <div class="progreso">
+            <ul class="progressbar">
+                {% if hay_miembros  %}
+                    <li class="active">
+                        Miembros
+                    </li>
+                {% else %}
+                    <li>
+                        Miembros
+                    </li>
+                {% endif %}
+                {% if hay_miembros and hay_roles %}
+                    <li class="active">
+                        Roles
+                    </li>
+                {% else %}
+                    <li>
+                        Roles
+                    </li>
+                {% endif %}
+                {% if hay_miembros and hay_roles and hay_tipos %}
+                    <li class="active">
+                        Tipos de Ítem
+                    </li>
+                {% else %}
+                    <li>
+                        Tipos de Ítem
+                    </li>
+                {% endif %}
+                {% if hay_miembros and hay_roles and hay_tipos and hay_comite%}
+                    <li class="active">
+                        Comité
+                    </li>
+                {% else %}
+                    <li>
+                        Comité
+                    </li>
+                {% endif %}
+                {% if hay_miembros and hay_roles and hay_tipos and hay_comite and hay_fases%}
+                    <li class="active">
+                        Fases
+                    </li>
+                {% else %}
+                    <li>
+                        Fases
+                    </li>
+                {% endif %}
+            </ul>
         </div>
-
-        <button class="accordion">
-            Miembros del Proyecto
-            <i class="material-icons blue-text left">people</i>
-        </button>
-        <div class="panel">
-            <h8 style="text-align: left" class="grey-text">
-                Lista de usuarios del sistema que forman parte del proyecto.
-            </h8>
-            <section class="MiembrosProyecto">
-                <div class="col s12 md6 xl3">
-                    <div class="card-panel">
-                         {% for u in usuarios %}
-                            <b>{{ u.username}} &emsp;&emsp;</b>
-                         {% endfor %}
-                    </div>
-                </div>
-                <form action="/proyecto/proyectoUser/">
-                    <button type="submit" class="btn-small blue darken-2 right" >
-                       Administrar miembros del proyecto
-                       <i class="material-icons white-text left">settings</i>
-                    </button>
-                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                </form>
-            </section>
-        </div>
-
-        <button class="accordion">
-            Roles
-            <i class="material-icons blue-text left">assignment_ind</i>
-        </button>
-        <div class="panel">
-            <h8 style="text-align: left" class="grey-text">
-                Lista de Roles con los que cuenta el sistema.
-            </h8>
-            <div class="RolesProyecto">
-                <div class="col s12 md6 xl3">
-                    <div class="card-panel">
-                        {% for r in roles %}
-                            <b>{{ r.nombre}} &emsp;</b>
-                        {% endfor %}
-                    </div>
-                 </div>
-            </div>
-            <form action="/proyecto/proyectoRol/proyectoid={{ proyecto.id }}/mensaje=''/">
-                <button type="submit" name="removeperm" class="btn blue darken-2 right" >
-                    Administrar Roles
-                    <i class="material-icons white-text left">settings</i>
-                </button>
-                <input type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            </form>
-        </div>
-
-        <button class="accordion">
-            Tipos de Item
-            <i class="material-icons blue-text left">web</i>
-        </button>
-        <div class="panel">
-            <h8 style="text-align: left" class="grey-text">
-                Lista de Tipos de ítem con los que cuenta el sistema.
-            </h8>
-            <div class="TiposProyecto">
-                <div class="col s12 md6 xl3">
-                    <div class="card-panel">
-                        {% for t in tipoItem %}
-                            <b>{{ t.nombreTipo}} &emsp;&emsp;</b>
-                        {% endfor %}
-                    </div>
-                 </div>
-            </div>
-            <form action="/proyecto/proyectoTipodeItem/">
-                   <button type="submit" name="removeperm" class="btn blue darken-2 right" >
-                        Administrar Tipos de Item
-                        <i class="material-icons white-text left">settings</i>
-                    </button>
-                 <input type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            </form>
-        </div>
-
-        <button class="accordion">
-            Comité de Control de Cambios
-            <i class="material-icons blue-text left">next_week</i>
-        </button>
-        <div class="panel">
-            <h8 style="text-align: left" class="grey-text">
-                Miembros del Proyecto asignados como Comité de Control de Cambios.
-            </h8>
-            <div class="TiposProyecto">
-                <div class="col s12 md6 xl3">
-                    <div class="card-panel">
-                        {% for c in comite %}
-                            <b>{{ c}} &emsp;&emsp;</b>
-                        {% endfor %}
-                    </div>
-                 </div>
-            </div>
-            <form action="/proyecto/proyectoComite/proyectoid={{ proyecto.id }}/mensaje=''/">
-                <button type="submit"
-                        class="btn blue darken-3 center"
-                        title="Permite agregar o remover miembros del Comité de Control de Cambios"
+    </div><br><br><br><br>
+    <div class="container">
+        {%if proyecto.estado == "pendiente"%}
+            <div class="row">
+                <form
+                    action="/proyecto/modify/"
+                    id="formModificacion"
                 >
-                    Administrar miembros del Comité
-                    <i class="material-icons white-text left">settings</i>
-                </button>
-                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            </form>
-        </div>
-        <button class="accordion">
-                Fases
-              <i class="material-icons blue-text left">view_module</i>
-        </button>
-        <div class="panel">
-            <h8 style="text-align: left" class="grey-text">Lista de Fases creadas en el proyecto.</h8>
-            <div class="FasesProyecto">
-                <div class="col s12 md6 xl3">
-                    <div class="card-panel">
-                       {% if fases %}
-                            {% for f in fasesUser %}
-                                <b>{{ f.nombre}}<i> ({{ f.estado }})</i>&emsp;</b>
-                            {% endfor %}
-                       {%else%}
-                            El Proyecto aún no cuenta con fases.
-                       {%endif%}
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style= "border:1px solid #024e82;">
+                                <a href="#" onclick="document.getElementById('formModificacion').submit()" >
+                                    <img src="{% static 'img/DatosdelProyecto.jpg' %}" alt="DatosdelProyecto" width="80" height="180">
+                                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-            <form action="/proyecto/proyectoFase/proyectoid={{proyecto.id}}">
-                    <button type="submit"
-                            class="btn blue darken-2 right"
-                            title="Crear, Modificar o deshabilitar fases del Proyecto"
+                </form>
+                <form
+                        action="/proyecto/proyectoUser/"
+                        id="formUsuarios"
+                >
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style= "border:1px solid #024e82;">
+                                <a href="#" onclick="document.getElementById('formUsuarios').submit()" >
+                                    <img src="{% static 'img/Miembros.jpg' %}" alt="MiembrosProyecto" width="80" height="180">
+                                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                {% if hay_miembros %}
+                    <form
+                            action="/proyecto/proyectoRol/proyectoid={{ proyecto.id }}/mensaje=''/"
+                            id="FormRol"
                     >
-                        Administrar Fases
-                        <i class="material-icons white-text left">settings</i>
-                    </button>
-                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            </form>
-        </div>
-        <br>
-        <form action="/proyecto/proyectoInicializar/">
-            <button type="submit" class="btn green darken-2 right" >
-                    <b>Iniciar Proyecto</b>
-                <i class="material-icons white-text left">near_me</i>
-            </button>
-            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-        </form>
-        <form action="/proyecto/unable/">
-            <button type="submit" class="btn red darken-3 left" >
-                       <b>Deshabilitar Proyecto</b>
-                    <i class="material-icons white-text left">block</i>
-             </button>
-            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-        </form>
+                        <div class="col s5 m3">
+                            <div class="card">
+                                <div class="card-image" style= "border:1px solid #024e82;">
+                                    <a href="#" onclick="document.getElementById('FormRol').submit()" >
+                                        <img src="{% static 'img/rolessin.jpg' %}" alt="RolesProyecto" width="80" height="180" style="padding-top: 22px">
+                                        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style= "border:1px solid #7d7d7d;"
+                            >
+                                <a
+                                        style="cursor: default"
+                                        title="Agregue miembros al proyecto para seguir avanzando con la configuración del proyecto."
+                                >
+                                    <img src="{% static 'img/rolesgris.png' %}" alt="RolesProyecto" width="80" height="180" style="padding-top: 22px">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if hay_miembros and hay_roles %}
+                    <form
+                        action="/proyecto/proyectoTipodeItem/"
+                        id="FormTipoItem"
+                >
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style= "border:1px solid #024e82;">
+                                <a href="#" onclick="document.getElementById('FormTipoItem').submit()" >
+                                    <img src="{% static 'img/tiposdeitem.jpg' %}" alt="TiposProyecto" width="80" height="180" style="padding-top: 22px">
+                                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                </form>
+                {% else %}
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style= "border:1px solid #7d7d7d;"
+                            >
+                                <a
+                                        style="cursor: default"
+                                        title="Agregue miembros y roles al proyecto para seguir avanzando con la configuración del proyecto."
+                                >
+                                    <img src="{% static 'img/tiposgris.png' %}" alt="RolesProyecto" width="80" height="180" style="padding-top: 22px">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if hay_miembros and hay_roles and hay_tipos %}
+                    <form
+                        action="/proyecto/proyectoComite/proyectoid={{ proyecto.id }}/mensaje=''/"
+                        id="FormComite"
+                >
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style= "border:1px solid #024e82;">
+                                <a href="#" onclick="document.getElementById('FormComite').submit()" >
+                                    <img src="{% static 'img/Comité.jpg' %}" alt="DatosdelProyecto" width="80" height="180">
+                                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                {% else %}
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style= "border:1px solid #7d7d7d;"
+                            >
+                                <a
+                                        style="cursor: default"
+                                        title="Agregue miembros,roles y Tipos de Item al proyecto para seguir avanzando con la configuración"
+                                >
+                                    <img src="{% static 'img/comitegris.png' %}" alt="RolesProyecto" width="80" height="180" style="padding-top: 22px">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if hay_miembros and hay_roles and hay_tipos and hay_comite %}
+                    <form
+                        action="/proyecto/proyectoFase/proyectoid={{proyecto.id}}"
+                        id="FormFases"
+                    >
+                        <div class="col s5 m3">
+                            <div class="card">
+                                <div class="card-image" style= "border:1px solid #024e82;">
+                                    <a href="#" onclick="document.getElementById('FormFases').submit()" >
+                                        <img src="{% static 'img/Fases.jpg' %}" alt="FasesdelProyecto" width="80" height="180">
+                                        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style= "border:1px solid #7d7d7d;"
+                            >
+                                <a
+                                        style="cursor: default"
+                                        title="Designe a tres miembros del proyecto como Comité de Control de Cambios para seguir avanzando con la configuración"
+                                >
+                                    <img src="{% static 'img/fsesgris.png' %}" alt="fases" width="80" height="180" style="padding-top: 22px">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if hay_miembros and hay_roles and hay_tipos and hay_comite and hay_fases%}
+                    <form
+                            action="/proyecto/proyectoInicializar/"
+                            id="FormInicializar"
+                    >
+                        <div class="col s5 m3">
+                            <div class="card">
+                                <div class="card-image" style= "border:1px solid #028839;">
+                                    <a href="#" onclick="document.getElementById('FormInicializar').submit()" >
+                                        <img src="{% static 'img/IniciarProyecto.jpg' %}" alt="IniciarProyecto" width="80" height="180">
+                                        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style= "border:1px solid #7d7d7d;"
+                            >
+                                <a
+                                        style="cursor: default"
+                                        title="Cumpla todos los pasos para poder iniciar el Proyecto."
+                                >
+                                    <img src="{% static 'img/iniciargris.png' %}" alt="fases" width="80" height="180" style="padding-top: 22px">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                <form
+                        action="/proyecto/proyectoCancelar/"
+                        id="FormCancelar"
+                >
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style= "border:1px solid #f4c80c;">
+                                <a href="#" onclick="document.getElementById('FormCancelar').submit()" >
+                                    <img src="{% static 'img/CancelarProyecto.jpg' %}" alt="CancelarProyecto" width="80" height="180">
+                                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        {%endif%}
     </div>
     <br>
     {%if proyecto.estado != "cancelado"%}
-                <form action="/proyecto/proyectoCancelar/">
+                <form action="/proyecto/unable/">
                     <br><button type="submit" class="btn-small yellow darken-3 right">
-                            Cancelar Proyecto
+                            Deshabilitar Proyecto
                         </button>
                     <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
                 </form>

@@ -252,6 +252,21 @@ def proyectoView(request, id):
         """Se verifica el estado del proyecto, para destinarlo al html correcto"""
         if (proyecto.estado == 'pendiente'):
             """Template a renderizar: proyectoListarFases.html con parametros -> proyectoid y fases del proyecto"""
+            hay_miembros = False
+            if len(proyecto.usuarios.all()) > 2:
+                hay_miembros = True
+            hay_roles = False
+            if len(proyecto.roles.all()) > 0:
+                hay_roles = True
+            hay_tipos = False
+            if len(proyecto.tipoItem.all()) > 0:
+                hay_tipos = True
+            hay_comite = False
+            if len(proyecto.comite.all()) == 3:
+                hay_comite = True
+            hay_fases = False
+            if len(proyecto.fases.all()) > 0:
+                hay_fases = True
             return render(request, 'proyecto/proyectoPendiente.html', {'proyecto': proyecto, 'fases': fases,
                                                                        'fasesUser': sorted(fasesUser,
                                                                                            key=lambda x: x.id,
@@ -259,7 +274,8 @@ def proyectoView(request, id):
                                                                        'usuarios': usuarios,
                                                                        'roles': roles,
                                                                        'tipoItem': tipoItem,
-                                                                       'comite': comite, })
+                                                                       'comite': comite, 'hay_miembros':hay_miembros, 'hay_roles':hay_roles,
+                                                                       'hay_tipos':hay_tipos, 'hay_comite':hay_comite, 'hay_fases':hay_fases})
         else:
             """Template a renderizar: proyectoIniciado.html con parametros -> proyectoid y fases del proyecto"""
             return render(request, 'proyecto/proyectoIniciado.html', {'proyecto': proyecto, 'fases': fases,
@@ -607,8 +623,8 @@ def proyectoUserRemove(request, proyectoid, userid):
         """ Para saber si hay algun user removible del proyecto"""
         eliminable = True
         if user.is_staff == True or user == request.user or user == gerente:
-                """Si no puede ser removido del proyecto, establece eliminable a false"""
-                eliminable = False
+            """Si no puede ser removido del proyecto, establece eliminable a false"""
+            eliminable = False
         """
          Template a renderizar: proyectoUserRemove.html con parametro->
          usuarios posibles para remover y proyectoid
