@@ -156,6 +156,17 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
                         items_LB_cerrada.append(i)
                     else:
                         items_LB_abierta.append(i)
+        lb_abierta_items = []
+        lb_abierta = []
+        lb_cerrada_items = []
+        lb_cerrada = []
+        for lb in fase.lineasBase.all():
+            if lb.estado == "abierta":
+                lb_abierta_items.append(lb)
+                lb_abierta.append(lb)
+            if lb.estado == "cerrada":
+                lb_cerrada_items.append(lb.items.all())
+                lb_cerrada.append(lb)
         tipos = fase.tipoItem.all()
         return render(request, 'fase/FaseProyectoInicializado.html', {'proyecto': proyecto, 'fase': fase,
                                                                       'items': items, 'tipos': tipos,
@@ -164,7 +175,9 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
                                                                       'items_aprobado': items_aprobado,
                                                                       'items_LB_cerrada':items_LB_cerrada,
                                                                       'items_LB_abierta':items_LB_abierta,
-                                                                      'mensaje': mensaje,
+                                                                      'mensaje': mensaje, 'lb_abierta':lb_abierta,'lb_cerrada':lb_cerrada,
+                                                                      'lb_abierta_items': lb_abierta_items,
+                                                                      'lb_cerrada_items': lb_cerrada_items,
                                                                       'items_revision':items_revision})
 
 
@@ -1364,7 +1377,7 @@ def itemCambiarEstado(request):
                     mensaje=mensaje)
 
 
-def itemDeshabilitar(request):
+def itemDeshabilitar(request,proyectoid,faseid,itemid):
     """
     **itemDeshabilitar:**
     Vista utilizada para deshabilitar Item.
@@ -1374,15 +1387,15 @@ def itemDeshabilitar(request):
     y que (indirectamente) haya iniciado sesion.
     """
     """ID del proyecto"""
-    proyectoid = request.GET.get('proyectoid')
+    #proyectoid = request.GET.get('proyectoid')
     """Proyecto en el cual se encuentra el item."""
     proyecto = Proyecto.objects.get(id=proyectoid)
     """ID de fase."""
-    faseid = request.GET.get('faseid')
+    #faseid = request.GET.get('faseid')
     """Fase en la cual se encuentra el item."""
     fase = Fase.objects.get(id=faseid)
     """ID de item."""
-    itemid = request.GET.get('itemid')
+    #itemid = request.GET.get('itemid')
     """Item a deshabilitar."""
     item = Item.objects.get(id=itemid)
     """Verificar que el usuario cuente con los permisos necesarios."""
@@ -1391,20 +1404,11 @@ def itemDeshabilitar(request):
         return redirect('/permissionError/')
 
     """Verificar que el estado del proyecto sea inicializado."""
-    if proyecto.estado != "inicializado":
-        """En caso contrario, no permite deshabilitar el item y redirige a la vista de fase."""
-        return redirect('proyectoView', id=proyectoid)
+
 
     """Verificar que el estado del item sea en desarrollo."""
     if item.estado == "pendiente de aprobacion" or item.estado == "aprobado" or item.estado == "en linea base":
-        mensaje = "El estado actual del item no permite la deshabilitacion del mismo."
-        """
-        En caso contrario niega la deshabilitacion del mismo y 
-        vuelve a gestion de item mostrando un mensaje de error.
-        Template a renderizar gestionItem.html con parametros -> proyectoid, faseid, itemid y mensaje de error.
-        """
-        return render(request, 'home.html',
-                      {'proyectoid': proyectoid, 'faseid': faseid, 'itemid': itemid, 'mensaje': mensaje, })
+        mensaje = "El estado actual del item no permite la deshabilitación del mismo."
 
     """VERIFICAR SI ES POSIBLE DESHABILITAR EL ITEM TENIENDO EN CUENTA SUS RELACIONES."""
     """Obtener relaciones."""
@@ -1446,11 +1450,9 @@ def itemDeshabilitar(request):
         # item._history_date = datetime.now()
         """Guardar."""
         item.save()
-        """Redirige a la vista de la fase correspondiente."""
-        return redirect('proyectoView', id=proyectoid)
-    """Redirige a la vista de la fase correspondiente."""
-    return redirect('proyectoView', id=proyectoid)
-
+        mensaje = "Item deshabilitado correctamente."
+        return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
+    return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
 
 def itemVerRelaciones(request, itemid, faseid, proyectoid, mensaje):
     if request.method == 'GET':

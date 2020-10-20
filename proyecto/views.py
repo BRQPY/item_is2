@@ -76,7 +76,7 @@ def proyectoCrear(request):
 
 
 
-def proyectoInicializar(request):
+def proyectoInicializar(request, proyectoid):
     """
            **proyectoInicializar:**
             Vista utilizada para inicializar proyectos.
@@ -85,8 +85,7 @@ def proyectoInicializar(request):
              proyecto y que(indirectamente) haya iniciado
               sesion.
     """
-    """ID del proyecto."""
-    proyectoid = request.GET.get('proyectoid')
+
     """Proyecto a inicializar."""
     proyecto = Proyecto.objects.get(id=proyectoid)
 
@@ -132,7 +131,7 @@ def proyectoInicializar(request):
     return redirect('proyectoView', id=proyectoid)
 
 
-def proyectoCancelar(request):
+def proyectoCancelar(request, proyectoid):
     """
                **proyectoCancelar:**
                 Vista utilizada para cancelar proyectos.
@@ -141,8 +140,6 @@ def proyectoCancelar(request):
                  proyecto y que(indirectamente) haya iniciado
                   sesion.
     """
-    """ID del proyecto."""
-    proyectoid = request.GET.get('proyectoid')
     """Proyecto a cancelar."""
     proyecto = Proyecto.objects.get(id=proyectoid)
 
@@ -400,7 +397,7 @@ def proyectoModificar(request):
     return render(request, 'proyecto/ProyectoInicializadoConfig.html', {'proyecto': proyecto, })
 
 
-def proyectoDeshabilitar(request):
+def proyectoDeshabilitar(request, proyectoid):
     """
        **proyectoDeshabilitar:**
         Vista utilizada para visualizar Deshabilitar Proyecto.
@@ -410,35 +407,12 @@ def proyectoDeshabilitar(request):
     """
     """GET request, muestra el template correspondiente para deshabilitar el proyecto"""
     if request.method == 'GET':
-        """ID del proyecto"""
-        proyectoid = request.GET.get('proyectoid')
-
         """Proyecto a deshabilitar"""
         proyecto = Proyecto.objects.get(id=proyectoid)
-        """Verificar permiso necesario en el proyecto correspondiente"""
-        if not (request.user.has_perm("is_gerente", proyecto)):
-            return redirect('/permissionError/')
-
-        """Template a renderizar: proyectoDeshabilitar.html con parametro -> proyectoid"""
-        return render(request, 'proyecto/proyectoDeshabilitar.html', {'proyectoid': proyectoid, })
-
-    """ID del proyecto"""
-    proyectoid = request.POST.get('proyectoid')
-    """Confirmar accion -> si"""
-    if request.POST.get('pregunta') == "si":
-        """Proyecto a deshabilitar"""
-        proyecto = Proyecto.objects.get(id=proyectoid)
-
         """Deshabilitar proyecto, cambio de estado"""
         proyecto.estado = "deshabilitado"
         proyecto.save()
-
-        """Redirigir a pagina: /home/"""
         return redirect("/home/")
-
-    """Confirmar accion -> no"""
-    """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
-    return render(request, "proyecto/ProyectoInicializadoConfig.html", {'proyectoid': proyectoid, })
 
 
 def faseView(request, faseid, proyectoid):

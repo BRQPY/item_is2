@@ -71,6 +71,24 @@
           <strong> {{ mensaje }}</strong>
         </div>
     {% endif %}
+    {% if mensaje == "Error! No se puede deshabilitar el ítem." %}
+        <div class="alert_message" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "Item deshabilitado correctamente." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "El estado actual del item no permite la deshabilitación del mismo." %}
+        <div class="alert_message" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
     <div class="container"><br>
         <div style="position: relative;">
             <div style="position: absolute; left: 0; top: 0; text-align: left">
@@ -102,7 +120,7 @@
                 {% if  fase.estado != "cerrada" %}
                     {% if tipos %}
                         <form action="/item/itemCrear/">
-                            <button type="submit" class="btn blue darken-3 right">
+                            <button type="submit" class="btn blue darken-5 right">
                                 Crear nuevo ítem
                                 <i class="material-icons white-text left">add_circle</i>
                             </button>
@@ -135,230 +153,239 @@
     </div>
     <div class="container">
         <section class="section section-expenses">
-                <ul class="z-depth-1">
-                    <div class="filterDiv desarrollo">
-                        {% for i in items_desarrollo %}
-                            <li>
-                                <div class="card-panel" style= "border:1px solid #03a9f4;">
-                                    <div class="row">
-                                        <div class="col l4 left">
-                                            <b>{{ i.nombre }}</b>
-                                        </div>
-                                        {% if  fase.estado != "cerrada" %}
+            <ul class="z-depth-1">
+                <div class="filterDiv desarrollo">
+                    {% for i in items_desarrollo %}
+                        <li>
+                            <div class="card-panel" style="border:1px solid #03a9f4;">
+                                <div class="row">
+                                    <div class="col l4 left">
+                                        <b>{{ i.nombre }}</b>
+                                    </div>
+                                    <div class="col l4 right">
+                                        <a href="{% url 'itemConfigurar' i.id fase.id proyecto.id %}"
+                                           title="Ver y/o modificar datos del ítem, relacionar, reversionar."
+                                        >
+                                            Gestionar Ítem
+                                            <i class="material-icons dark blue-text left">settings</i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col 1">
+                                        <b>Estado:</b>
+                                        {{ i.estado }}
+                                    </div>
+                                    <div class="col l4 left">
+                                        <b>Costo en horas:</b>
+                                        {{ i.costo }}h
+                                    </div>
+                                    <div class="col 3">
+                                        <b>Tipo de ítem:</b>
+                                        {{ i.tipoItem.nombreTipo }}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </div>
+                <div class="filterDiv pendiente">
+                    {% for i in items_pendiente %}
+                        <li>
+                            <div class="card-panel" style="border:2px solid #ff9800;">
+                                <div class="row">
+                                    <div class="col l4 left">
+                                        <b>{{ i.nombre }}</b>
+                                    </div>
+                                    <div class="col l4 right">
+                                        <a href="{% url 'itemConfigurar' i.id fase.id proyecto.id %}"
+                                           title="Ver y/o modificar datos del ítem, relacionar, reversionar."
+                                        >
+                                            Gestionar Ítem
+                                            <i class="material-icons dark blue-text left">settings</i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col 1">
+                                        <b>Estado:</b>
+                                        {{ i.estado }}
+                                    </div>
+                                    <div class="col l4 left">
+                                        <b>Costo en horas:</b>
+                                        {{ i.costo }}h
+                                    </div>
+                                    <div class="col 3">
+                                        <b>Tipo de ítem:</b>
+                                        {{ i.tipoItem.nombreTipo }}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </div>
+                <div class="filterDiv aprobado">
+                    {% for i in items_aprobado %}
+                        <li>
+                            <div class="card-panel" style="border:2px solid #1b5e20;">
+                                <div class="row">
+                                    <div class="col l4 left">
+                                        <b>{{ i.nombre }}</b>
+                                    </div>
+                                    <div class="col l4 right">
+                                        <a href="{% url 'itemConfigurar' i.id fase.id proyecto.id %}"
+                                           title="Ver y/o modificar datos del ítem, relacionar, reversionar."
+                                        >
+                                            Gestionar Ítem
+                                            <i class="material-icons dark blue-text left">settings</i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col 1">
+                                        <b>Estado:</b>
+                                        {{ i.estado }}
+                                    </div>
+                                    <div class="col l4 left">
+                                        <b>Costo en horas:</b>
+                                        {{ i.costo }}h
+                                    </div>
+                                    <div class="col 3">
+                                        <b>Tipo de ítem:</b>
+                                        {{ i.tipoItem.nombreTipo }}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </div>
+                <div class="filterDiv en revision">
+                    {% for i in items_revision %}
+                        <li>
+                            <div class="card-panel" style="border:1.5px solid #ef6c00;">
+                                <div class="row">
+                                    <div class="col l4 left">
+                                        <b>{{ i.nombre }}</b>
+                                    </div>
+                                    <div class="col l4 right">
+                                        <a href="{% url 'itemConfigurar' i.id fase.id proyecto.id %}"
+                                           title="Ver y/o modificar datos del ítem, relacionar, reversionar."
+                                        >
+                                            Gestionar Ítem
+                                            <i class="material-icons dark blue-text left">settings</i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col 1">
+                                        <b>Estado:</b>
+                                        {{ i.estado }}
+                                    </div>
+                                    <div class="col l4 left">
+                                        <b>Costo en horas:</b>
+                                        {{ i.costo }}h
+                                    </div>
+                                    <div class="col 3">
+                                        <b>Tipo de ítem:</b>
+                                        {{ i.tipoItem.nombreTipo }}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </div>
+                <div class="filterDiv abierta">
+                    {% for lb in lb_abierta %}
+                        <div style="border:1px solid #039be5 ;border-radius: 10px;">
+                            <div class="container" style="text-align: center"
+                                 title="Si desea gestionar la Línea Base, haga click en el botón de Configurar Fase.">
+                                <h6>
+                                    <b>{{ lb.nombre }}</b> ({{ lb.estado }})
+                                </h6>
+                            </div>
+                            {% for i in lb.items.all %}
+                                <li style="padding-left: 8px;padding-right: 8px;">
+                                    <div class="card-panel" style="border:1px solid #039be5 ;">
+                                        <div class="row">
+                                            <div class="col l4 left">
+                                                <b>{{ i.nombre }}</b>
+                                            </div>
                                             <div class="col l4 right">
-                                                <a href="{%url 'itemConfigurar' i.id fase.id proyecto.id%}"
+                                                <a href="{% url 'itemConfigurar' i.id fase.id proyecto.id %}"
                                                    title="Ver y/o modificar datos del ítem, relacionar, reversionar."
                                                 >
                                                     Gestionar Ítem
                                                     <i class="material-icons dark blue-text left">settings</i>
                                                 </a>
                                             </div>
-                                        {% endif %}
+                                        </div>
+                                        <div class="row">
+                                            <div class="col 1">
+                                                <b>Estado:</b>
+                                                {{ i.estado }}
+                                            </div>
+                                            <div class="col l4 left">
+                                                <b>Costo en horas:</b>
+                                                {{ i.costo }}h
+                                            </div>
+                                            <div class="col 3">
+                                                <b>Tipo de ítem:</b>
+                                                {{ i.tipoItem.nombreTipo }}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="row">
-                                        <div class="col 1">
-                                            <b>Estado:</b>
-                                            {{ i.estado}}
-                                        </div>
-                                        <div class="col l4 left">
-                                            <b>Costo en horas:</b>
-                                            {{ i.costo }}h
-                                        </div>
-                                        <div class="col 3">
-                                            <b>Tipo de ítem:</b>
-                                            {{ i.tipoItem.nombreTipo}}
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                        {% endfor %}
-                    </div>
-                    <div class="filterDiv pendiente">
-                        {% for i in items_pendiente %}
-                            <li>
-                                <div class="card-panel" style="border:2px solid #ff9800;">
-                                    <div class="row">
-                                        <div class="col l4 left">
-                                            <b>{{ i.nombre }}</b>
-                                        </div>
-                                        {% if  fase.estado != "cerrada" %}
+                                </li>
+                            {% endfor %}
+                        </div><br>
+                    {% endfor %}
+                </div>
+                <div class="filterDiv cerrada">
+                    {% for lb in lb_cerrada %}
+                        <div style="border-width: 5px 5px;border:solid black ;border-radius: 10px;">
+                            <div class="container" style="text-align: center"
+                                 title="Si desea gestionar la Línea Base, haga click en el botón de Configurar Fase.">
+                                <h6>
+                                    <b>{{ lb.nombre }}</b> ({{ lb.estado }})
+                                </h6>
+                            </div>
+                            {% for i in lb.items.all %}
+                                <li style="padding-left: 8px;padding-right: 8px;">
+                                    <div class="card-panel" style="border:1px solid black;border-radius: 5px;">
+                                        <div class="row">
+                                            <div class="col l4 left">
+                                                <b>{{ i.nombre }}</b>
+                                            </div>
                                             <div class="col l4 right">
-                                                <a href="{%url 'itemConfigurar' i.id fase.id proyecto.id%}"
+                                                <a href="{% url 'itemConfigurar' i.id fase.id proyecto.id %}"
                                                    title="Ver y/o modificar datos del ítem, relacionar, reversionar."
+                                                   style="color: black"
                                                 >
                                                     Gestionar Ítem
-                                                    <i class="material-icons dark blue-text left">settings</i>
+                                                    <i class="material-icons dark black-text left">settings</i>
                                                 </a>
                                             </div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="row">
-                                        <div class="col 1">
-                                            <b>Estado:</b>
-                                            {{ i.estado}}
                                         </div>
-                                        <div class="col l4 left">
-                                            <b>Costo en horas:</b>
-                                            {{ i.costo }}h
-                                        </div>
-                                        <div class="col 3">
-                                            <b>Tipo de ítem:</b>
-                                            {{ i.tipoItem.nombreTipo}}
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                        {% endfor %}
-                    </div>
-                    <div class="filterDiv aprobado">
-                        {% for i in items_aprobado %}
-                            <li>
-                                <div class="card-panel" style="border:2px solid #1b5e20;">
-                                    <div class="row">
-                                        <div class="col l4 left">
-                                            <b>{{ i.nombre }}</b>
-                                        </div>
-                                        {% if  fase.estado != "cerrada" %}
-                                            <div class="col l4 right">
-                                                <a href="{%url 'itemConfigurar' i.id fase.id proyecto.id%}"
-                                                   title="Ver y/o modificar datos del ítem, relacionar, reversionar."
-                                                >
-                                                    Gestionar Ítem
-                                                    <i class="material-icons dark blue-text left">settings</i>
-                                                </a>
+                                        <div class="row">
+                                            <div class="col 1">
+                                                <b>Estado:</b>
+                                                {{ i.estado }}
                                             </div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="row">
-                                        <div class="col 1">
-                                            <b>Estado:</b>
-                                            {{ i.estado}}
-                                        </div>
-                                        <div class="col l4 left">
-                                            <b>Costo en horas:</b>
-                                            {{ i.costo }}h
-                                        </div>
-                                        <div class="col 3">
-                                            <b>Tipo de ítem:</b>
-                                            {{ i.tipoItem.nombreTipo}}
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                        {% endfor %}
-                    </div>
-                    <div class="filterDiv en revision">
-                        {% for i in items_revision %}
-                            <li>
-                                <div class="card-panel" style="border:1.5px solid #ef6c00;">
-                                    <div class="row">
-                                        <div class="col l4 left">
-                                            <b>{{ i.nombre }}</b>
-                                        </div>
-                                        {% if  fase.estado != "cerrada" %}
-                                            <div class="col l4 right">
-                                                <a href="{%url 'itemConfigurar' i.id fase.id proyecto.id%}"
-                                                   title="Ver y/o modificar datos del ítem, relacionar, reversionar."
-                                                >
-                                                    Gestionar Ítem
-                                                    <i class="material-icons dark blue-text left">settings</i>
-                                                </a>
+                                            <div class="col l4 left">
+                                                <b>Costo en horas:</b>
+                                                {{ i.costo }}h
                                             </div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="row">
-                                        <div class="col 1">
-                                            <b>Estado:</b>
-                                            {{ i.estado}}
-                                        </div>
-                                        <div class="col l4 left">
-                                            <b>Costo en horas:</b>
-                                            {{ i.costo }}h
-                                        </div>
-                                        <div class="col 3">
-                                            <b>Tipo de ítem:</b>
-                                            {{ i.tipoItem.nombreTipo}}
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                        {% endfor %}
-                    </div>
-                    <div class="filterDiv abierta">
-                        {% for i in items_LB_abierta %}
-                            <li>
-                                <div class="card-panel" style="border:2.5px solid #039be5 ;">
-                                    <div class="row">
-                                        <div class="col l4 left">
-                                            <b>{{ i.nombre }}</b>
-                                        </div>
-                                        {% if  fase.estado != "cerrada" %}
-                                            <div class="col l4 right">
-                                                <a href="{%url 'itemConfigurar' i.id fase.id proyecto.id%}"
-                                                   title="Ver y/o modificar datos del ítem, relacionar, reversionar."
-                                                >
-                                                    Gestionar Ítem
-                                                    <i class="material-icons dark blue-text left">settings</i>
-                                                </a>
+                                            <div class="col 3">
+                                                <b>Tipo de ítem:</b>
+                                                {{ i.tipoItem.nombreTipo }}
                                             </div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="row">
-                                        <div class="col 1">
-                                            <b>Estado:</b>
-                                            {{ i.estado}}
-                                        </div>
-                                        <div class="col l4 left">
-                                            <b>Costo en horas:</b>
-                                            {{ i.costo }}h
-                                        </div>
-                                        <div class="col 3">
-                                            <b>Tipo de ítem:</b>
-                                            {{ i.tipoItem.nombreTipo}}
                                         </div>
                                     </div>
-                                </div>
-                            </li>
-                        {% endfor %}
-                    </div>
-                    <div class="filterDiv cerrada">
-                        {% for i in items_LB_cerrada %}
-                            <li>
-                                <div class="card-panel" style="border:2.5px solid black ;">
-                                    <div class="row">
-                                        <div class="col l4 left">
-                                            <b>{{ i.nombre }}</b>
-                                        </div>
-                                        {% if  fase.estado != "cerrada" %}
-                                            <div class="col l4 right">
-                                                <a href="{%url 'itemConfigurar' i.id fase.id proyecto.id%}"
-                                                   title="Ver y/o modificar datos del ítem, relacionar, reversionar."
-                                                >
-                                                    Gestionar Ítem
-                                                    <i class="material-icons dark blue-text left">settings</i>
-                                                </a>
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="row">
-                                        <div class="col 1">
-                                            <b>Estado:</b>
-                                            {{ i.estado}}
-                                        </div>
-                                        <div class="col l4 left">
-                                            <b>Costo en horas:</b>
-                                            {{ i.costo }}h
-                                        </div>
-                                        <div class="col 3">
-                                            <b>Tipo de ítem:</b>
-                                            {{ i.tipoItem.nombreTipo}}
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                        {% endfor %}
-                    </div>
-                </ul>
+                                </li>
+                            {% endfor %}
+                        </div><br>
+                    {% endfor %}
+                </div>
+            </ul>
         </section>
     </div>
 

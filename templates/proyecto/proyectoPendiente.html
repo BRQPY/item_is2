@@ -278,21 +278,17 @@
                     </div>
                 {% endif %}
                 {% if hay_miembros and hay_roles and hay_tipos and hay_comite and hay_fases%}
-                    <form
-                            action="/proyecto/proyectoInicializar/"
-                            id="FormInicializar"
-                    >
-                        <div class="col s5 m3">
-                            <div class="card">
-                                <div class="card-image" style= "border:1px solid #028839;">
-                                    <a href="#" onclick="document.getElementById('FormInicializar').submit()" >
-                                        <img src="{% static 'img/IniciarProyecto.jpg' %}" alt="IniciarProyecto" width="80" height="180">
-                                        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                                    </a>
-                                </div>
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style="border:1px solid #028839;">
+                                <a href="/proyecto/proyectoInicializar/proyectoid={{ proyecto.id }}/"
+                                   onclick="return confirm('Está seguro de iniciar el Proyecto?');"
+                                >
+                                    <img src="{% static 'img/IniciarProyecto.jpg' %}" alt="IniciarProyecto" width="80" height="180">
+                                </a>
                             </div>
                         </div>
-                    </form>
+                    </div>
                 {% else %}
                     <div class="col s5 m3">
                         <div class="card">
@@ -308,33 +304,31 @@
                         </div>
                     </div>
                 {% endif %}
-                <form
-                        action="/proyecto/proyectoCancelar/"
-                        id="FormCancelar"
-                >
-                    <div class="col s5 m3">
-                        <div class="card">
-                            <div class="card-image" style= "border:1px solid #f4c80c;">
-                                <a href="#" onclick="document.getElementById('FormCancelar').submit()" >
-                                    <img src="{% static 'img/CancelarProyecto.jpg' %}" alt="CancelarProyecto" width="80" height="180">
-                                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                                </a>
-                            </div>
+                <div class="col s5 m3">
+                    <div class="card">
+                        <div class="card-image" style="border:1px solid #f4c80c;">
+                            <a href="/proyecto/proyectoCancelar/proyectoid={{ proyecto.id }}/"
+                               onclick="return confirm('Está seguro de cancelar el Proyecto?');"
+                            >
+                                <img src="{% static 'img/CancelarProyecto.jpg' %}" alt="CancelarProyecto" width="80"
+                                     height="180">
+                            </a>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
         {%endif%}
     </div>
     <br>
-    {%if proyecto.estado != "cancelado"%}
-                <form action="/proyecto/unable/">
-                    <br><button type="submit" class="btn-small yellow darken-3 right">
-                            Deshabilitar Proyecto
-                        </button>
-                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                </form>
-            {%endif%}<br>
+    {% if proyecto.estado == "cancelado" %}
+        <form action="/proyecto/unable/">
+            <br>
+            <button type="submit" class="btn-small red darken-3 right">
+                Deshabilitar Proyecto
+            </button>
+            <input type="hidden" value={{ proyecto.id }} id="proyectoid" name="proyectoid">
+        </form>
+    {% endif %}<br>
 <script>
 var acc = document.getElementsByClassName("accordion");
 var i;

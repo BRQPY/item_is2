@@ -4,20 +4,21 @@
 {% block content %}
     <style>
         * {
-          box-sizing: border-box;
+            box-sizing: border-box;
         }
 
         /* Create three equal columns that floats next to each other */
         .column {
-          float: left;
-          width: 33.33%;
-          padding: 10px;
+            float: left;
+            width: 33.33%;
+            padding: 10px;
         }
+
         /* Clear floats after the columns */
         .row_opciones:after {
-          content: "";
-          display: table;
-          clear: both;
+            content: "";
+            display: table;
+            clear: both;
         }
     </style>
     <form action="/fase/FaseProyectoInicializado/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/mensaje=' '">
@@ -26,122 +27,156 @@
             <i class="material-icons dark blue-text left">keyboard_return</i>
         </button>
     </form>
-    {{mensaje}}
+    {{ mensaje }}
 
-    {%if proyecto.estado != "cancelado"%}
-    <div class="container">
-        <h4 style="text-align: center">{{item.nombre}}</h4>
-        <div class="row">
-            <div class="col s5 m3">
-                <div class="card">
-                    <div class="card-image" style= "border:1px solid #03a9f4;">
-                        <a href="{%url 'itemVerDatos' item.id fase.id proyecto.id%}">
-                            <img src="{% static 'img/datosdelitem.jpg' %}" alt="datosdelitem" width="80" height="180">
-                        </a>
+    {% if proyecto.estado != "cancelado" %}
+        <div class="container">
+            <h4 style="text-align: center">{{ item.nombre }}</h4>
+            <div class="row">
+                <div class="col s5 m3">
+                    <div class="card">
+                        <div class="card-image" style="border:1px solid #03a9f4;">
+                            <a href="{% url 'itemVerDatos' item.id fase.id proyecto.id %}">
+                                <img src="{% static 'img/datosdelitem.jpg' %}" alt="datosdelitem" width="80"
+                                     height="180">
+                            </a>
+                        </div>
                     </div>
                 </div>
+                {% if fase.estado != "cerrada" %}
+                    <form
+                            action="/item/relaciones/ver/itemid={{ item.id }}/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/mensaje='' "
+                            id="formRelaciones"
+                    >
+                        <div class="col s5 m3">
+                            <div class="card">
+                                <div class="card-image" style="border:1px solid #03a9f4;">
+                                    <a href="#" onclick="document.getElementById('formRelaciones').submit()">
+                                        <img src="{% static 'img/Relaciones.jpg' %}" alt="relacionesitem" width="80"
+                                             height="180">
+                                        <input type="hidden" value={{ proyecto.id }} id="proyectoid" name="proyectoid">
+                                        <input type="hidden" value={{ fase.id }} id="faseid" name="faseid">
+                                        <input type="hidden" value={{ item.id }} id="itemid" name="itemid">
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                </form>
+                {% else %}
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style="border:1px solid #7d7d7d;">
+                                <a
+                                        style="cursor: default"
+                                        title="El estado de la fase no permite acceder al panel de relaciones. Haga click en trazabilidad para ver sus relaciones."
+                                >
+                                    <img src="{% static 'img/relacionesgris.png' %}" alt="relacionesitem" width="80"
+                                         height="180">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                <form action="/item/trazabilidad/" id="formTrazabilidad">
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style="border:1px solid #03a9f4;">
+                                {% if puede_calculo_impacto %}
+                                    <a href="#" onclick="document.getElementById('formTrazabilidad').submit()">
+                                        <img src="{% static 'img/Trazabilidad.jpg' %}" alt="trazabilidaditem" width="80"
+                                             height="180">
+                                        <input type="hidden" value={{ proyecto.id }} id="proyectoid" name="proyectoid">
+                                        <input type="hidden" value={{ fase.id }} id="faseid" name="faseid">
+                                        <input type="hidden" value={{ item.id }} id="itemIdTrazabilidad"
+                                               name="itemIdTrazabilidad">
+                                    </a>
+                                {% else %}
+                                    <a
+                                            href="#"
+                                            title="Usted no cuenta con el permiso para obtener la trazabilidad del ítem."
+                                            style="cursor: default"
+                                    >
+                                        <img src="{% static 'img/Trazabilidad.jpg' %}" alt="trazabilidaditem" width="80"
+                                             height="180">
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <form action="/item/calculoImpacto/" id="formImpacto">
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style="border:1px solid #03a9f4;">
+                                {% if puede_calculo_impacto %}
+                                    <a href="#" onclick="document.getElementById('formImpacto').submit()">
+                                        <img src="{% static 'img/calculodeimpacto .jpg' %}" alt="calculodeimpacto"
+                                             width="80" height="180">
+                                        <input type="hidden" value={{ proyecto.id }} id="proyectoid" name="proyectoid">
+                                        <input type="hidden" value={{ fase.id }} id="faseid" name="faseid">
+                                        <input type="hidden" value={{ item.id }} id="itemIdCalculo"
+                                               name="itemIdCalculo">
+                                    </a>
+                                {% else %}
+                                    <a
+                                            href="#"
+                                            title="Usted no cuenta con el permiso para obtener el Cálculo de Impacto del."
+                                            style="cursor: default"
+                                    >
+                                        <img src="{% static 'img/calculodeimpacto .jpg' %}" alt="calculodeimpacto"
+                                             width="80" height="180">
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <form action="/item/history/" id="formHistorial">
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style="border:1px solid #03a9f4;">
+                                <a href="#" onclick="document.getElementById('formHistorial').submit()">
+                                    <img src="{% static 'img/HistorialdeCambios.jpg' %}" alt="historialitem"
+                                         width="80"
+                                         height="180">
+                                    <input type="hidden" value={{ proyecto.id }} id="proyectoid" name="proyectoid">
+                                    <input type="hidden" value={{ fase.id }} id="faseid" name="faseid">
+                                    <input type="hidden" value={{ item.id }} id="itemid" name="itemid">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                {% if fase.estado != "cerrada" %}
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style="border:1px solid #ff3d00;">
+                                <a href="/item/unable/proyectoid={{ proyecto.id }}/faseid={{ fase.id }}/itemid={{ item.id }}"
+                                   onclick="return confirm('Está seguro de deshabilitar el ítem ?');"
+                                >
+                                    <img src="{% static 'img/DeshabilitarItem.jpg' %}" alt="deshabilitaritem" width="80"
+                                         height="180">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style="border:1px solid #7d7d7d;">
+                                <a
+                                        style="cursor: default"
+                                        title="El estado de la fase no permite deshabilitar el ítem."
+                                >
+                                    <img src="{% static 'img/deshabilitaritemgris.png' %}" alt="deshabilitaritemgris" width="80"
+                                         height="180">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
             </div>
-            <form
-                    action="/item/relaciones/ver/itemid={{ item.id }}/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/mensaje='' "
-                    id="formRelaciones"
-            >
-                <div class="col s5 m3">
-                    <div class="card">
-                        <div class="card-image" style= "border:1px solid #03a9f4;">
-                            <a href="#" onclick="document.getElementById('formRelaciones').submit()" >
-                                <img src="{% static 'img/Relaciones.jpg' %}" alt="relacionesitem" width="80" height="180">
-                                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-                                <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </form>
-            <form action="/item/trazabilidad/" id="formTrazabilidad">
-                <div class="col s5 m3">
-                    <div class="card">
-                        <div class="card-image" style= "border:1px solid #03a9f4;">
-                            {% if puede_calculo_impacto %}
-                                <a href="#" onclick="document.getElementById('formTrazabilidad').submit()">
-                                    <img src="{% static 'img/Trazabilidad.jpg' %}" alt="trazabilidaditem" width="80" height="180">
-                                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                                    <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-                                    <input  type="hidden" value={{item.id}} id="itemIdTrazabilidad" name="itemIdTrazabilidad">
-                                </a>
-                            {% else %}
-                                <a
-                                        href="#"
-                                        title="Usted no cuenta con el permiso para obtener la trazabilidad del ítem."
-                                        style="cursor: default"
-                                >
-                                    <img src="{% static 'img/Trazabilidad.jpg' %}" alt="trazabilidaditem" width="80" height="180">
-                                </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </form>
-            <form action="/item/calculoImpacto/" id="formImpacto">
-                <div class="col s5 m3">
-                    <div class="card">
-                        <div class="card-image" style= "border:1px solid #03a9f4;">
-                            {% if puede_calculo_impacto %}
-                                <a href="#" onclick="document.getElementById('formImpacto').submit()">
-                                    <img src="{% static 'img/calculodeimpacto .jpg' %}" alt="calculodeimpacto" width="80" height="180">
-                                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                                    <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-                                    <input  type="hidden" value={{item.id}} id="itemIdCalculo" name="itemIdCalculo">
-                                </a>
-                            {% else %}
-                                <a
-                                        href="#"
-                                        title="Usted no cuenta con el permiso para obtener el Cálculo de Impacto del."
-                                        style="cursor: default"
-                                >
-                                    <img src="{% static 'img/calculodeimpacto .jpg' %}" alt="calculodeimpacto" width="80" height="180">
-                                </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </form>
-            <form action="/item/history/" id="formHistorial">
-                <div class="col s5 m3">
-                    <div class="card">
-                        <div class="card-image" style= "border:1px solid #03a9f4;">
-                            <a href="#" onclick="document.getElementById('formHistorial').submit()">
-                                <img src="{% static 'img/HistorialdeCambios.jpg' %}" alt="historialitem" width="80" height="180">
-                                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-                                <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </form>
         </div>
-        <div class="row">
-        </div>
-    </div> <br><br><br><br>
-                <div class="row_opciones">
-                    <div class="column">
-                        <form action="/item/unable/"
-                              onsubmit="return confirm('Está seguro de deshabilitar el ítem ?');"
-                        >
-                            <button type="submit" class="btn red darken-5 left"
-                            >
-                                Deshabilitar Item
-                               <i class="material-icons white-text left">delete</i>
-                            </button>
-                            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-                            <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
-                        </form>
-                    </div>
-                </div>
-
-
-            {%endif%}
-
-{% endblock%}
+    {% endif %}
+{% endblock %}
