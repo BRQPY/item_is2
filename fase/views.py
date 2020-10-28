@@ -2312,7 +2312,6 @@ def itemReversionar(request, proyectoid, faseid, itemid, history_date):
 
         """ Se podra reversionar el item si este se encuentra en estado de desarrollo"""
         if (item.estado == 'en desarrollo'):
-
             verNum = 0
             versions = Version.objects.get_for_object(item)
             total = len(versions)
@@ -2329,6 +2328,7 @@ def itemReversionar(request, proyectoid, faseid, itemid, history_date):
             "Asigna el numero de version a la reversion del item"
             item.version = num.version + 1
             item.save()
+
 
             return redirect('itemConfigurar', itemid=itemid, faseid=faseid, proyectoid=proyectoid)
         else:
