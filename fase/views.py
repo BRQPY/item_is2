@@ -160,6 +160,8 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
         lb_abierta = []
         lb_cerrada_items = []
         lb_cerrada = []
+        lb_comprometida = []
+        lb_comprometida_items = []
         for lb in fase.lineasBase.all():
             if lb.estado == "abierta":
                 lb_abierta_items.append(lb)
@@ -167,6 +169,9 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
             if lb.estado == "cerrada":
                 lb_cerrada_items.append(lb.items.all())
                 lb_cerrada.append(lb)
+            if lb.estado == "comprometida":
+                lb_comprometida_items.append(lb.items.all())
+                lb_comprometida.append(lb)
         tipos = fase.tipoItem.all()
         return render(request, 'fase/FaseProyectoInicializado.html', {'proyecto': proyecto, 'fase': fase,
                                                                       'items': items, 'tipos': tipos,
@@ -176,8 +181,10 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
                                                                       'items_LB_cerrada':items_LB_cerrada,
                                                                       'items_LB_abierta':items_LB_abierta,
                                                                       'mensaje': mensaje, 'lb_abierta':lb_abierta,'lb_cerrada':lb_cerrada,
+                                                                        'lb_comprometida':lb_comprometida,
                                                                       'lb_abierta_items': lb_abierta_items,
                                                                       'lb_cerrada_items': lb_cerrada_items,
+                                                                      'lb_comprometida_items': lb_comprometida_items,
                                                                       'items_revision':items_revision})
 
 
@@ -1210,7 +1217,7 @@ def itemCambiarEstado(request):
     item = Item.objects.get(id=dato['itemid'])
 
     "Verificar que si el item esta aprobado, no debe cambiar su estado si este ya posee relaciones."
-    if item.estado == "aprobado":
+    if item.estado == "aprobado" or item.estado == "en revision":
         relaciones = item.relaciones.exclude(estado="deshabilitado")
         cambiar_estado = True
         for r in relaciones:
@@ -1317,7 +1324,7 @@ def itemCambiarEstado(request):
                 for ir in itemsRelacionados:
                     """Obtener relacion objeto."""
                     relacion = Relacion.objects.get(item_from=item, item_to=ir)
-                    """Si el item perteece a la fase anterior y su estado es en linea base."""
+                    """Si el item pertenece a la fase anterior y su estado es en linea base."""
                     if relacion.fase_item_to == anterior and ir.estado == "en linea base":
                         """Obtener linea base."""
                         lineaBaseItem = LineaBase.objects.get(items__id=ir.id)
@@ -1514,9 +1521,9 @@ def itemVerRelaciones(request, itemid, faseid, proyectoid, mensaje):
         "Solo si esta en linea base puede avanzar de fase."
         siguiente = None
         itemsFaseSiguiente = None
-        if item_recibido.estado == "en linea base":
+        if item_recibido.estado == "en linea base" or item_recibido.estado == "en revision":
             linea_base_item = LineaBase.objects.filter(items=item_recibido)
-            if linea_base_item.get().estado == "cerrada":
+            if linea_base_item.get().estado == "cerrada" or item_recibido.estado == "en revision":
                 fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
                 actual = False
                 for fp in fasesProyecto:
@@ -1538,7 +1545,7 @@ def itemVerRelaciones(request, itemid, faseid, proyectoid, mensaje):
         "Verifica si hay al menos un ítem con el cual establecer relaciones"
         if itemsFaseActual or itemsFaseSiguiente:
             habilitar_Add_relacion = True
-
+        print(siguiente)
         return render(request, "item/ItemVerRelacion.html", {'proyecto': proyecto, 'fase': fase, 'item': item_recibido,
                                                              'antecesores': items_antecesores,
                                                              'sucesores': items_sucesores,
@@ -1581,13 +1588,18 @@ def itemRelacionesRemover(request, itemid, item_rm, faseid, proyectoid):
         fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
         cont = 0
         esPrimeraFase = False
+        fase_item_final = Fase.objects.get(id=item_final_remover.faseid)
         for fp in fasesProyecto:
             cont = cont + 1
             if fp == fase:
                 if cont == 1:
                     esPrimeraFase = True
                     break
-        if not esPrimeraFase:
+        esPrimeraFase_item_final = False
+        if fase == fase_item_final and esPrimeraFase:
+            esPrimeraFase_item_final = True
+
+        if not esPrimeraFase or not esPrimeraFase_item_final:
             """Si el item cuenta con un estado aprobado o bien, en linea base."""
             if item_final_remover.estado == "aprobado" or item_final_remover.estado == "en linea base":
                 "Debe verificar que el item no quede sin al menos una relacion a otro item aprobado o antecesor en linea base."
@@ -1620,27 +1632,30 @@ def itemRelacionesRemover(request, itemid, item_rm, faseid, proyectoid):
             "El mismo testeo para el item del cual queremos remover la relacion."
 
             "Debe verificar que el item no quede sin al menos una relacion a otro item aprobado o antecesor en linea base."
-            relaciones_item_inicio = item_inicio.relaciones.exclude(id=item_final_remover.id)
-            """Recorrer relaciones."""
-            for r in relaciones_item_inicio:
-                """Obtener relacion objeto."""
-                relacion = Relacion.objects.get(item_from=r, item_to=item_inicio)
-                """Si la relacion es de tipo padre y el estado del item es aprobado o en linea base."""
-                if relacion.tipo == "padre" and (r.estado == "aprobado" or r.estado == "en linea base"):
-                    """Setear bandera en true."""
-                    ok_remover_inicio = True
-                    """Romper ciclo."""
-                    break
-                """Si la relacion es de tipo antecesor y el estado del item es en linea base"""
-                if relacion.tipo == "antecesor" and r.estado == "en linea base":
-                    """Obtener linea base."""
-                    lineaBaseItem = LineaBase.objects.get(items__id=r.id)
-                    """Si el estado de la linea base es cerrada."""
-                    if lineaBaseItem.estado == "cerrada":
+            if item_inicio.estado == "aprobado" or item_inicio.estado == "en linea base":
+                relaciones_item_inicio = item_inicio.relaciones.exclude(id=item_final_remover.id)
+                """Recorrer relaciones."""
+                for r in relaciones_item_inicio:
+                    """Obtener relacion objeto."""
+                    relacion = Relacion.objects.get(item_from=r, item_to=item_inicio)
+                    """Si la relacion es de tipo padre y el estado del item es aprobado o en linea base."""
+                    if relacion.tipo == "padre" and (r.estado == "aprobado" or r.estado == "en linea base"):
                         """Setear bandera en true."""
                         ok_remover_inicio = True
                         """Romper ciclo."""
                         break
+                    """Si la relacion es de tipo antecesor y el estado del item es en linea base"""
+                    if relacion.tipo == "antecesor" and r.estado == "en linea base":
+                        """Obtener linea base."""
+                        lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                        """Si el estado de la linea base es cerrada."""
+                        if lineaBaseItem.estado == "cerrada":
+                            """Setear bandera en true."""
+                            ok_remover_inicio = True
+                            """Romper ciclo."""
+                            break
+            else:
+                ok_remover_inicio = True
         else:
             ok_remover_inicio = True
             ok_remover_final = True
@@ -1659,8 +1674,11 @@ def itemRelacionesRemover(request, itemid, item_rm, faseid, proyectoid):
             return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid,
                             mensaje='La relación se removió correctamente.')
 
+        print("inicio", ok_remover_inicio)
+        print("final", ok_remover_final)
         """Redirigir a la vista itemVerRelaciones sin romper la relacion."""
-        return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid, mensaje='Error. No se pudo remover la relación.')
+        return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid,
+                        mensaje="Error! Al intentar remover la relación, si el estado de uno o ambos ítems participantes en la relación es de 'aprobado' o 'en línea base' estos no pueden quedar disconexos.")
 
 
 @transaction.atomic()
@@ -3053,6 +3071,8 @@ def AprobarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid)
                                                         solicitud = RoturaLineaBaseComprometida.objects.create(
                                                             comprometida_estado="pendiente")
                                                         solicitud.save()
+                                                        r.estado = "en linea base"
+                                                        r.save()
                                                         lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
                                                         lineaBaseItem.save()
                                                     if lineaBaseItem.estado == "abierta":
@@ -3324,6 +3344,8 @@ def RechazarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid
                                                         solicitud = RoturaLineaBaseComprometida.objects.create(
                                                             comprometida_estado="pendiente")
                                                         solicitud.save()
+                                                        r.estado = "en linea base"
+                                                        r.save()
                                                         lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
                                                         lineaBaseItem.save()
                                                     if lineaBaseItem.estado == "abierta":
@@ -3642,6 +3664,8 @@ def AprobarRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid,
                                                         solicitud = RoturaLineaBaseComprometida.objects.create(
                                                             comprometida_estado="pendiente")
                                                         solicitud.save()
+                                                        r.estado = "en linea base"
+                                                        r.save()
                                                         lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
                                                         lineaBaseItem.save()
                                                     if lineaBaseItem.estado == "abierta":
@@ -3895,6 +3919,8 @@ def RechazarRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid
                                                         solicitud = RoturaLineaBaseComprometida.objects.create(
                                                             comprometida_estado="pendiente")
                                                         solicitud.save()
+                                                        r.estado = "en linea base"
+                                                        r.save()
                                                         lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
                                                         lineaBaseItem.save()
                                                     if lineaBaseItem.estado == "abierta":
@@ -4210,7 +4236,11 @@ def itemTrazabilidad(request):
         for r in Relacion.objects.all():
             if r.tipo == "antecesor" or r.tipo == "padre":
                 relaciones.append(r)
-
+        print(adj)
+        for r in relaciones:
+            print("item from", r.item_from.nombre)
+            print("item to", r.item_to.nombre)
+            print("tipo ", r.tipo)
         return render(request, 'item/TrazabilidadItem.html', {'fasesProyecto': fasesProyecto, 'proyecto': proyecto,
                                                               'lista_item': sorted(lista_items, key=lambda x: x.id,
                                                                                    reverse=False),

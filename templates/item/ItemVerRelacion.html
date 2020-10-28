@@ -46,7 +46,7 @@
           <strong> {{ mensaje }}</strong>
         </div>
     {% endif %}
-    {% if mensaje == "Error. No se pudo remover la relación." %}
+    {% if mensaje == "Error! Al intentar remover la relación, si el estado de uno o ambos ítems participantes en la relación es de 'aprobado' o 'en línea base' estos no pueden quedar disconexos." %}
         <div class="alert_message" >
           <span class="closebtn">&times;</span>
           <strong> {{ mensaje }}</strong>

@@ -150,6 +150,7 @@
         <button class="btnItem" onclick="filterSelection('en revision')">En revisión</button>
         <button class="btnItem" onclick="filterSelection('abierta')"> Línea Base abierta</button>
         <button class="btnItem" onclick="filterSelection('cerrada')"> Línea Base cerrada</button>
+        <button class="btnItem" onclick="filterSelection('comprometida')"> Línea Base comprometida</button>
     </div>
     <div class="container">
         <section class="section section-expenses">
@@ -341,6 +342,52 @@
                 </div>
                 <div class="filterDiv cerrada">
                     {% for lb in lb_cerrada %}
+                        <div style="border-width: 5px 5px;border:solid black ;border-radius: 10px;">
+                            <div class="container" style="text-align: center"
+                                 title="Si desea gestionar la Línea Base, haga click en el botón de Configurar Fase.">
+                                <h6>
+                                    <b>{{ lb.nombre }}</b> ({{ lb.estado }})
+                                </h6>
+                            </div>
+                            {% for i in lb.items.all %}
+                                <li style="padding-left: 8px;padding-right: 8px;">
+                                    <div class="card-panel" style="border:1px solid black;border-radius: 5px;">
+                                        <div class="row">
+                                            <div class="col l4 left">
+                                                <b>{{ i.nombre }}</b>
+                                            </div>
+                                            <div class="col l4 right">
+                                                <a href="{% url 'itemConfigurar' i.id fase.id proyecto.id %}"
+                                                   title="Ver y/o modificar datos del ítem, relacionar, reversionar."
+                                                   style="color: black"
+                                                >
+                                                    Gestionar Ítem
+                                                    <i class="material-icons dark black-text left">settings</i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col 1">
+                                                <b>Estado:</b>
+                                                {{ i.estado }}
+                                            </div>
+                                            <div class="col l4 left">
+                                                <b>Costo en horas:</b>
+                                                {{ i.costo }}h
+                                            </div>
+                                            <div class="col 3">
+                                                <b>Tipo de ítem:</b>
+                                                {{ i.tipoItem.nombreTipo }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </div><br>
+                    {% endfor %}
+                </div>
+                <div class="filterDiv comprometida">
+                    {% for lb in lb_comprometida %}
                         <div style="border-width: 5px 5px;border:solid black ;border-radius: 10px;">
                             <div class="container" style="text-align: center"
                                  title="Si desea gestionar la Línea Base, haga click en el botón de Configurar Fase.">

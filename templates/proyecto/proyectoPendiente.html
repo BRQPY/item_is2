@@ -26,14 +26,14 @@
   .progressbar li:before {
       width: 30px;
       height: 30px;
-      content: counter(step);
+      content: '';
       counter-increment: step;
       line-height: 30px;
       border: 2px solid #7d7d7d;
       display: block;
       text-align: center;
       margin: 0 auto 10px auto;
-      border-radius: 50%;
+      border-radius: 100%;
       background-color: white;
   }
   .progressbar li:after {
@@ -45,6 +45,7 @@
       top: 15px;
       left: -50%;
       z-index: -1;
+
   }
   .progressbar li:first-child:after {
       content: none;
@@ -57,6 +58,7 @@
   }
   .progressbar li.active + li:after {
       background-color: #024e82;
+
   }
 
 </style>
@@ -80,7 +82,7 @@
                         Miembros
                     </li>
                 {% endif %}
-                {% if hay_miembros and hay_roles %}
+                {% if hay_roles %}
                     <li class="active">
                         Roles
                     </li>
@@ -89,7 +91,7 @@
                         Roles
                     </li>
                 {% endif %}
-                {% if hay_miembros and hay_roles and hay_tipos %}
+                {% if hay_tipos %}
                     <li class="active">
                         Tipos de Ítem
                     </li>
@@ -98,7 +100,7 @@
                         Tipos de Ítem
                     </li>
                 {% endif %}
-                {% if hay_miembros and hay_roles and hay_tipos and hay_comite%}
+                {% if hay_comite%}
                     <li class="active">
                         Comité
                     </li>
@@ -107,7 +109,7 @@
                         Comité
                     </li>
                 {% endif %}
-                {% if hay_miembros and hay_roles and hay_tipos and hay_comite and hay_fases%}
+                {% if hay_fases%}
                     <li class="active">
                         Fases
                     </li>
@@ -329,6 +331,7 @@
             <input type="hidden" value={{ proyecto.id }} id="proyectoid" name="proyectoid">
         </form>
     {% endif %}<br>
+
 <script>
 var acc = document.getElementsByClassName("accordion");
 var i;
