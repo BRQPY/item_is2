@@ -173,12 +173,13 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
                                                                       'items_desarrollo': items_desarrollo,
                                                                       'items_pendiente': items_pendiente,
                                                                       'items_aprobado': items_aprobado,
-                                                                      'items_LB_cerrada':items_LB_cerrada,
-                                                                      'items_LB_abierta':items_LB_abierta,
-                                                                      'mensaje': mensaje, 'lb_abierta':lb_abierta,'lb_cerrada':lb_cerrada,
+                                                                      'items_LB_cerrada': items_LB_cerrada,
+                                                                      'items_LB_abierta': items_LB_abierta,
+                                                                      'mensaje': mensaje, 'lb_abierta': lb_abierta,
+                                                                      'lb_cerrada': lb_cerrada,
                                                                       'lb_abierta_items': lb_abierta_items,
                                                                       'lb_cerrada_items': lb_cerrada_items,
-                                                                      'items_revision':items_revision})
+                                                                      'items_revision': items_revision})
 
 
 def faseUsers(request, faseid, proyectoid):
@@ -235,7 +236,7 @@ def faseUsers(request, faseid, proyectoid):
                                                        'cant_user': cant_user,
                                                        'cant_roles_proyecto': cant_roles_proyecto,
                                                        'agregar_mas_users': agregar_mas_users,
-                                                       'hay_roles':hay_roles})
+                                                       'hay_roles': hay_roles})
     return render(request, "fase/faseUsers.html")
 
 
@@ -471,7 +472,6 @@ def FaseAddUser(request):
             """Asignar los permisos del rol al grupo, en la fase correspondiente"""
             assign_perm(c, user, fase)
             """Asignar el grupo al usuario"""
-
 
             """Asignar los permisos del rol al grupo, en la fase correspondiente"""
             # assign_perm(c, grupo, fase)
@@ -876,12 +876,11 @@ def itemCrear(request):
             """Guardar."""
             item.save()
 
-
             """Agregar item a fase."""
             fase.items.add(item)
-            mensaje="Item creado correctamente."
+            mensaje = "Item creado correctamente."
             """Redirigir a la vista de la fase correspondiente."""
-            return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid,mensaje=mensaje)
+            return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
         else:
             """POST para seleccionar tipo de item"""
             """ID del proyecto correspondiente."""
@@ -1044,7 +1043,7 @@ def itemConfigurar(request, itemid, faseid, proyectoid):
                       {'fase': fase, 'item': item, 'proyecto': proyecto, 'archivos': list(item.archivos),
                        'campos': zip(item.tipoItem.campo_extra,
                                      item.campo_extra_valores),
-                       'puede_calculo_impacto':puede_calculo_impacto, 'puede_trazabilidad':puede_trazabilidad})
+                       'puede_calculo_impacto': puede_calculo_impacto, 'puede_trazabilidad': puede_trazabilidad})
 
 
 @transaction.atomic()
@@ -1222,11 +1221,11 @@ def itemCambiarEstado(request):
         if not cambiar_estado:
             mensaje_error = "No es posible cambiar el estado del item ya que este cuenta con relaciones."
 
-            #Template a renderizar: item.html
-            #con parametros -> faseid, proyectoid, item, proyecto, campos extra de item,
-            #permiso para establecer item como pendiente de aprobacion,
-            #permiso para establecer item como parobado, choices
-            #con los distintos estados del item y el mensaje correspondiente.
+            # Template a renderizar: item.html
+            # con parametros -> faseid, proyectoid, item, proyecto, campos extra de item,
+            # permiso para establecer item como pendiente de aprobacion,
+            # permiso para establecer item como parobado, choices
+            # con los distintos estados del item y el mensaje correspondiente.
 
             return render(request, 'item/item.html',
                           {'faseid': dato['faseid'], 'proyectoid': dato['proyectoid'], 'item': item,
@@ -1338,11 +1337,11 @@ def itemCambiarEstado(request):
                     mensaje_error = "No es posible aprobar el item ya que este no posee una relacion con un item antecesor" \
                                     "en linea base cerrada, o bien, con un item padre aprobado."
 
-                        #Template a renderizar: item.html
-                        #con parametros -> faseid, proyectoid, item, proyecto, campos extra de item,
-                        #permiso para establecer item como pendiente de aprobacion,
-                        #permiso para establecer item como parobado, choices
-                        #con los distintos estados del item y el mensaje correspondiente.
+                    # Template a renderizar: item.html
+                    # con parametros -> faseid, proyectoid, item, proyecto, campos extra de item,
+                    # permiso para establecer item como pendiente de aprobacion,
+                    # permiso para establecer item como parobado, choices
+                    # con los distintos estados del item y el mensaje correspondiente.
 
                     return render(request, 'item/item.html',
                                   {'faseid': dato['faseid'], 'proyectoid': dato['proyectoid'], 'item': item,
@@ -1373,11 +1372,11 @@ def itemCambiarEstado(request):
     con los distintos estados del item y el mensaje correspondiente.
     """
     """Redirigir a la vista de la fase correspondiente."""
-    return redirect('faseViewInicializado',faseid=dato['faseid'], proyectoid=dato['proyectoid'],
+    return redirect('faseViewInicializado', faseid=dato['faseid'], proyectoid=dato['proyectoid'],
                     mensaje=mensaje)
 
 
-def itemDeshabilitar(request,proyectoid,faseid,itemid):
+def itemDeshabilitar(request, proyectoid, faseid, itemid):
     """
     **itemDeshabilitar:**
     Vista utilizada para deshabilitar Item.
@@ -1387,15 +1386,15 @@ def itemDeshabilitar(request,proyectoid,faseid,itemid):
     y que (indirectamente) haya iniciado sesion.
     """
     """ID del proyecto"""
-    #proyectoid = request.GET.get('proyectoid')
+    # proyectoid = request.GET.get('proyectoid')
     """Proyecto en el cual se encuentra el item."""
     proyecto = Proyecto.objects.get(id=proyectoid)
     """ID de fase."""
-    #faseid = request.GET.get('faseid')
+    # faseid = request.GET.get('faseid')
     """Fase en la cual se encuentra el item."""
     fase = Fase.objects.get(id=faseid)
     """ID de item."""
-    #itemid = request.GET.get('itemid')
+    # itemid = request.GET.get('itemid')
     """Item a deshabilitar."""
     item = Item.objects.get(id=itemid)
     """Verificar que el usuario cuente con los permisos necesarios."""
@@ -1404,7 +1403,6 @@ def itemDeshabilitar(request,proyectoid,faseid,itemid):
         return redirect('/permissionError/')
 
     """Verificar que el estado del proyecto sea inicializado."""
-
 
     """Verificar que el estado del item sea en desarrollo."""
     if item.estado == "pendiente de aprobacion" or item.estado == "aprobado" or item.estado == "en linea base":
@@ -1453,6 +1451,7 @@ def itemDeshabilitar(request,proyectoid,faseid,itemid):
         mensaje = "Item deshabilitado correctamente."
         return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
     return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
+
 
 def itemVerRelaciones(request, itemid, faseid, proyectoid, mensaje):
     if request.method == 'GET':
@@ -1660,7 +1659,8 @@ def itemRelacionesRemover(request, itemid, item_rm, faseid, proyectoid):
                             mensaje='La relación se removió correctamente.')
 
         """Redirigir a la vista itemVerRelaciones sin romper la relacion."""
-        return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid, mensaje='Error. No se pudo remover la relación.')
+        return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid,
+                        mensaje='Error. No se pudo remover la relación.')
 
 
 @transaction.atomic()
@@ -1823,7 +1823,6 @@ def itemAddRelacion(request):
 
             adj[int(iP.id)] = relaciones_por_item
 
-
         """SI TIENE UN CICLO ELIMINAR RELACIONES Y REDIRIGIR A VISUALIZACION DE RELACIONES"""
         if isCyclicDisconnected(adj, V):
             relaciones_uno = Relacion.objects.get(item_from=itemActual, item_to=itemRelacion)
@@ -1911,9 +1910,9 @@ def faseGestionLineaBase(request, proyectoid, faseid, mensaje):
     """
     if request.method == 'GET':
         """ID de pryecto."""
-        #proyectoid = request.GET.get('proyectoid')
+        # proyectoid = request.GET.get('proyectoid')
         """ID de fase."""
-        #faseid = request.GET.get('faseid')
+        # faseid = request.GET.get('faseid')
         """Obtener fase."""
         fase = Fase.objects.get(id=faseid)
         """Obtener proyecto."""
@@ -1946,7 +1945,7 @@ def faseGestionLineaBase(request, proyectoid, faseid, mensaje):
                       {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, 'crear_lb': crear_lb,
                        'es_comite': es_comite, 'puede_solicitar': puede_solicitar,
                        'lb_abierta': lb_abierta, 'lb_cerrada': lb_cerrada, 'lb_comprometida': lb_comprometida,
-                       'lb_rota': lb_rota, 'mensaje':mensaje,
+                       'lb_rota': lb_rota, 'mensaje': mensaje,
                        })
 
 
@@ -2024,9 +2023,9 @@ def faseAddLineaBase(request):
         else:
             """Si no existen items disponibles, ya no se podra crear linea base."""
             crear_lb = False
-        mensaje= "La Línea Base se creo correctamente."
+        mensaje = "La Línea Base se creo correctamente."
         """Renderizar fase/faseGestionLineaBase.html"""
-        return redirect('LineaBase', proyectoid=proyecto.id, faseid=fase.id, mensaje=mensaje )
+        return redirect('LineaBase', proyectoid=proyecto.id, faseid=fase.id, mensaje=mensaje)
 
     """Se recibe el ID del proyecto en el cual se encuentra actualmente el Usuario"""
     """Recupera de la BD el proyecto en el que se encuentra el usuario."""
@@ -2314,8 +2313,6 @@ def itemReversionar(request, proyectoid, faseid, itemid, history_date):
         """ Se podra reversionar el item si este se encuentra en estado de desarrollo"""
         if (item.estado == 'en desarrollo'):
 
-            num = Item.objects.last()
-            item.version = num.version + 1
             verNum = 0
             versions = Version.objects.get_for_object(item)
             total = len(versions)
@@ -2323,12 +2320,14 @@ def itemReversionar(request, proyectoid, faseid, itemid, history_date):
                 verNum = verNum + 1
                 aux = str(f.revision.date_created)
                 if (aux == history_date):
-
                     break
-
+            "Obtiene el valor del numero de version de la ultima version en la lista"
+            num = Item.objects.last()
+            "Reversiona al item seleccionado"
             versions[verNum - 1].revision.revert()
             item.refresh_from_db()
-
+            "Asigna el numero de version a la reversion del item"
+            item.version = num.version + 1
             item.save()
 
             return redirect('itemConfigurar', itemid=itemid, faseid=faseid, proyectoid=proyectoid)
@@ -2417,7 +2416,7 @@ def cerrarFase(request, proyectoid, faseid):
                 if cerrar and bandera:
                     fase.estado = "cerrada"
                     fase.save()
-                    mensaje= "La Fase se cerro correctamente."
+                    mensaje = "La Fase se cerro correctamente."
                     return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
             else:
 
@@ -2438,7 +2437,6 @@ def cerrarFase(request, proyectoid, faseid):
 
         mensaje = "Error! La Fase no se pudo cerrar. La fase debe poseer al menos un item relacionado con la fase siguiente y todos sus ítems deben pertenecer a una Línea Base Cerrada."
         return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
-
 
 
 def itemCalculoImpacto(request):
@@ -2664,15 +2662,14 @@ def itemCalculoImpacto(request):
                 """Aumentar la suma total de costos"""
                 suma_total = suma_total + int(i.costo)
 
-
         """Obtener porcentaje mediante la suma total y el calculo de impacto del item"""
 
-        porcentaje = round(float((calculo*100)/suma_total), 2)
+        porcentaje = round(float((calculo * 100) / suma_total), 2)
         """Renderizar al html"""
         return render(request, 'item/itemCalculoImpacto.html',
                       {'faseid': faseid, 'proyectoid': proyectoid,
                        'item': itemCalculo,
-                       'porcentaje': float(porcentaje), 'calculo':calculo, 'suma': suma_total})
+                       'porcentaje': float(porcentaje), 'calculo': calculo, 'suma': suma_total})
 
 
 def gestionRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, mensaje):
@@ -2910,15 +2907,14 @@ def AprobarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid)
                 """Registrar el voto"""
                 voto_anotado = True
 
-
-                #Luego de registrar los votos, se procede a controlar si se rompe o no la Línea Base.
-                #Si algún voto está en -1, quiere decir que algún miembro del Comité aún no voto.
-                #En caso de que todos hayan votado, se suman los valores.
-                #Si:
-                #suma == 0, todos rechazaron --> No se rompe la linea base.
-                #suma == 1, un solo voto por la aprobación, dos rechazos --> No se rompe la linea base.
-                #suma == 2, dos votos por la aprobación, un rechazo --> Se rompe la linea base.
-                #suma == 3, todos aprobaron --> Se rompe la linea base.
+                # Luego de registrar los votos, se procede a controlar si se rompe o no la Línea Base.
+                # Si algún voto está en -1, quiere decir que algún miembro del Comité aún no voto.
+                # En caso de que todos hayan votado, se suman los valores.
+                # Si:
+                # suma == 0, todos rechazaron --> No se rompe la linea base.
+                # suma == 1, un solo voto por la aprobación, dos rechazos --> No se rompe la linea base.
+                # suma == 2, dos votos por la aprobación, un rechazo --> Se rompe la linea base.
+                # suma == 3, todos aprobaron --> Se rompe la linea base.
 
             """Ya votaron los tres miembros"""
             if solicitud.voto_uno is not -1 and solicitud.voto_dos is not -1 and solicitud.voto_tres is not -1:
@@ -3011,7 +3007,6 @@ def AprobarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid)
                                         """Remover item de la linea base"""
                                         lineaBaseItem.items.remove(r)
                                         lineaBaseItem.save()
-
 
                         """Verificar si el algoritmo debe seguir"""
                         seguir = False
@@ -3177,15 +3172,14 @@ def RechazarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid
                 """Registrar el voto"""
                 voto_anotado = True
 
-
-                #Luego de registrar los votos, se procede a controlar si se rompe o no la Línea Base.
-                #Si algún voto está en -1, quiere decir que algún miembro del Comité aún no voto.
-                #En caso de que todos hayan votado, se suman los valores.
-                #Si:
-                #suma == 0, todos rechazaron --> No se rompe la linea base.
-                #suma == 1, un solo voto por la aprobación, dos rechazos --> No se rompe la linea base.
-                #suma == 2, dos votos por la aprobación, un rechazo --> Se rompe la linea base.
-                #suma == 3, todos aprobaron --> Se rompe la linea base.
+                # Luego de registrar los votos, se procede a controlar si se rompe o no la Línea Base.
+                # Si algún voto está en -1, quiere decir que algún miembro del Comité aún no voto.
+                # En caso de que todos hayan votado, se suman los valores.
+                # Si:
+                # suma == 0, todos rechazaron --> No se rompe la linea base.
+                # suma == 1, un solo voto por la aprobación, dos rechazos --> No se rompe la linea base.
+                # suma == 2, dos votos por la aprobación, un rechazo --> Se rompe la linea base.
+                # suma == 3, todos aprobaron --> Se rompe la linea base.
 
             """Ya votaron los tres miembros"""
             if solicitud.voto_uno is not -1 and solicitud.voto_dos is not -1 and solicitud.voto_tres is not -1:
@@ -3279,8 +3273,6 @@ def RechazarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid
                                         """Remover item de la linea base"""
                                         lineaBaseItem.items.remove(r)
                                         lineaBaseItem.save()
-
-
 
                         """Verificar si el algoritmo debe seguir"""
                         seguir = False
@@ -3496,19 +3488,19 @@ def AprobarRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid,
                 solicitud.save()
                 voto_anotado = True
 
-                #Luego de registrar los votos, se procede
-                #a controlar si se rompe o no la Línea Base.
-                #Si algún voto está en -1, quiere decir que
-                #algún miembro del Comité aún no voto.
-                #En caso de que todos hayan votado,
-                #se suman los valores.
-                #suma == 0, todos rechazaron --> No se rompe la linea base.
-                #suma == 1, un solo voto por la aprobación,
-                #dos rechazos --> No se rompe la linea base.
-                #suma == 2, dos votos por la aprobación,
-                #un rechazo --> Se rompe la linea base.
-                #suma == 3, todos aprobaron --> Se rompe la linea base."""
-            
+                # Luego de registrar los votos, se procede
+                # a controlar si se rompe o no la Línea Base.
+                # Si algún voto está en -1, quiere decir que
+                # algún miembro del Comité aún no voto.
+                # En caso de que todos hayan votado,
+                # se suman los valores.
+                # suma == 0, todos rechazaron --> No se rompe la linea base.
+                # suma == 1, un solo voto por la aprobación,
+                # dos rechazos --> No se rompe la linea base.
+                # suma == 2, dos votos por la aprobación,
+                # un rechazo --> Se rompe la linea base.
+                # suma == 3, todos aprobaron --> Se rompe la linea base."""
+
             """Ya votaron los tres miembros"""
             if solicitud.uno_voto_comprometida is not -1 and solicitud.dos_voto_comprometida is not -1 and solicitud.tres_voto_comprometida is not -1:
                 suma = solicitud.uno_voto_comprometida + solicitud.dos_voto_comprometida + solicitud.tres_voto_comprometida
@@ -3599,8 +3591,6 @@ def AprobarRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid,
                                         lineaBaseItem.items.remove(r)
                                         """Guardar"""
                                         lineaBaseItem.save()
-
-
 
                         """Verificar si el algoritmo debe seguir"""
                         seguir = False
@@ -3753,15 +3743,14 @@ def RechazarRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid
                 solicitud.save()
                 voto_anotado = True
 
-
-                #Luego de registrar los votos, se procede a controlar si se rompe o no la Línea Base.
-                #Si algún voto está en -1, quiere decir que algún miembro del Comité aún no voto.
-                #En caso de que todos hayan votado, se suman los valores.
-                #Si:
-                #suma == 0, todos rechazaron --> No se rompe la linea base.
-                #suma == 1, un solo voto por la aprobación, dos rechazos --> No se rompe la linea base.
-                #suma == 2, dos votos por la aprobación, un rechazo --> Se rompe la linea base.
-                #suma == 3, todos aprobaron --> Se rompe la linea base.
+                # Luego de registrar los votos, se procede a controlar si se rompe o no la Línea Base.
+                # Si algún voto está en -1, quiere decir que algún miembro del Comité aún no voto.
+                # En caso de que todos hayan votado, se suman los valores.
+                # Si:
+                # suma == 0, todos rechazaron --> No se rompe la linea base.
+                # suma == 1, un solo voto por la aprobación, dos rechazos --> No se rompe la linea base.
+                # suma == 2, dos votos por la aprobación, un rechazo --> Se rompe la linea base.
+                # suma == 3, todos aprobaron --> Se rompe la linea base.
 
             """Ya votaron los tres miembros"""
             if solicitud.uno_voto_comprometida is not -1 and solicitud.dos_voto_comprometida is not -1 and solicitud.tres_voto_comprometida is not -1:
@@ -3853,7 +3842,6 @@ def RechazarRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid
                                         lineaBaseItem.items.remove(r)
                                         """Guardar"""
                                         lineaBaseItem.save()
-
 
                         """Verificar si el algoritmo debe seguir"""
                         seguir = False
@@ -3965,10 +3953,10 @@ def itemTrazabilidad(request):
         """Obtener item."""
         itemTrazabilidad = Item.objects.get(id=itemIdTrazabilidad)
 
-            #TRAZABILIDAD HACIA LA DERECHA
-            #SUCESORES E HIJOS. Y LOS HIJOS
-            #Y SUCESORES DE ESTOS HASTA LLEGAR
-            #AL FINAL
+        # TRAZABILIDAD HACIA LA DERECHA
+        # SUCESORES E HIJOS. Y LOS HIJOS
+        # Y SUCESORES DE ESTOS HASTA LLEGAR
+        # AL FINAL
 
         adj = {}
         confirmados = []
@@ -4000,7 +3988,6 @@ def itemTrazabilidad(request):
                     if r in itemsFase:
                         if Relacion.objects.filter(item_from=r, item_to=confirmado, tipo="hijo").exists():
                             if int(r.id) not in confirmados:
-
                                 confirmados.append(int(r.id))
                                 adj[int(r.id)] = []
                                 adj[int(confirmado.id)].append(int(r.id))
@@ -4194,7 +4181,6 @@ def itemTrazabilidad(request):
 
                 confirmados = confirmadosAux
 
-
         fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
         lista_items = []
         for key, value in adj.items():
@@ -4214,7 +4200,8 @@ def itemTrazabilidad(request):
         return render(request, 'item/TrazabilidadItem.html', {'fasesProyecto': fasesProyecto, 'proyecto': proyecto,
                                                               'lista_item': sorted(lista_items, key=lambda x: x.id,
                                                                                    reverse=False),
-                                                              'relaciones': relaciones, 'item':itemTrazabilidad, 'faseid':faseid})
+                                                              'relaciones': relaciones, 'item': itemTrazabilidad,
+                                                              'faseid': faseid})
 
 
 def itemVerDatos(request, itemid, faseid, proyectoid):
@@ -4243,7 +4230,6 @@ def solicitarCambioEstado(request, itemid, faseid, proyectoid):
        a los miembros de la fase corresponidente, que
        cuenten con el rol de QA
     """
-
 
     if request.method == "GET":
         fase = Fase.objects.get(id=faseid)
