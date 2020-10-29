@@ -3103,13 +3103,9 @@ def AprobarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid)
                                             if not r in en_revision:
                                                 seguir = True
 
-                    mensaje = "Su voto se registro correctamente. Se aprobo la rotura de la Línea Base."
+                    mensaje = "Se aprobó la rotura de la Línea Base."
                     """Renderizar html"""
-                    return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
-                                                                                    'lineaBase': lineaBase,
-                                                                                    'solicitudes': solicitudes,
-                                                                                    'es_comite': es_comite,
-                                                                                    'mensaje': mensaje})
+                    return redirect('LineaBase', proyectoid=proyecto.id, faseid=fase.id, mensaje=mensaje)
 
             else:
                 """Aún no votaron todos los miembros"""
@@ -3377,12 +3373,10 @@ def RechazarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid
                                             if not r in en_revision:
                                                 seguir = True
 
-                mensaje = "Su voto se registro correctamente. Se aprobo la rotura de la Línea Base."
-                return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
-                                                                                'lineaBase': lineaBase,
-                                                                                'solicitudes': solicitudes,
-                                                                                'es_comite': es_comite,
-                                                                                'mensaje': mensaje})
+
+                mensaje = "Se rechazó la rotura de la Línea Base."
+                """Renderizar html"""
+                return redirect('LineaBase', proyectoid=proyecto.id, faseid=fase.id, mensaje=mensaje)
 
 
             else:
@@ -3701,8 +3695,9 @@ def AprobarRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid,
                 """Lineas base de la fase"""
                 lineasBase = fase.lineasBase.exclude(estado="deshabilitada")
                 """Renderizar html"""
-                return render(request, "fase/faseGestionLineaBase.html",
-                              {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+                mensaje = "Se aprobó la rotura de la Línea Base."
+                """Renderizar html"""
+                return redirect('LineaBase', proyectoid=proyecto.id, faseid=fase.id, mensaje=mensaje)
 
             else:
                 """Aún no votaron todos los miembros"""
@@ -3956,8 +3951,9 @@ def RechazarRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid
                 """Lineas base de la fase"""
                 lineasBase = fase.lineasBase.exclude(estado="deshabilitada")
                 """Renderizar html"""
-                return render(request, "fase/faseGestionLineaBase.html",
-                              {'fase': fase, 'proyecto': proyecto, 'lineasBase': lineasBase, })
+                mensaje = "Se rechazó la rotura de la Línea Base."
+                """Renderizar html"""
+                return redirect('LineaBase', proyectoid=proyecto.id, faseid=fase.id, mensaje=mensaje)
 
             else:
                 """Aún no votaron todos los miembros"""

@@ -4,14 +4,14 @@
 {% block content %}
     {% if mensaje == "Permisos actualizados correctamente." %}
         <div class="exito_mensaje" >
-          <span class="closebtn">&times;</span>
-          <strong> {{ mensaje }}</strong>
+            <span class="closebtn">&times;</span>
+            <strong> {{ mensaje }}</strong>
         </div>
     {% endif %}
     {% if mensaje == "Los datos del usuario fueron actualizados correctamente" %}
         <div class="exito_mensaje" >
-          <span class="closebtn">&times;</span>
-          <strong> {{ mensaje }}</strong>
+            <span class="closebtn">&times;</span>
+            <strong> {{ mensaje }}</strong>
         </div>
     {% endif %}
     <form action="/gestionUser/mensaje=''">
@@ -23,36 +23,64 @@
     <div class="container">
         <h3 style="text-align: center">{{ usuario.username }}</h3>
         <h5 style="text-align: center" class="grey-text">Panel de Configuración del usuario: {{ usuario.username }}</h5><br>
-        <form action="/gestionUser/permisos/agregar/">
-            <button class="btn-small blue darken-3 left" type="submit" value="Agregar Permisos a Usuario">
-                <i class="material-icons left">person</i>Gestionar PERMISOS DEL USUARIO
-                <input type="hidden" value="{{ usuario.id }}" id="userid" name="userid"/>
-            </button>
-        </form>
-        <form action="/gestionUser/ver/">
-            <br><button id ="guar" class="btn blue darken-3 left" type="submit" value="Ver Usuarios">
-                    <i class="material-icons left">assignment_ind</i> VER USUARIO
-                    <input type="hidden" value="{{ usuario.id }}" id="userid" name="userid"/>
-                </button>
-        </form><br><br>
-        <form action="/gestionUser/modify/">
-            <button id ="guar" class="btn blue darken-3 left"  type="submit" value="Modificar Usuarios">
-                <i class="material-icons left">create</i>
-                MODIFICAR USUARIO
-                <input type="hidden" value="{{ usuario.id }}" id="userid" name="userid"/>
-            </button>
-        </form>
+
+        <div class="row">
+            <form action="/gestionUser/permisos/agregar/"
+                  id="FormPerms"
+            >
+                <div class="col s5 m3">
+                    <div class="card">
+                        <div class="card-image" style="border:1px solid #024e82;">
+                            <a href="#" onclick="document.getElementById('FormPerms').submit()">
+                                <img src="{% static 'img/PermisosdeUsuario.jpg' %}" alt="UserPerms" width="80"
+                                     height="180">
+                                <input type="hidden" value="{{ usuario.id }}" id="userid" name="userid"/>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <form action="/gestionUser/ver/"
+                  id="FormVerUser"
+            >
+                <div class="col s5 m3">
+                    <div class="card">
+                        <div class="card-image" style="border:1px solid #024e82;">
+                            <a href="#" onclick="document.getElementById('FormVerUser').submit()">
+                                <img src="{% static 'img/VerUsuario.jpg' %}" alt="VerUser" width="80"
+                                     height="180" >
+                                <input type="hidden" value="{{ usuario.id }}" id="userid" name="userid"/>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <form action="/gestionUser/modify/"
+                  id="FormModificar"
+            >
+                <div class="col s5 m3">
+                    <div class="card">
+                        <div class="card-image" style="border:1px solid #024e82;">
+                            <a href="#" onclick="document.getElementById('FormModificar').submit()">
+                                <img src="{% static 'img/ModificarUsuario.jpg' %}" alt="VerUser" width="80" height="180" >
+                                <input type="hidden" value="{{ usuario.id }}" id="userid" name="userid"/>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
     <script>
         var close = document.getElementsByClassName("closebtn");
         var i;
 
         for (i = 0; i < close.length; i++) {
-          close[i].onclick = function(){
-            var div = this.parentElement;
-            div.style.opacity = "0";
-            setTimeout(function(){ div.style.display = "none"; }, 600);
-          }
+            close[i].onclick = function(){
+                var div = this.parentElement;
+                div.style.opacity = "0";
+                setTimeout(function(){ div.style.display = "none"; }, 600);
+            }
         }
     </script>
 {% endblock %}

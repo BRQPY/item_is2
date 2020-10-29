@@ -46,6 +46,18 @@
           <strong> {{ mensaje }}</strong>
         </div>
     {% endif %}
+    {% if mensaje == "Se aprobó la rotura de la Línea Base." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "Se rechazó la rotura de la Línea Base." %}
+        <div class="alert_message" >
+            <span class="closebtn">&times;</span>
+            <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
     <form action="{%url 'faseConfinicializada' proyecto.id fase.id  %}">
         <button type="submit" class="waves-effect waves-teal btn-flat">
             Volver a la configuración de la fase {{ fase.nombre }}
