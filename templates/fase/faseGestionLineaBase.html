@@ -90,7 +90,15 @@
                     <div class="filterDiv abierta">
                         {% for lb in lb_abierta %}
                             <li>
-                                <div class="card-panel" style= "border:1px solid #03a9f4;">
+                                <div class="card-panel"
+                                     style=
+                                             "border-left:15px outset #039be5;
+                                          border-right:0.2px solid black;
+                                          border-bottom:0.2px solid black;
+                                          border-top: 0.1px solid black;
+                                          border-radius: 10px;
+                                         "
+                                >
                                     <div class="row">
                                         <div class="col 14 left">
                                             <b>Nombre:</b>
@@ -100,9 +108,10 @@
                                             <div class="col 14 right">
                                                 <a href="{%url 'faseConfigLineaBase' proyecto.id fase.id lb.id%}"
                                                    title="Añadir o remover ítems de la Línea Base"
+                                                   style="color: black"
                                                 >
                                                     Administrar Línea Base
-                                                    <i class="material-icons blue-text left">settings</i>
+                                                    <i class="material-icons black-text left">settings</i>
                                                 </a>
                                             </div>
                                         {% endif %}
@@ -124,7 +133,15 @@
                     <div class="filterDiv cerrada">
                         {% for lbc in lb_cerrada %}
                             <li>
-                                <div class="card-panel" style="border:2px solid #00b0ff ;">
+                                <div class="card-panel"
+                                     style=
+                                             "border-left:15px outset black;
+                                          border-right:0.2px solid black;
+                                          border-bottom:0.2px solid black;
+                                          border-top: 0.1px solid black;
+                                          border-radius: 10px;
+                                         "
+                                >
                                     <div class="row">
                                         <div class="col 14 left">
                                             <b>Nombre:</b>
@@ -135,19 +152,21 @@
                                                 <div class="col 14 right">
                                                     <a href="{%url 'gestionRoturaLineaBase' proyecto.id fase.id lbc.id 'd' %}"
                                                        title="Gestionar rotura de la Línea Base."
+                                                       style="color: black"
 
                                                     >
                                                         Gestionar Rotura de Línea Base
-                                                        <i class="material-icons blue-text left">lock_open</i>
+                                                        <i class="material-icons black-text left">lock_open</i>
                                                     </a>
                                                 </div>
                                             {% endif %}
                                             <div class="col 14 right">
                                                 <a href="{%url 'consultarLineaBase' proyecto.id fase.id lbc.id%}"
                                                    title="En una Línea Base Cerrada sólo se puede consultar sus ítems."
+                                                   style="color: black"
                                                 >
                                                     Consultar Línea Base
-                                                    <i class="material-icons blue-text left">info_outline</i>
+                                                    <i class="material-icons black-text left">info_outline</i>
                                                 </a>
                                             </div>
                                         {% endif %}
@@ -169,7 +188,15 @@
                     <div class="filterDiv comprometida">
                         {% for c in lb_comprometida %}
                             <li>
-                                <div class="card-panel" style="border:1px solid #ffd600;">
+                                <div class="card-panel"
+                                     style=
+                                             "border-left:15px outset #ff9800;
+                                          border-right:0.2px solid black;
+                                          border-bottom:0.2px solid black;
+                                          border-top: 0.1px solid black;
+                                          border-radius: 10px;
+                                         "
+                                >
                                     <div class="row">
                                         <div class="col 14 left">
                                             <b>Nombre:</b>
@@ -179,20 +206,23 @@
                                             <div class="col 14 right">
                                                 <a href="{%url 'votacionRoturaLineaBaseComprometida' proyecto.id fase.id c.id%}"
                                                    title="Decidir sobre la rotura de la Línea Base."
+                                                   style="color: black"
                                                 >
                                                     Gestionar Rotura de Línea Base
-                                                    <i class="material-icons blue-text left">lock_open</i>
-                                                </a>
-                                            </div>
-                                            <div class="col 14 right">
-                                                <a href="{%url 'consultarLineaBase' proyecto.id fase.id c.id%}"
-                                                   title="En una Línea Base Cerrada sólo se puede consultar sus ítems."
-                                                >
-                                                    Consultar Línea Base
-                                                    <i class="material-icons blue-text left">info_outline</i>
+                                                    <i class="material-icons black-text left">lock_open</i>
                                                 </a>
                                             </div>
                                         {% endif %}
+
+                                        <div class="col 14 right">
+                                            <a href="{%url 'consultarLineaBase' proyecto.id fase.id c.id%}"
+                                               title="En una Línea Base Cerrada sólo se puede consultar sus ítems."
+                                               style="color:black"
+                                            >
+                                                Consultar Línea Base
+                                                <i class="material-icons black-text left">info_outline</i>
+                                            </a>
+                                        </div>
                                     </div>
                                     <div class="row">
                                         <div class="col 14 left">
@@ -211,7 +241,15 @@
                     <div class="filterDiv rota">
                         {% for r in lb_rota %}
                             <li>
-                                <div class="card-panel" style= "border:1px solid #e57373;">
+                                <div class="card-panel"
+                                     style=
+                                             "border-left:15px outset #ff3d00;
+                                          border-right:0.2px solid black;
+                                          border-bottom:0.2px solid black;
+                                          border-top: 0.1px solid black;
+                                          border-radius: 10px;
+                                         "
+                                >
                                     <div class="row">
                                         <div class="col 14 left">
                                             <b>Nombre:</b>
@@ -221,9 +259,10 @@
                                             <div class="col 14 right">
                                                 <a href="{%url 'consultarLineaBase' proyecto.id fase.id r.id%}"
                                                    title="En una Línea Base Cerrada sólo se puede consultar sus ítems."
+                                                   style="color:black"
                                                 >
                                                     Consultar Línea Base
-                                                    <i class="material-icons blue-text left">info_outline</i>
+                                                    <i class="material-icons black-text left">info_outline</i>
                                                 </a>
                                             </div>
                                         {% endif %}
