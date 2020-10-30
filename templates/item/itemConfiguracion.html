@@ -147,7 +147,7 @@
                         </div>
                     </div>
                 </form>
-                {% if fase.estado != "cerrada" %}
+                {% if fase.estado != "cerrada" and item.estado == "en desarrollo" %}
                     <div class="col s5 m3">
                         <div class="card">
                             <div class="card-image" style="border:1px solid #ff3d00;">
@@ -166,7 +166,7 @@
                             <div class="card-image" style="border:1px solid #7d7d7d;">
                                 <a
                                         style="cursor: default"
-                                        title="El estado de la fase no permite deshabilitar el ítem."
+                                        title="El ítem debe estar 'en desarrollo' y la fase en estado 'abierta' para poder deshabilitar el ítem."
                                 >
                                     <img src="{% static 'img/deshabilitaritemgris.png' %}" alt="deshabilitaritemgris" width="80"
                                          height="180">

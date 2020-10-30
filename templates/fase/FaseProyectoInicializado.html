@@ -90,6 +90,12 @@
           <strong> {{ mensaje }}</strong>
         </div>
     {% endif %}
+    {% if mensaje == "El ítem se reversionó correctamente." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
     {% if mensaje == "El estado actual del item no permite la deshabilitación del mismo." %}
         <div class="alert_message" >
           <span class="closebtn">&times;</span>

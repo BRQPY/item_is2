@@ -58,7 +58,7 @@
         {% for i in versions %}
             <button class="accordion" >
                 <h8>
-                    Version
+                    Version {{ i.field_dict.version}}
                     <i class="material-icons blue-text left">update</i>
                 </h8>
                 <i class="material-icons blue-text left"></i>
@@ -67,12 +67,60 @@
                 <section class="DescripcionProyecto">
                     <div class="col s12 md6 xl3">
                         <div class="card-panel">
-                            {% for field_name, field_value in i.field_dict.items %}
-                                <div class="row">
-                                    <div class="col l4 left">
-                                        <b>{{ field_name }}</b>  {{ field_value }}
-                                    </div>
+                            <div class="row">
+                                <div class="col l4 left">
+                                    <b>Nombre:</b>  {{ i.field_dict.nombre }}
                                 </div>
+                                <div class="col l4 left">
+                                    <b>Id ítem:</b>  {{ i.field_dict.id }}
+                                </div>
+                                <div class="col l4 left">
+                                    <b>Id Tipo de ítem:</b>  {{ i.field_dict.tipoItem_id }}
+                                </div>
+                                <div class="col l4 left">
+                                    <b>Id Fase:</b>  {{ i.field_dict.faseid}}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col l4 left">
+                                    <b>Observacion:</b>  {{ i.field_dict.observacion }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col l4 left">
+                                    <b>Estado:</b>  {{ i.field_dict.estado }}
+                                </div>
+                                <div class="col l4 left">
+                                    <b>Fecha:</b>  {{ i.field_dict.fecha }}
+                                </div>
+                                <div class="col l4 left">
+                                    <b>Costo:</b>  {{ i.field_dict.costo }}
+                                </div>
+                                <div class="col l4 left">
+                                    <b>Versión:</b>  {{ i.field_dict.version }}
+                                </div>
+                            </div>
+                            {% for field_name, field_value in i.field_dict.items %}
+                                {% if field_name == "archivos" %}
+                                    <b>Archivos:</b>
+                                    {% for a in field_value %}
+                                        <div class="row">
+                                            <div class="col l4 left">
+                                                <i class="material-icons dark black-text left">insert_drive_file</i>
+                                                {{ a }}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                                {% if field_name == "campo_extra_valores" %}
+                                    {% for c in field_value %}
+                                        <div class="row">
+                                            <div class="col l4 left">
+                                                <b>Campos Extra:</b>  {{ c }}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
                             {% endfor %}
                         </div>
                     </div>
@@ -86,8 +134,17 @@
                             >
                                 Reversionar
                                 <i class="material-icons white-text left">autorenew</i>
-                            </button><br>
+                            </button><br><br>
                         </form>
+                    {% else %}
+                        <button
+                                    type="submit"
+                                    class="btn btn-small #eeeeee grey lighten-3 black-text right"
+                                    title="El ítem debe estar 'en desarrollo' para poder realizar una reversión."
+                            >
+                                Reversionar
+                                <i class="material-icons white-text left">autorenew</i>
+                            </button><br><br>
                     {% endif %}
                 </section>
             </div>

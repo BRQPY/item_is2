@@ -180,9 +180,7 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
                                                                       'items': items, 'tipos': tipos,
                                                                       'items_desarrollo': items_desarrollo,
                                                                       'items_pendiente': items_pendiente,
-                                                                      'items_aprobado': items_aprobado,
-<<<<<<< HEAD
-                                                                      'items_LB_cerrada':items_LB_cerrada,
+                                                                      'items_aprobado': items_aprobado,                                               'items_LB_cerrada':items_LB_cerrada,
                                                                       'items_LB_abierta':items_LB_abierta,
                                                                       'items_LB_comprometida':items_LB_comprometida,
                                                                       'mensaje': mensaje, 'lb_abierta':lb_abierta,'lb_cerrada':lb_cerrada,
@@ -191,15 +189,6 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
                                                                       'lb_cerrada_items': lb_cerrada_items,
                                                                       'lb_comprometida_items': lb_comprometida_items,
                                                                       'items_revision':items_revision})
-=======
-                                                                      'items_LB_cerrada': items_LB_cerrada,
-                                                                      'items_LB_abierta': items_LB_abierta,
-                                                                      'mensaje': mensaje, 'lb_abierta': lb_abierta,
-                                                                      'lb_cerrada': lb_cerrada,
-                                                                      'lb_abierta_items': lb_abierta_items,
-                                                                      'lb_cerrada_items': lb_cerrada_items,
-                                                                      'items_revision': items_revision})
->>>>>>> origin/Modificacion_num_version
 
 
 def faseUsers(request, faseid, proyectoid):
@@ -1408,12 +1397,12 @@ def itemDeshabilitar(request, proyectoid, faseid, itemid):
         """Al no contar con los permisos, niega el acceso, redirigiendo."""
         return redirect('/permissionError/')
 
-    """Verificar que el estado del proyecto sea inicializado."""
+
 
     """Verificar que el estado del item sea en desarrollo."""
     if item.estado == "pendiente de aprobacion" or item.estado == "aprobado" or item.estado == "en linea base":
         mensaje = "El estado actual del item no permite la deshabilitación del mismo."
-
+        ok_deshabilitar = False
     """VERIFICAR SI ES POSIBLE DESHABILITAR EL ITEM TENIENDO EN CUENTA SUS RELACIONES."""
     """Obtener relaciones."""
     relaciones_item_deshabilitar = item.relaciones.all()
@@ -1520,8 +1509,12 @@ def itemVerRelaciones(request, itemid, faseid, proyectoid, mensaje):
         siguiente = None
         itemsFaseSiguiente = None
         if item_recibido.estado == "en linea base" or item_recibido.estado == "en revision":
-            linea_base_item = LineaBase.objects.filter(items=item_recibido)
-            if linea_base_item.get().estado == "cerrada" or item_recibido.estado == "en revision":
+            bandera_lb = False
+            if item_recibido.estado == "en linea base":
+                linea_base_item = list(LineaBase.objects.filter(items__id=item_recibido.id).exclude(estado="rota"))
+                if linea_base_item[0].estado == "cerrada":
+                    bandera_lb = True
+            if bandera_lb or item_recibido.estado == "en revision":
                 fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
                 actual = False
                 for fp in fasesProyecto:
@@ -1697,12 +1690,7 @@ def itemRelacionesRemover(request, itemid, item_rm, faseid, proyectoid):
                 mensaje_error = "Error! La relación no puede ser removida porque el item quedaría sin una relación con un ítem 'aprobado' o 'en Línea Base' que le garantice seguir con su estado actual."
 
         """Redirigir a la vista itemVerRelaciones sin romper la relacion."""
-        return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid,
-<<<<<<< HEAD
-                        mensaje=mensaje_error)
-=======
-                        mensaje='Error. No se pudo remover la relación.')
->>>>>>> origin/Modificacion_num_version
+        return redirect('itemVerRelaciones', itemid=item_inicio.id, faseid=faseid, proyectoid=proyectoid,mensaje=mensaje_error)
 
 
 @transaction.atomic()
@@ -2370,9 +2358,8 @@ def itemReversionar(request, proyectoid, faseid, itemid, history_date):
             "Asigna el numero de version a la reversion del item"
             item.version = num.version + 1
             item.save()
-
-
-            return redirect('itemConfigurar', itemid=itemid, faseid=faseid, proyectoid=proyectoid)
+            mensaje="El ítem se reversionó correctamente."
+            return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid, mensaje=mensaje)
         else:
             return redirect('itemConfigurar', itemid=itemid, faseid=faseid, proyectoid=proyectoid)
 
@@ -3549,6 +3536,10 @@ def AprobarRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid,
                     solicitud.comprometida_estado = "rechazado"
                     """Guardar"""
                     solicitud.save()
+                    """Establecer a la línea base como cerrada"""
+                    lineaBase.estado = "cerrada"
+                    """Guardar"""
+                    lineaBase.save()
                     # Acciones de rechazo de solicitud de Rotura Linea Base
                     """Mensaje a proveer"""
                     mensaje = "Su voto se registro correctamente. Se rechazó la rotura de la Línea Base."
@@ -3803,6 +3794,10 @@ def RechazarRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid
                     solicitud.comprometida_estado = "rechazado"
                     """Guardar"""
                     solicitud.save()
+                    """Establecer a la línea base como cerrada"""
+                    lineaBase.estado = "cerrada"
+                    """Guardar"""
+                    lineaBase.save()
                     # Acciones de rechazo de solicitud de Rotura Linea Base
                     """Mensaje a proveer"""
                     mensaje = "Su voto se registro correctamente. Se rechazó la rotura de la Línea Base."
