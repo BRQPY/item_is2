@@ -2857,10 +2857,39 @@ def votacionRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid
             """Es miembro del comite"""
             es_comite = True
         mensaje = "a"
+        registro_votos = {}
+        votantes = list(solicitud.votos_registrados.all())
+        """Array para guardar votos registrados"""
+        for c in proyecto.comite.all():
+            contador = 0
+            if c in votantes:
+                """Si esta dentro de los votantes, encuentra su indice para determinar cual voto cargar"""
+                index = votantes.index(c)
+                if index == 0:
+                    """Es el primer voto registrado, ahora hay que verificar si voto a favor o en contra"""
+                    if solicitud.voto_uno == 0:
+                        registro_votos[c.username] = "Votó para rechazar la rotura de la Línea Base."
+                    if solicitud.voto_uno == 1:
+                        registro_votos[c.username] = "Votó para aprobar la rotura de la Línea Base."
+                if index == 1:
+                    """Es el segundp voto registrado, ahora hay que verificar si voto a favor o en contra"""
+                    if solicitud.voto_dos == 0:
+                        registro_votos[c.username] = "Votó para rechazar la rotura de la Línea Base."
+                    if solicitud.voto_dos == 1:
+                        registro_votos[c.username] = "Votó para aprobar la rotura de la Línea Base."
+                if index == 2:
+                    """Es el tercer voto registrado, ahora hay que verificar si voto a favor o en contra"""
+                    if solicitud.voto_tres == 0:
+                        registro_votos[c.username] = "Votó para rechazar la rotura de la Línea Base."
+                    if solicitud.voto_tres == 1:
+                        registro_votos[c.username] = "Votó para aprobar la rotura de la Línea Base."
+            else:
+                registro_votos[c.username]= "Aún no votó."
+
         return render(request, "fase/faseRoturaLineaBaseVotar.html", {'proyecto': proyecto, 'fase': fase,
                                                                       'lineaBase': lineaBase,
                                                                       'solicitud': solicitud, 'es_comite': es_comite,
-                                                                      'mensaje': mensaje})
+                                                                      'mensaje': mensaje, 'registro_votos': registro_votos})
 
 
 def AprobarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid):

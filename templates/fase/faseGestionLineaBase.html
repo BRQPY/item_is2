@@ -214,16 +214,19 @@
                                             <b>Nombre:</b>
                                             {{c.nombre}}
                                         </div>
-                                        {% if c.estado == "comprometida" and es_comite  %}
-                                            <div class="col 14 right">
-                                                <a href="{%url 'votacionRoturaLineaBaseComprometida' proyecto.id fase.id c.id%}"
-                                                   title="Decidir sobre la rotura de la Línea Base."
-                                                   style="color: black"
-                                                >
-                                                    Gestionar Rotura de Línea Base
-                                                    <i class="material-icons black-text left">lock_open</i>
-                                                </a>
-                                            </div>
+                                        {% if c.estado == "comprometida" %}
+                                            {% if puede_solicitar or es_comite %}
+                                                <div class="col 14 right">
+                                                    <a href="{%url 'gestionRoturaLineaBase' proyecto.id fase.id c.id 'd' %}"
+                                                       title="Gestionar rotura de la Línea Base."
+                                                       style="color: black"
+
+                                                    >
+                                                        Gestionar Rotura de Línea Base
+                                                        <i class="material-icons black-text left">lock_open</i>
+                                                    </a>
+                                                </div>
+                                            {% endif %}
                                         {% endif %}
 
                                         <div class="col 14 right">

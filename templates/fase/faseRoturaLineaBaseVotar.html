@@ -33,6 +33,20 @@
                                 {{solicitud.descripcion_solicitud}}
                             </div>
                         </div>
+                        <br>
+                        <b>Votos del Comité de Control de Cambios:</b>
+                        {% for votante, voto in registro_votos.items %}
+                            <ul>
+                                <li>
+                                    <div class="row">
+                                        <div class="col 14 left">
+                                            <b>&nbsp {{ votante }}: </b>
+                                            {{voto}}
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        {% endfor %}
                     </div>
                 </li>
             </ul>

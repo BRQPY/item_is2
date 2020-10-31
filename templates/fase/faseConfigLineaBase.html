@@ -10,17 +10,17 @@
             </button>
         </form>
     {% else %}
-        <form action="/fase/gestionLineaBase/">
+        <form action="/fase/gestionLineaBase/proyectoid={{ proyecto.id }}/faseid={{ fase.id }}/mensaje=' '/"/>
             <button type="submit" class="waves-effect waves-teal btn-flat">
                 Volver a la Gestión de Lineas Base
                 <i class="material-icons dark blue-text left">keyboard_return</i>
             </button>
-            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
         </form>
     {% endif %}
     <div class="container">
         <h5 style="text-align: center"><b>Items de la Linea Base</b></h5>
+        <h5 style="text-align: center" class="grey-text">Panel de Gestión de la Línea Base: "{{ lineaBase.nombre }}" </h5><br>
+
             {% if crear_lb %}
                 <form action="/fase/lineaBaseAddItem/">
                     <button type="submit" class="btn-small blue darken-1 right">

@@ -64,6 +64,14 @@
             {%endif%}
         </div>
     </div>
+    <div class="container">
+        {% if proyecto.estado == "cancelado" %}
+            <h5 style="text-align: left" class="bold grey-text">Acta de Cancelación del Proyecto</h5>
+        {% endif %}
+        {% if proyecto.estado == "finalizado" %}
+            <h5 style="text-align: left" class="bold grey-text">Acta de Finalización del Proyecto</h5>
+        {% endif %}
+    </div>
     <script>
         var close = document.getElementsByClassName("closebtn");
         var i;
