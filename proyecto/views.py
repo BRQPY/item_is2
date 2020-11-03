@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Proyecto, Fase, Rol, FaseUser, TipodeItem, RoturaLineaBase
+from .models import Proyecto, Fase, Rol, FaseUser, TipodeItem, RoturaLineaBase, ActaInforme
 from django.contrib.auth.models import User, Group, Permission
 from guardian.shortcuts import assign_perm, remove_perm
 from django.contrib.auth.decorators import permission_required
@@ -274,6 +274,11 @@ def proyectoView(request, id):
                                                                        'comite': comite, 'hay_miembros':hay_miembros, 'hay_roles':hay_roles,
                                                                        'hay_tipos':hay_tipos, 'hay_comite':hay_comite, 'hay_fases':hay_fases})
         else:
+            hay_acta = False
+            acta = list(proyecto.acta.all())
+            acta = acta.pop()
+            if acta:
+                hay_acta = True
             """Template a renderizar: proyectoIniciado.html con parametros -> proyectoid y fases del proyecto"""
             return render(request, 'proyecto/proyectoIniciado.html', {'proyecto': proyecto, 'fases': fases,
                                                                       'fasesUser': sorted(fasesUser,
@@ -282,7 +287,7 @@ def proyectoView(request, id):
                                                                       'usuarios': usuarios,
                                                                       'roles': roles,
                                                                       'tipoItem': tipoItem,
-                                                                      'comite': comite, })
+                                                                      'comite': comite, 'hay_acta':hay_acta, 'acta':acta})
     if request.method == "POST":
         proyectoid = request.POST.get('proyectoid')
         proyecto = Proyecto.objects.get(id=proyectoid)
@@ -1591,3 +1596,35 @@ def ProyectoFinalizar(request, proyectoid):
         """Redireccionar a vista de proyecto"""
         return redirect('proyectoView', id=proyectoid)
 
+
+def formActaProyecto(request, proyectoid):
+    """
+    **formRoturaLineaBase:**
+    Vista utilizada para garantizar un formulario para solicitar
+    la rotura de linea base.
+    Solicita que el usuario que realiza el request cuente
+    con el permiso para solicitar rotura de lineas base en la fase
+    correspondiente y que (indirectamente) haya
+    iniciado sesion.
+    """
+
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Renderizar html"""
+        return render(request, "proyecto/FormularioFinalProyecto.html", {'proyecto': proyecto})
+    if request.method == "POST":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        descripcion = request.POST.get('descripcion')
+        fecha_fin = request.POST.get('fechafin')
+        """Se crea un objeto de tipo acta"""
+        acta = ActaInforme.objects.create(justificacion=descripcion, fechafin=fecha_fin)
+        """Se guarda el objeto"""
+        acta.save()
+        """Se agrega el al proyecto"""
+        proyecto.acta.add(acta)
+        """Guardar cambios"""
+        proyecto.save()
+
+        return redirect('proyectoView', id=proyectoid)

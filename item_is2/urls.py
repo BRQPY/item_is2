@@ -162,4 +162,5 @@ urlpatterns = [
     path('item/verDatos/itemid=<str:itemid>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', viewsFase.itemVerDatos, name="itemVerDatos"),
     path('item/SolicitudCambio/itemid=<str:itemid>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', viewsFase.solicitarCambioEstado, name="SolicitudCambio"),
     path('proyecto/finalizar/proyectoid=<str:proyectoid>/', views.ProyectoFinalizar, name="ProyectoFinalizar"),
+    path('proyecto/acta/form/proyectoid=<str:proyectoid>/', views.formActaProyecto, name="formActaProyecto"),
 ]

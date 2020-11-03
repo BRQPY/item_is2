@@ -115,11 +115,11 @@ class Rol(models.Model):
     nombre = models.CharField(max_length=40, default=None)
     perms = models.ForeignKey(Group, on_delete=models.CASCADE, default=None, null=True)
     faseUser = models.ManyToManyField(FaseUser, default=None)
-"""
+
 class ActaInforme(models.Model):
     justificacion = models.CharField(max_length=400, blank=True, null=True)
     fechafin = models.CharField(max_length=200, blank=True, null=True)
-"""
+
 class Proyecto(models.Model):
     nombre = models.CharField(max_length=200, blank=False, null=False)
     descripcion = models.CharField(max_length=400, blank=True, null=False)
@@ -133,7 +133,7 @@ class Proyecto(models.Model):
     roles = models.ManyToManyField(Rol, default=None)
     fases = models.ManyToManyField(Fase, default=None, through='ProyectoFase')
     tipoItem = models.ManyToManyField(TipodeItem, default=None)
-    #acta = models.ForeignKey(ActaInforme, on_delete=models.CASCADE, default=None, blank=True, null=True, related_name='acta')
+    acta = models.ManyToManyField(ActaInforme, default=None, blank=True, related_name='acta_informe')
     class Meta:
         permissions = (
             ("is_gerente", "Can do anything in project"),

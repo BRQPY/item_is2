@@ -60,16 +60,86 @@
                     Aun no puede visualizar ninguna fase.
                 {%endif%}
             {%else%}
-                El proyecto aun no cuenta con fases creadas.
+                El proyecto no cuenta con fases creadas.
             {%endif%}
         </div>
     </div>
     <div class="container">
         {% if proyecto.estado == "cancelado" %}
             <h5 style="text-align: left" class="bold grey-text">Acta de Cancelación del Proyecto</h5>
+            {% if  request.user == proyecto.gerente %}
+                {% if hay_acta %}
+                    <ul class="z-depth-1">
+                        <li>
+                            <div class="card-panel z-depth-4 expense" style="border:1px solid #03a9f4;">
+                                <div class="row">
+                                    <div class="col l4 left">
+                                        <b>Gerente:</b>
+                                        {{ proyecto.gerente }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col l4 left">
+                                        <b>Fecha de Cancelación:</b>
+                                        {{ acta.fechafin }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col l4 left">
+                                        <b>Justificacion:</b>
+                                        {{ acta.justificacion }}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                {% else %}
+                    <form action="/proyecto/acta/form/proyectoid={{ proyecto.id }}/">
+                        <button type="submit" class="btn btn-small blue darken-1 right">
+                            Crear acta
+                            <i class="material-icons white-text left">add_circle</i>
+                        </button>
+                    </form><br>
+                {% endif %}
+            {% endif %}
         {% endif %}
         {% if proyecto.estado == "finalizado" %}
-            <h5 style="text-align: left" class="bold grey-text">Acta de Finalización del Proyecto</h5>
+            <h5 style="text-align: left" class="bold grey-text">Acta de Cancelación del Proyecto</h5>
+            {% if  request.user == proyecto.gerente %}
+                {% if hay_acta %}
+                    <ul class="z-depth-1">
+                        <li>
+                            <div class="card-panel z-depth-4 expense" style="border:1px solid #03a9f4;">
+                                <div class="row">
+                                    <div class="col l4 left">
+                                        <b>Gerente:</b>
+                                        {{ proyecto.gerente }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col l4 left">
+                                        <b>Fecha de Finalización:</b>
+                                        {{ acta.fechafin }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col l4 left">
+                                        <b>Justificacion:</b>
+                                        {{ acta.justificacion }}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                {% else %}
+                    <form action="/proyecto/acta/form/proyectoid={{ proyecto.id }}/">
+                        <button type="submit" class="btn btn-small blue darken-1 right">
+                            Crear acta
+                            <i class="material-icons white-text left">add_circle</i>
+                        </button>
+                    </form><br>
+                {% endif %}
+            {% endif %}
         {% endif %}
     </div>
     <script>

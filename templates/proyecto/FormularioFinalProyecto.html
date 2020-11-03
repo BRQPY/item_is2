@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <style>
+        textarea::placeholder {
+            color: #3b444b;
+        }
+    </style>
+
+    <form action="/proyecto/proyectoVer/proyectoid={{ proyecto.id }}/">
+        <button type="submit" class="waves-effect waves-teal btn-flat">
+            Volver al Proyecto
+            <i class="material-icons dark blue-text left">keyboard_return</i>
+        </button>
+    </form>
+    <div class="container">
+        <form action="/proyecto/acta/form/proyectoid={{ proyecto.id }}/" method="post">
+            {% csrf_token %}
+            <h3 style="text-align: center"> Formulario de creación del Acta</h3>
+            <h5 style="text-align: center" class="grey-text"> Proyecto "{{ proyecto.nombre }}"</h5>
+            <h6>
+                <b>Gerente:</b>  {{ proyecto.gerente }}
+            </h6>
+            <h6>
+                <b>Estado final del proyecto:</b>  {{ proyecto.estado }}
+            </h6>
+            {% if proyecto.estado == "cancelado" %}
+                <div>
+                    <h6>
+                        <b>Fecha de Cancelación del Proyecto:</b>
+                    </h6>
+                    <input type=date id="fechafin" name="fechafin" required>
+                </div>
+            {% endif %}
+            {% if proyecto.estado == "finalizado" %}
+                <div>
+                    <h6>
+                        <b>Fecha de Finalización del Proyecto:</b>
+                    </h6>
+                    <input type=date id="fechafin" name="fechafin" required>
+                </div>
+            {% endif %}
+
+            <h6>
+                <b>Justificación:</b>
+            </h6>
+            <textarea id="descripcion" name="descripcion" required
+                      style="width:100%; height:80px;"
+                      placeholder="Explica, en menos de 200 caracteres porqué se tomó esa decisión sobre el estado del proyecto."
+            ></textarea>
+            <br>
+            <button type="submit" class="btn-small blue darken-3 right">
+                Crear Acta
+                <i class="material-icons left">add_circle</i>
+            </button>
+        </form>
+    </div>
+{% endblock%}
