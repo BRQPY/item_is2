@@ -276,7 +276,8 @@ def proyectoView(request, id):
         else:
             hay_acta = False
             acta = list(proyecto.acta.all())
-            acta = acta.pop()
+            if len(acta) > 0:
+                acta = acta.pop()
             if acta:
                 hay_acta = True
             """Template a renderizar: proyectoIniciado.html con parametros -> proyectoid y fases del proyecto"""

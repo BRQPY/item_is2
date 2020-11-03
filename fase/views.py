@@ -3006,116 +3006,49 @@ def AprobarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid)
                     en_revision_lb = []
                     """Recorrer items de linea base"""
                     for i in lineaBase.items.all():
-                        """Actualizar estado del item a enrevision"""
-                        i.estado = "en revision"
-                        # i._history_date = datetime.now()
-                        """Guardar"""
-                        i.save()
-                        """Agregar a la lista"""
-                        en_revision.append(i)
-                        """Recorrer relaciones del item"""
-                        for r in i.relaciones.all():
-                            """verificar si el item relacionado es antecesor"""
-                            relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
-                            """Si el iten relacionado no es antecesor"""
-                            if not relacionItem:
-                                """COlocar el estado del item relacionado como en revision"""
-                                r.estado = "en revision"
-                                # r._history_date = datetime.now()
-                                """Guardar"""
-                                r.save()
-                                """Verificar si el item relacionado se encuentra en linea base"""
-                                esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
-                                """Agregar a la lista en revison"""
-                                en_revision.append(r)
-                                """Si se encuentra en linea base"""
-                                if esta_en_LB:
-                                    """Agregar a la lista"""
-                                    en_revision_lb.append(r)
-                                    """Obtener liena base"""
-                                    lineaBaseItem = LineaBase.objects.get(items__id=r.id)
-                                    """Si el estado de la linea base es cerrada."""
-                                    if lineaBaseItem.estado == "cerrada":
-                                        """Actualizar estado a comprometida"""
-                                        lineaBaseItem.estado = "comprometida"
-                                        r.estado = "en linea base"
-                                        r.save()
-                                        """Crear solicitud de rotura para comprometida"""
-                                        solicitud = RoturaLineaBaseComprometida.objects.create(
-                                            comprometida_estado="pendiente")
-                                        """Guardar solicitud"""
-                                        solicitud.save()
-                                        """Agregar solicitud a la linea base"""
-                                        lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
-                                        """Guardar linea base"""
-                                        lineaBaseItem.save()
-                                    """Si la linea base esta comprometida"""
-                                    if lineaBaseItem.estado == "comprometida":
-                                        """Crear solicitud"""
-                                        solicitud = RoturaLineaBaseComprometida.objects.create(
-                                            comprometida_estado="pendiente")
-                                        """Guardar solicitud"""
-                                        solicitud.save()
-                                        """Agregar solicitud a la linea base"""
-                                        lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
-                                        """Guardar linea base"""
-                                        lineaBaseItem.save()
-                                    """Si la linea base es abierta"""
-                                    if lineaBaseItem.estado == "abierta":
-                                        """Remover item de la linea base"""
-                                        lineaBaseItem.items.remove(r)
-                                        lineaBaseItem.save()
+                        """Si el ítem esta en la lista de ítems de la solicitud, ponerle como en revision"""
+                        if i in solicitud.items_implicados.all():
+                            i.estado = "en desarrollo"
+                            # i._history_date = datetime.now()
+                            """Guardar"""
+                            i.save()
+                            """Agregar a la lista solo a aquellos dentro de la lista para que sus hijos se vean afectados"""
+                            en_revision.append(i)
+                            """Recorrer relaciones del item"""
+                            for r in i.relaciones.all():
+                                """verificar si el item relacionado es antecesor"""
+                                relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
+                                """Si el iten relacionado no es antecesor"""
+                                if not relacionItem:
+                                    """COlocar el estado del item relacionado como en revision"""
+                                    r.estado = "en revision"
+                                    # r._history_date = datetime.now()
+                                    """Guardar"""
+                                    r.save()
+                                    """Verificar si el item relacionado se encuentra en linea base"""
+                                    esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
+                                    """Agregar a la lista en revison"""
+                                    en_revision.append(r)
+                                    """Si se encuentra en linea base"""
+                                    if esta_en_LB:
+                                        """Agregar a la lista"""
+                                        en_revision_lb.append(r)
+                                        """Obtener liena base"""
+                                        lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                                        """Si el estado de la linea base es cerrada."""
+                                        if lineaBaseItem.estado == "cerrada":
+                                            """Actualizar estado a comprometida"""
+                                            lineaBaseItem.estado = "comprometida"""
+                                            lineaBaseItem.save()
+                                        """Si la linea base es abierta"""
+                                        if lineaBaseItem.estado == "abierta":
+                                            """Remover item de la linea base"""
+                                            lineaBaseItem.items.remove(r)
+                                            lineaBaseItem.save()
 
-                        """Verificar si el algoritmo debe seguir"""
-                        seguir = False
-                        """Recorrer los items en revision"""
-                        for i in en_revision:
-                            """Si no esta en linea base"""
-                            if not i in en_revision_lb:
-                                """Recorrer relaciones"""
-                                for r in i.relaciones.all():
-                                    relacionItem = Relacion.objects.filter(item_from=r, item_to=i,
-                                                                           tipo="antecesor").exists()
-                                    if not relacionItem:
-                                        if not r in en_revision:
-                                            seguir = True
-
-                        while seguir:
-                            """Recorrer items en revision"""
-                            for i in en_revision:
-                                """Si no esta en linea base"""
-                                if not i in en_revision_lb:
-                                    """Recorrer relaciones"""
-                                    for r in i.relaciones.all():
-                                        relacionItem = Relacion.objects.filter(item_from=r, item_to=i,
-                                                                               tipo="antecesor").exists()
-                                        if not relacionItem:
-                                            if not r in en_revision:
-                                                r.estado = "en revision"
-                                                # r._history_date = datetime.now()
-                                                """Guardar"""
-                                                r.save()
-                                                en_revision.append(r)
-                                                esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
-                                                if esta_en_LB:
-                                                    en_revision_lb.append(r)
-                                                    lineaBaseItem = LineaBase.objects.get(items__id=r.id)
-                                                    """Si el estado de la linea base es cerrada."""
-                                                    if lineaBaseItem.estado == "cerrada":
-                                                        lineaBaseItem.estado = "comprometida"
-                                                        solicitud = RoturaLineaBaseComprometida.objects.create(
-                                                            comprometida_estado="pendiente")
-                                                        solicitud.save()
-                                                        r.estado = "en linea base"
-                                                        r.save()
-                                                        lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
-                                                        lineaBaseItem.save()
-                                                    if lineaBaseItem.estado == "abierta":
-                                                        lineaBaseItem.items.remove(r)
-                                                        lineaBaseItem.save()
-
+                            """Verificar si el algoritmo debe seguir"""
                             seguir = False
-
+                            """Recorrer los items en revision"""
                             for i in en_revision:
                                 """Si no esta en linea base"""
                                 if not i in en_revision_lb:
@@ -3127,6 +3060,51 @@ def AprobarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid)
                                             if not r in en_revision:
                                                 seguir = True
 
+                            while seguir:
+                                """Recorrer items en revision"""
+                                for i in en_revision:
+                                    """Si no esta en linea base"""
+                                    if not i in en_revision_lb:
+                                        """Recorrer relaciones"""
+                                        for r in i.relaciones.all():
+                                            relacionItem = Relacion.objects.filter(item_from=r, item_to=i,
+                                                                                   tipo="antecesor").exists()
+                                            if not relacionItem:
+                                                if not r in en_revision:
+                                                    r.estado = "en revision"
+                                                    # r._history_date = datetime.now()
+                                                    """Guardar"""
+                                                    r.save()
+                                                    en_revision.append(r)
+                                                    esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
+                                                    if esta_en_LB:
+                                                        en_revision_lb.append(r)
+                                                        lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                                                        """Si el estado de la linea base es cerrada."""
+                                                        if lineaBaseItem.estado == "cerrada":
+                                                            lineaBaseItem.estado = "comprometida"
+                                                            lineaBaseItem.save()
+                                                        if lineaBaseItem.estado == "abierta":
+                                                            lineaBaseItem.items.remove(r)
+                                                            lineaBaseItem.save()
+
+                                seguir = False
+
+                                for i in en_revision:
+                                    """Si no esta en linea base"""
+                                    if not i in en_revision_lb:
+                                        """Recorrer relaciones"""
+                                        for r in i.relaciones.all():
+                                            relacionItem = Relacion.objects.filter(item_from=r, item_to=i,
+                                                                                   tipo="antecesor").exists()
+                                            if not relacionItem:
+                                                if not r in en_revision:
+                                                    seguir = True
+                        else:
+                            i.estado = "aprobado"
+                            # i._history_date = datetime.now()
+                            """Guardar"""
+                            i.save()
                     mensaje = "Se aprobó la rotura de la Línea Base."
                     """Renderizar html"""
                     return redirect('LineaBase', proyectoid=proyecto.id, faseid=fase.id, mensaje=mensaje)
@@ -3269,119 +3247,49 @@ def RechazarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid
                     en_revision_lb = []
                     """Recorrer items de linea base"""
                     for i in lineaBase.items.all():
-                        """Actualizar estado del item a enrevision"""
-                        i.estado = "en revision"
-                        # i._history_date = datetime.now()
-                        """Guardar"""
-                        i.save()
-                        """Agregar a la lista"""
-                        en_revision.append(i)
-                        """Recorrer relaciones del item"""
-                        for r in i.relaciones.all():
-                            """verificar si el item relacionado es antecesor"""
-                            relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
-                            """Si el iten relacionado no es antecesor"""
-                            if not relacionItem:
-                                """COlocar el estado del item relacionado como en revision"""
-                                r.estado = "en revision"
-                                # r._history_date = datetime.now()
-                                """Guardar"""
-                                r.save()
-                                """Verificar si el item relacionado se encuentra en linea base"""
-                                esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
-                                """Agregar a la lista en revison"""
-                                en_revision.append(r)
-                                """Si se encuentra en linea base"""
-                                if esta_en_LB:
-                                    """Agregar a la lista"""
-                                    en_revision_lb.append(r)
-                                    """Obtener liena base"""
-                                    lineaBaseItem = LineaBase.objects.get(items__id=r.id)
-                                    """Si el estado de la linea base es cerrada."""
-                                    if lineaBaseItem.estado == "cerrada":
-                                        """Actualizar estado a comprometida"""
-                                        lineaBaseItem.estado = "comprometida"
+                        if i in solicitud.items_implicados.all():
+                            """Actualizar estado del item a enrevision"""
+                            i.estado = "en desarrollo"
+                            # i._history_date = datetime.now()
+                            """Guardar"""
+                            i.save()
+                            """Agregar a la lista"""
+                            en_revision.append(i)
+                            """Recorrer relaciones del item"""
+                            for r in i.relaciones.all():
+                                """verificar si el item relacionado es antecesor"""
+                                relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
+                                """Si el iten relacionado no es antecesor"""
+                                if not relacionItem:
+                                    """COlocar el estado del item relacionado como en revision"""
+                                    r.estado = "en revision"
+                                    # r._history_date = datetime.now()
+                                    """Guardar"""
+                                    r.save()
+                                    """Verificar si el item relacionado se encuentra en linea base"""
+                                    esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
+                                    """Agregar a la lista en revison"""
+                                    en_revision.append(r)
+                                    """Si se encuentra en linea base"""
+                                    if esta_en_LB:
+                                        """Agregar a la lista"""
+                                        en_revision_lb.append(r)
+                                        """Obtener liena base"""
+                                        lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                                        """Si el estado de la linea base es cerrada."""
+                                        if lineaBaseItem.estado == "cerrada":
+                                            """Actualizar estado a comprometida"""
+                                            lineaBaseItem.estado = "comprometida"
+                                            lineaBaseItem.save()
+                                        """Si la linea base es abierta"""
+                                        if lineaBaseItem.estado == "abierta":
+                                            """Remover item de la linea base"""
+                                            lineaBaseItem.items.remove(r)
+                                            lineaBaseItem.save()
 
-                                        r.estado = "en linea base"
-                                        r.save()
-                                        """Crear solicitud de rotura para comprometida"""
-                                        solicitud = RoturaLineaBaseComprometida.objects.create(
-                                            comprometida_estado="pendiente")
-                                        """Guardar solicitud"""
-                                        solicitud.save()
-                                        """Agregar solicitud a la linea base"""
-                                        lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
-                                        """Guardar linea base"""
-                                        lineaBaseItem.save()
-                                    """Si la linea base esta comprometida"""
-                                    if lineaBaseItem.estado == "comprometida":
-                                        """Crear solicitud"""
-                                        solicitud = RoturaLineaBaseComprometida.objects.create(
-                                            comprometida_estado="pendiente")
-                                        """Guardar solicitud"""
-                                        solicitud.save()
-                                        """Agregar solicitud a la linea base"""
-                                        lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
-                                        """Guardar linea base"""
-                                        lineaBaseItem.save()
-                                    """Si la linea base es abierta"""
-                                    if lineaBaseItem.estado == "abierta":
-                                        """Remover item de la linea base"""
-                                        lineaBaseItem.items.remove(r)
-                                        lineaBaseItem.save()
-
-                        """Verificar si el algoritmo debe seguir"""
-                        seguir = False
-                        """Recorrer los items en revision"""
-                        for i in en_revision:
-                            """Si no esta en linea base"""
-                            if not i in en_revision_lb:
-                                """Recorrer relaciones"""
-                                for r in i.relaciones.all():
-
-                                    relacionItem = Relacion.objects.filter(item_from=r, item_to=i,
-                                                                           tipo="antecesor").exists()
-                                    if not relacionItem:
-                                        if not r in en_revision:
-                                            seguir = True
-
-                        while seguir:
-                            """Recorrer items en revision"""
-                            for i in en_revision:
-                                """Si no esta en linea base"""
-                                if not i in en_revision_lb:
-                                    """Recorrer relaciones"""
-                                    for r in i.relaciones.all():
-
-                                        relacionItem = Relacion.objects.filter(item_from=r, item_to=i,
-                                                                               tipo="antecesor").exists()
-                                        if not relacionItem:
-                                            if not r in en_revision:
-                                                r.estado = "en revision"
-                                                # r._history_date = datetime.now()
-                                                """Guardar"""
-                                                r.save()
-                                                en_revision.append(r)
-                                                esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
-                                                if esta_en_LB:
-                                                    en_revision_lb.append(r)
-                                                    lineaBaseItem = LineaBase.objects.get(items__id=r.id)
-                                                    """Si el estado de la linea base es cerrada."""
-                                                    if lineaBaseItem.estado == "cerrada":
-                                                        lineaBaseItem.estado = "comprometida"
-                                                        solicitud = RoturaLineaBaseComprometida.objects.create(
-                                                            comprometida_estado="pendiente")
-                                                        solicitud.save()
-                                                        r.estado = "en linea base"
-                                                        r.save()
-                                                        lineaBaseItem.roturaLineaBaseComprometida.add(solicitud)
-                                                        lineaBaseItem.save()
-                                                    if lineaBaseItem.estado == "abierta":
-                                                        lineaBaseItem.items.remove(r)
-                                                        lineaBaseItem.save()
-
+                            """Verificar si el algoritmo debe seguir"""
                             seguir = False
-
+                            """Recorrer los items en revision"""
                             for i in en_revision:
                                 """Si no esta en linea base"""
                                 if not i in en_revision_lb:
@@ -3394,6 +3302,51 @@ def RechazarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid
                                             if not r in en_revision:
                                                 seguir = True
 
+                            while seguir:
+                                """Recorrer items en revision"""
+                                for i in en_revision:
+                                    """Si no esta en linea base"""
+                                    if not i in en_revision_lb:
+                                        """Recorrer relaciones"""
+                                        for r in i.relaciones.all():
+
+                                            relacionItem = Relacion.objects.filter(item_from=r, item_to=i,
+                                                                                   tipo="antecesor").exists()
+                                            if not relacionItem:
+                                                if not r in en_revision:
+                                                    r.estado = "en revision"
+                                                    # r._history_date = datetime.now()
+                                                    """Guardar"""
+                                                    r.save()
+                                                    en_revision.append(r)
+                                                    esta_en_LB = LineaBase.objects.filter(items__id=r.id).exists()
+                                                    if esta_en_LB:
+                                                        en_revision_lb.append(r)
+                                                        lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                                                        """Si el estado de la linea base es cerrada."""
+                                                        if lineaBaseItem.estado == "cerrada":
+                                                            lineaBaseItem.estado = "comprometida"
+                                                            lineaBaseItem.save()
+                                                        if lineaBaseItem.estado == "abierta":
+                                                            lineaBaseItem.items.remove(r)
+                                                            lineaBaseItem.save()
+
+                                seguir = False
+
+                                for i in en_revision:
+                                    """Si no esta en linea base"""
+                                    if not i in en_revision_lb:
+                                        """Recorrer relaciones"""
+                                        for r in i.relaciones.all():
+
+                                            relacionItem = Relacion.objects.filter(item_from=r, item_to=i,
+                                                                                   tipo="antecesor").exists()
+                                            if not relacionItem:
+                                                if not r in en_revision:
+                                                    seguir = True
+                        else:
+                            i.estado = "aprobado"
+                            i.save()
 
                 mensaje = "Se rechazó la rotura de la Línea Base."
                 """Renderizar html"""

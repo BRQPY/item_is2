@@ -154,7 +154,6 @@
                         </div>
                     </div>
                 </form>
-                {% if hay_miembros %}
                     <form
                             action="/proyecto/proyectoRol/proyectoid={{ proyecto.id }}/mensaje=''/"
                             id="FormRol"
@@ -170,22 +169,6 @@
                             </div>
                         </div>
                     </form>
-                {% else %}
-                    <div class="col s5 m3">
-                        <div class="card">
-                            <div class="card-image" style= "border:1px solid #7d7d7d;"
-                            >
-                                <a
-                                        style="cursor: default"
-                                        title="Agregue miembros al proyecto para seguir avanzando con la configuración del proyecto."
-                                >
-                                    <img src="{% static 'img/rolesgris.png' %}" alt="RolesProyecto" width="80" height="180" style="padding-top: 22px">
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
-                {% if hay_miembros and hay_roles %}
                     <form
                         action="/proyecto/proyectoTipodeItem/"
                         id="FormTipoItem"
@@ -202,22 +185,6 @@
                     </div>
                     <input type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
                 </form>
-                {% else %}
-                    <div class="col s5 m3">
-                        <div class="card">
-                            <div class="card-image" style= "border:1px solid #7d7d7d;"
-                            >
-                                <a
-                                        style="cursor: default"
-                                        title="Agregue miembros y roles al proyecto para seguir avanzando con la configuración del proyecto."
-                                >
-                                    <img src="{% static 'img/tiposgris.png' %}" alt="RolesProyecto" width="80" height="180" style="padding-top: 22px">
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
-                {% if hay_miembros and hay_roles and hay_tipos %}
                     <form
                         action="/proyecto/proyectoComite/proyectoid={{ proyecto.id }}/mensaje=''/"
                         id="FormComite"
@@ -233,22 +200,6 @@
                         </div>
                     </div>
                 </form>
-                {% else %}
-                    <div class="col s5 m3">
-                        <div class="card">
-                            <div class="card-image" style= "border:1px solid #7d7d7d;"
-                            >
-                                <a
-                                        style="cursor: default"
-                                        title="Agregue miembros,roles y Tipos de Item al proyecto para seguir avanzando con la configuración"
-                                >
-                                    <img src="{% static 'img/comitegris.png' %}" alt="RolesProyecto" width="80" height="180" style="padding-top: 22px">
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
-                {% if hay_miembros and hay_roles and hay_tipos and hay_comite %}
                     <form
                         action="/proyecto/proyectoFase/proyectoid={{proyecto.id}}"
                         id="FormFases"
@@ -264,21 +215,6 @@
                             </div>
                         </div>
                     </form>
-                {% else %}
-                    <div class="col s5 m3">
-                        <div class="card">
-                            <div class="card-image" style= "border:1px solid #7d7d7d;"
-                            >
-                                <a
-                                        style="cursor: default"
-                                        title="Designe a tres miembros del proyecto como Comité de Control de Cambios para seguir avanzando con la configuración"
-                                >
-                                    <img src="{% static 'img/fsesgris.png' %}" alt="fases" width="80" height="180" style="padding-top: 22px">
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
                 {% if hay_miembros and hay_roles and hay_tipos and hay_comite and hay_fases%}
                     <div class="col s5 m3">
                         <div class="card">
@@ -298,7 +234,7 @@
                             >
                                 <a
                                         style="cursor: default"
-                                        title="Cumpla todos los pasos para poder iniciar el Proyecto."
+                                        title="Cumpla todos los requisitos para poder iniciar el Proyecto."
                                 >
                                     <img src="{% static 'img/iniciargris.png' %}" alt="fases" width="80" height="180" style="padding-top: 22px">
                                 </a>
