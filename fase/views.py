@@ -145,7 +145,7 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
         items_desarrollo = items.filter(estado="en desarrollo")
         items_pendiente = items.filter(estado="pendiente de aprobacion")
         items_aprobado = items.filter(estado="aprobado")
-        items_revision = items.filter(estado="en revision")
+        items_revision = list(items.filter(estado="en revision"))
         items_LB_cerrada = []
         items_LB_abierta = []
         items_LB_comprometida= []
@@ -175,6 +175,11 @@ def faseVerProyectoInicializado(request, faseid, proyectoid, mensaje):
             if lb.estado == "comprometida":
                 lb_comprometida_items.append(lb.items.all())
                 lb_comprometida.append(lb)
+        for lb in lb_comprometida:
+            for r in items_revision:
+                if r in lb.items.all():
+                    items_revision.remove(r)
+
         tipos = fase.tipoItem.all()
         return render(request, 'fase/FaseProyectoInicializado.html', {'proyecto': proyecto, 'fase': fase,
                                                                       'items': items, 'tipos': tipos,
@@ -1105,7 +1110,12 @@ def itemModificar(request):
         parametros -> proyectoid, faseid, itemid y mensaje de error.
         """
         # return redirect('proyectoView', id=proyectoid)
-
+        linea_base_item = list(LineaBase.objects.filter(items__id=item.id).exclude(estado="rota"))
+        esta_en_lb_comprometida = False
+        if len(linea_base_item) > 0:
+            linea_base_item = linea_base_item.pop()
+            if linea_base_item.estado == "comprometida":
+                esta_en_lb_comprometida = True
         """
         Template a renderizar: itemModificar 
         con parametros -> proyectoid, faseid, item y campos extra.
@@ -1117,7 +1127,8 @@ def itemModificar(request):
                        'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
                        'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
                        'desarrolloPermiso': request.user.has_perm("establecer_itemDesarrollo", fase),
-                       'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ], })
+                       'lineaBase' : linea_base_item,
+                       'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', 'en linea base'], 'esta_en_lb_comprometida':esta_en_lb_comprometida })
 
     """POST request, captura la informacion para actualizar los datos del item"""
     """Captura toda la informacion proveida por el usuario."""
@@ -1346,7 +1357,21 @@ def itemCambiarEstado(request):
                     mensaje_error = "Error! Para aprobar un ítem éste debe tener una relación de 'hijo' o 'sucesor' de un ítem con estado 'aprobado' o 'en linea base cerrada'."
                     return redirect('faseViewInicializado', faseid=dato['faseid'], proyectoid=dato['proyectoid'], mensaje=mensaje_error)
 
+        if dato['estado'] == "en linea base":
+            linea_base_item = list(LineaBase.objects.filter(items__id=item.id).exclude(estado="rota"))
 
+            if len(linea_base_item) > 0:
+                linea_base_item = linea_base_item.pop()
+                if linea_base_item.estado == "comprometida":
+                    cerrar = True
+                    for i in linea_base_item.items.all():
+                        if i.estado != "en linea base" and i != item:
+                            cerrar = False
+                            break
+                    if cerrar:
+                        """Si todos los ítems estan en linea base, se procede a cerrar la LB"""
+                        linea_base_item.estado = "cerrada"
+                        linea_base_item.save()
         """Verificar que el estado del proyecto sea inicializado."""
         if proyecto.estado != "inicializado":
             """En caso contrario, no permite cambiar el estado del item y redirige a la vista de fase."""
