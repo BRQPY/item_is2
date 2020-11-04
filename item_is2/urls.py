@@ -72,6 +72,7 @@ urlpatterns = [
     path('proyecto/gestionProyecto/', views.gestionProyecto, name="ProyectoGestion"),
     path('proyecto/modify/', views.proyectoModificar),
     path('proyecto/unable/proyectoid=<str:proyectoid>/', views.proyectoDeshabilitar),
+    path('proyecto/report/proyectoid=<str:proyectoid>/', views.reporte),
     path('proyecto/proyectoUser/', views.proyectoUser),
     path('proyecto/proyectoUser/add/', views.proyectoUserAdd),
     path('proyecto/proyectoUser/remove/proyectoid=<str:proyectoid>/userid=<str:userid>', views.proyectoUserRemove,

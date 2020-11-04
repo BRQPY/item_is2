@@ -10,6 +10,9 @@ from django.template.loader import get_template
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from proyecto.tasks import sendEmailViewProyecto
+from django.http import HttpResponse
+from .reportes import ReporteProyecto
+
 
 @permission_required('proyecto.add_proyecto', login_url='/permissionError/')
 def proyectoCrear(request):
@@ -54,11 +57,11 @@ def proyectoCrear(request):
         proyecto.estado = "pendiente"
         """Guardar"""
         proyecto.save()
-        #Envio de Correo al gerente del proyecto
+        # Envio de Correo al gerente del proyecto
         mail = gerente.email
         name = gerente.username
         messages.success(request, "Permisos asignados exitosamente!")
-        sendEmailViewProyecto.delay(mail, name, proyecto.nombre,0)
+        sendEmailViewProyecto.delay(mail, name, proyecto.nombre, 0)
         """
         #Vista a redirigir: homeView"""
         return redirect("/home/")
@@ -73,7 +76,6 @@ def proyectoCrear(request):
                 usuarios.append(user)
         """Template a renderizar: proyectoCrear.html"""
         return render(request, 'proyecto/proyectoCrear.html', {'usuarios': usuarios, })
-
 
 
 def proyectoInicializar(request, proyectoid):
@@ -150,7 +152,7 @@ def proyectoCancelar(request, proyectoid):
 
     """Establecer estado del poryecto como cancelado."""
     proyecto.estado = "cancelado"
-    #proyecto._history_date = datetime.now()
+    # proyecto._history_date = datetime.now()
     """Guardar."""
     proyecto.save()
     """Redirigir al menu principal del sistema."""
@@ -271,8 +273,10 @@ def proyectoView(request, id):
                                                                        'usuarios': usuarios,
                                                                        'roles': roles,
                                                                        'tipoItem': tipoItem,
-                                                                       'comite': comite, 'hay_miembros':hay_miembros, 'hay_roles':hay_roles,
-                                                                       'hay_tipos':hay_tipos, 'hay_comite':hay_comite, 'hay_fases':hay_fases})
+                                                                       'comite': comite, 'hay_miembros': hay_miembros,
+                                                                       'hay_roles': hay_roles,
+                                                                       'hay_tipos': hay_tipos, 'hay_comite': hay_comite,
+                                                                       'hay_fases': hay_fases})
         else:
             hay_acta = False
             acta = list(proyecto.acta.all())
@@ -288,7 +292,8 @@ def proyectoView(request, id):
                                                                       'usuarios': usuarios,
                                                                       'roles': roles,
                                                                       'tipoItem': tipoItem,
-                                                                      'comite': comite, 'hay_acta':hay_acta, 'acta':acta})
+                                                                      'comite': comite, 'hay_acta': hay_acta,
+                                                                      'acta': acta})
     if request.method == "POST":
         proyectoid = request.POST.get('proyectoid')
         proyecto = Proyecto.objects.get(id=proyectoid)
@@ -347,7 +352,7 @@ def gestionProyecto(request):
             break
     """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
     return render(request, 'proyecto/ProyectoInicializadoConfig.html',
-                  {'proyecto': proyecto, 'fases': proyecto.fases.all(), 'finalizar':finalizar})
+                  {'proyecto': proyecto, 'fases': proyecto.fases.all(), 'finalizar': finalizar})
 
 
 def proyectoModificar(request):
@@ -473,8 +478,8 @@ def faseView(request, faseid, proyectoid):
     """Template a renderizar: fase.html con parametros -> fase, proyecto, items de fase."""
     return render(request, 'fase/fase.html', {'fase': fase, 'proyecto': proyecto, 'items': items,
                                               'userRol': zip(user_sin_repetidos, roles_por_user),
-                                              'cant_user': cant_user, 'hay_roles':hay_roles,
-                                              'hay_tipos_item':hay_tipos_item,
+                                              'cant_user': cant_user, 'hay_roles': hay_roles,
+                                              'hay_tipos_item': hay_tipos_item,
                                               })
 
 
@@ -610,7 +615,7 @@ def proyectoUserRemove(request, proyectoid, userid):
          usuarios posibles para remover y proyectoid
         """
         return render(request, "proyecto/proyectoUserRemove.html", {'usuarios': user, 'proyectoid': proyectoid,
-                                                                    'eliminar':eliminable})
+                                                                    'eliminar': eliminable})
 
     """POST request, captura la lista de usuarios para remover del proyecto"""
     """Lista de usuarios a remover"""
@@ -646,7 +651,7 @@ def proyectoComite(request, proyectoid, mensaje):
         y que (indirectamente) haya iniciado sesion
     """
     """ID del proyecto"""
-    #proyectoid = request.GET.get('proyectoid')
+    # proyectoid = request.GET.get('proyectoid')
     """Proyecto correspondiente"""
     proyecto = Proyecto.objects.get(id=proyectoid)
     """Verificar permiso necesario en el proyecto correspondiente"""
@@ -708,7 +713,6 @@ def proyectoComiteAdd(request):
                 """Agregar usuarios al comite"""
                 miembros.append(u)
 
-
         """
         Template a renderizar: proyectoComiteAdd.html con parametros -> 
         miembros posibles a agregar y proyectoid
@@ -758,7 +762,7 @@ def proyectoComiteAdd(request):
                 assign_perm("view_fase", user, f)
 
     if len(users) == 0:
-        mensaje="Error, no se añadio a ningún miembro al Comité."
+        mensaje = "Error, no se añadio a ningún miembro al Comité."
     else:
         """Notificar a los miembros del comite"""
         mensaje = "Se agregó correctamente al usuario dentro del Comité"
@@ -811,7 +815,7 @@ def proyectoComiteRemove(request, proyectoid, userid):
                         """Solo se puede remover los primeros dos votos, porque si hay 3 votos ya se cerró la votación"""
                         if posicion_user == 0:
                             s.voto_uno = s.voto_dos
-                            s.voto_dos= -1
+                            s.voto_dos = -1
                             s.votos_registrados.remove(user)
                             s.save()
                         if posicion_user == 1:
@@ -822,14 +826,14 @@ def proyectoComiteRemove(request, proyectoid, userid):
                 for s in lb.roturaLineaBaseComprometida.all().filter(comprometida_estado="pendiente"):
                     print("Solicitud", s)
                     for v in s.registrados_votos_comprometida.all():
-                        print("Voto xdxdxd:",v)
+                        print("Voto xdxdxd:", v)
                         usuarios_votantes_comprometida.append(int(v.id))
                     if int(user.id) in usuarios_votantes_comprometida:
                         posicion_user = usuarios_votantes_comprometida.index(int(user.id))
                         """Solo se puede remover los primeros dos votos, porque si hay 3 votos ya se cerró la votación"""
                         if posicion_user == 0:
                             s.uno_voto_comprometida = s.dos_voto_comprometida
-                            s.dos_voto_comprometida= -1
+                            s.dos_voto_comprometida = -1
                             s.registrados_votos_comprometida.remove(user)
                             s.save()
                         if posicion_user == 1:
@@ -837,7 +841,7 @@ def proyectoComiteRemove(request, proyectoid, userid):
                             s.registrados_votos_comprometida.remove(user)
                             s.save()
         """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
-        return redirect('Comite', proyectoid=proyectoid ,mensaje="Se removió correctamente al usuario del Comité")
+        return redirect('Comite', proyectoid=proyectoid, mensaje="Se removió correctamente al usuario del Comité")
 
 
 def proyectoRol(request, proyectoid, mensaje):
@@ -848,7 +852,7 @@ def proyectoRol(request, proyectoid, mensaje):
         y que (indirectamente) haya iniciado sesion
     """
     """ID del proyecto"""
-    #proyectoid = request.GET.get('proyectoid')
+    # proyectoid = request.GET.get('proyectoid')
     """Proyecto correspondiente"""
     proyecto = Proyecto.objects.get(id=proyectoid)
     """Verificar permiso necesario en el proyecto correspondiente"""
@@ -865,7 +869,7 @@ def proyectoRol(request, proyectoid, mensaje):
     Template a renderizar: proyectoRol.html con parametros -> peroyectoid
     y roles del proyecto
     """
-    return render(request, 'proyecto/proyectoRol.html', {'proyecto': proyecto, 'roles': roles,'mensaje':mensaje })
+    return render(request, 'proyecto/proyectoRol.html', {'proyecto': proyecto, 'roles': roles, 'mensaje': mensaje})
 
 
 def proyectoRolCrear(request):
@@ -1005,7 +1009,7 @@ def proyectoRolCrear(request):
         proyecto.roles.add(rol)
         roles = proyecto.roles.all()
         """Template a renderizar: gestion Proyecto.html con parametro -> proyectoid"""
-        mensaje= "Rol creado correctamente."
+        mensaje = "Rol creado correctamente."
         return redirect('ProyectoRol', proyectoid=proyectoid, mensaje=mensaje)
     else:
         """GET request, muestra el template correspondiente para la creacion del rol"""
@@ -1193,8 +1197,6 @@ def proyectoRolModificar(request, proyectoid, rolid):
                 if permiso not in vector:
                     vector.append(permiso)
 
-
-
         """Garantizar la presencia del permiso Ver Fase"""
         permiso = Permission.objects.get(codename="view_fase")
         if permiso not in vector:
@@ -1202,7 +1204,7 @@ def proyectoRolModificar(request, proyectoid, rolid):
 
         for fu in rol.faseUser.all():
             for p in perms_antes_modificar:
-                remove_perm(p.codename,fu.user,fu.fase)
+                remove_perm(p.codename, fu.user, fu.fase)
 
         """Agregar permisos al grupo"""
         grupo.permissions.set(vector)
@@ -1210,10 +1212,9 @@ def proyectoRolModificar(request, proyectoid, rolid):
         grupo.save()
         usuarios_con_el_rol = []
 
-
         for fu in rol.faseUser.all():
             for p in grupo.permissions.all():
-                assign_perm(p.codename,fu.user,fu.fase)
+                assign_perm(p.codename, fu.user, fu.fase)
         """Agregar grupo de permisos al rol"""
         rol.perms = grupo
         """Guardar Rol"""
@@ -1302,7 +1303,7 @@ def crear_tipo_form(request):
         obj = TipodeItem.objects.create(nombreTipo=nombre1, descripcion=descrip)
         """Ciclo para agregar los campos extra creados por el usuario al objeto del tipo "Tipo de Item" """
         for c in campo:
-            if not c=="":
+            if not c == "":
                 obj.campo_extra.append(c)
         """Se guarda en la BD el objeto creado"""
         obj.save()
@@ -1354,7 +1355,7 @@ def gestionar_tipo_de_item(request):
                 tipos_no_modificable.append(tipos)
     for t in tipos:
         print("Nombre", t.nombreTipo)
-        print("tamaño:",len(t.campo_extra))
+        print("tamaño:", len(t.campo_extra))
     return render(request, "proyecto/gestionartipodeitem.html",
                   {'proyecto': proyecto, 'tipos_modificable': tipos_modificable,
                    'tipos_no_modificable': tipos_no_modificable, })
@@ -1423,7 +1424,7 @@ def modificar_tipo_de_item(request, proyectoid, tipoid):
             """Se crea un vector para guardar los cambios en los campos extras"""
             cambios_campos = []
             for c in cambios:
-                if not c=="":
+                if not c == "":
                     """
                     Agrega campos que no sean igual a un espacio en blanco,
                     pues estos fueron eliminados por el usuario.
@@ -1560,6 +1561,7 @@ def remover_tipo_de_item(request, proyectoid, tipoid):
                       {'proyecto': proyecto, 'tipos_modificable': tipos_modificable,
                        'tipos_no_modificable': tipos_no_modificable, })
 
+
 def ProyectoFinalizar(request, proyectoid):
     """
          **ProyectoFinalizar:**
@@ -1629,3 +1631,13 @@ def formActaProyecto(request, proyectoid):
         proyecto.save()
 
         return redirect('proyectoView', id=proyectoid)
+
+
+def reporte(request, proyectoid):
+    proyecto = Proyecto.objects.get(id=proyectoid)
+    fases = proyecto.fases.all()
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="reporte.pdf"'
+    r = ReporteProyecto()
+    response.write(r.run(proyectoid, fases))
+    return response
