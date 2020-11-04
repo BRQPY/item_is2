@@ -4277,4 +4277,5 @@ def solicitarCambioEstado(request, itemid, faseid, proyectoid):
             name = u.user.username
             sendEmailViewFaseSolicitud.delay(mail, name, item.nombre, fase.nombre)
 
+    # XD
     return render(request, "home.html")
