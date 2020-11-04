@@ -9,7 +9,6 @@
         </button>
     </form>
 
-
 	<div class="container">
         {%if proyecto.estado != "cancelado"%}
             {% if item.estado != "en linea base" %}
@@ -195,33 +194,66 @@
                     {% endif %}
                 {% endif %}
                 {% if item.estado == "en revision" %}
-                    <form action="/item/itemCambiarEstado/">
-                        <div>
-                            <select id="estado" name="estado" class="browser-default">
-                                <option value="en revision" selected>en revision</option>
-                                {%for c in choices%}
-                                    {%if c == "en desarrollo"%}
-                                        {%if desarrolloPermiso %}
-                                            <option value="{{c}}">{{c}}</option>
-                                        {%endif%}
-                                    {%endif%}
-                                    {%if c == "aprobado"%}
-                                        {%if aprobadoPermiso%}
-                                            <option value="{{c}}">{{c}}</option>
-                                        {%endif%}
-                                    {%endif%}
-                                {%endfor%}
-                             </select>
-                            <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
-                            <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
-                            <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
-
-                            <button type="submit" class="btn-small blue darken-3 right" >
-                                Cambiar Estado
-                                <i class="material-icons left">edit</i><br>
-                            </button>
+                    {% if esta_en_lb_comprometida  %}
+                        <div class="alert_message" >
+                            <strong> Atención: El ítem se encuentra en una Línea Base Comprometida ({{ lineaBase.nombre }}).</strong>
                         </div>
-                    </form>
+                        <div class="exito_mensaje" >
+                            <strong>Si el ítem no requiere modificaciones, cambie su estado a "en linea base".</strong>
+                        </div>
+                        <div class="alert_message" >
+                            <strong>Si el ítem requiere modificaciones, solicite la rotura de la Línea Base que contiente al ítem.</strong>
+                        </div>
+                        <form action="/item/itemCambiarEstado/">
+                            <div>
+                                <select id="estado" name="estado" class="browser-default">
+                                    <option value="en revision" selected>en revision</option>
+                                    {%for c in choices%}
+                                        {%if c == "en linea base"%}
+                                            <option value="{{c}}">{{c}}</option>
+                                        {%endif%}
+                                    {%endfor%}
+                                </select>
+                                <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                                <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+                                <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+
+                                <button type="submit" class="btn-small blue darken-3 right" >
+                                    Cambiar Estado
+                                    <i class="material-icons left">edit</i><br>
+                                </button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <form action="/item/itemCambiarEstado/">
+                            <div>
+                                <select id="estado" name="estado" class="browser-default">
+                                    <option value="en revision" selected>en revision</option>
+                                    {%for c in choices%}
+                                        {%if c == "en desarrollo"%}
+                                            {%if desarrolloPermiso %}
+                                                <option value="{{c}}">{{c}}</option>
+                                            {%endif%}
+                                        {%endif%}
+                                        {%if c == "aprobado"%}
+                                            {%if aprobadoPermiso%}
+                                                <option value="{{c}}">{{c}}</option>
+                                            {%endif%}
+                                        {%endif%}
+                                    {%endfor%}
+                                 </select>
+                                <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
+                                <input  type="hidden" value={{faseid}} id="faseid" name="faseid">
+                                <input  type="hidden" value={{item.id}} id="itemid" name="itemid">
+
+                                <button type="submit" class="btn-small blue darken-3 right" >
+                                    Cambiar Estado
+                                    <i class="material-icons left">edit</i><br>
+                                </button>
+                            </div>
+                        </form>
+                    {% endif %}
+
                 {% endif %}
             {%endif%}
         {%endif%}

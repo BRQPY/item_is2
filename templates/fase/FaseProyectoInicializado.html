@@ -492,7 +492,17 @@
                             </div>
                             {% for i in lb.items.all %}
                                 <li style="padding-left: 8px;padding-right: 8px;">
-                                    <div class="card-panel" style="border:1px solid black;border-radius: 5px;">
+                                    {% if i.estado == "en revision" %}
+                                        <div
+                                                class="card-panel"
+                                                style="
+                                                            border-left:15px outset #ff6d00;
+                                                            border-right:0.2px solid black;
+                                                            border-bottom:0.2px solid black;
+                                                            border-top: 0.1px solid black;
+                                                            border-radius: 10px;
+                                                "
+                                        >
                                         <div class="row">
                                             <div class="col l4 left">
                                                 <b>{{ i.nombre }}</b>
@@ -522,6 +532,49 @@
                                             </div>
                                         </div>
                                     </div>
+                                    {% endif %}
+                                    {% if i.estado == "en linea base" %}
+                                        <div
+                                                class="card-panel"
+                                                style="
+                                                            border-left:15px outset black;
+                                                            border-right:0.2px solid black;
+                                                            border-bottom:0.2px solid black;
+                                                            border-top: 0.1px solid black;
+                                                            border-radius: 10px;
+                                                "
+                                        >
+                                        <div class="row">
+                                            <div class="col l4 left">
+                                                <b>{{ i.nombre }}</b>
+                                            </div>
+                                            <div class="col l4 right">
+                                                <a href="{% url 'itemConfigurar' i.id fase.id proyecto.id %}"
+                                                   title="Ver y/o modificar datos del ítem, relacionar, reversionar."
+                                                   style="color: black"
+                                                >
+                                                    Gestionar Ítem
+                                                    <i class="material-icons dark black-text left">settings</i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col 1">
+                                                <b>Estado:</b>
+                                                {{ i.estado }}
+                                            </div>
+                                            <div class="col l4 left">
+                                                <b>Costo en horas:</b>
+                                                {{ i.costo }}h
+                                            </div>
+                                            <div class="col 3">
+                                                <b>Tipo de ítem:</b>
+                                                {{ i.tipoItem.nombreTipo }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
                                 </li>
                             {% endfor %}
                         </div><br>
