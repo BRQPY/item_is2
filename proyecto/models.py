@@ -19,6 +19,9 @@ class CampoExtraValores(models.Model):
     campoExtra = models.ForeignKey(CampoExtra, on_delete=models.CASCADE, default=None, related_name="campoExtra")
     valor = models.CharField(max_length=40)
 
+class SolicitudCambioEstado(models.Model):
+    justificacion = models.CharField(max_length=400, blank=True, null=True)
+    fecha = models.CharField(max_length=200, blank=True, null=True),
 
 class Item(models.Model):
     tipoItem = models.ForeignKey(TipodeItem, on_delete=models.CASCADE, default=None, related_name="tipoItem")
@@ -35,6 +38,8 @@ class Item(models.Model):
     # archivos = models.ManyToManyField(Files,default=None)
     archivos = ArrayField(models.CharField(max_length=40), default=list, blank=True)
     faseid=models.IntegerField(default=0, blank=True)
+    solicitudes = models.ManyToManyField(SolicitudCambioEstado, default=None, blank=True, related_name='solicitudes')
+
 
 
 class Files(models.Model):
@@ -165,7 +170,10 @@ class Proyecto(models.Model):
         ordering = ['nombre']
 
 
+
 class ProyectoFase(models.Model):
     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
     fase = models.ForeignKey(Fase, on_delete=models.CASCADE, default=None)
+
+
 

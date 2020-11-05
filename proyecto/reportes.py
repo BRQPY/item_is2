@@ -9,7 +9,7 @@ from reportlab.platypus import (
     TableStyle,
     Paragraph)
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from .models import Proyecto, Fase
+from .models import Proyecto, Fase, SolicitudCambioEstado
 
 
 class ReporteProyecto(object):
@@ -17,7 +17,7 @@ class ReporteProyecto(object):
     def __init__(self):
         self.buf = BytesIO()
 
-    def run(self, proyectoid, fases):
+    def run(self, proyectoid, fases, fecha_ini, fecha_fin):
         self.doc = SimpleDocTemplate(self.buf)
         self.story = []
         proyecto = Proyecto.objects.get(pk=proyectoid)
@@ -33,7 +33,7 @@ class ReporteProyecto(object):
         except:
             self.encabezado("No ha seleccionado fases")
 
-        # self.solicitudes(proyecto.fecha_inicio, proyecto.fecha_fin)
+        self.solicitudes(fecha_ini, fecha_fin)
 
         self.doc.build(self.story, onFirstPage=self.numeroPagina,
                        onLaterPages=self.numeroPagina)
@@ -52,23 +52,12 @@ class ReporteProyecto(object):
         self.story.append(p)
         self.story.append(Spacer(1, 0.1 * inch))
 
-    def solicitudes(self, fecha_ini, fecha_fin):
-        solicitudes = Solicitud.objects.filter(fecha_solicitud__range=[fecha_ini, fecha_fin])
-        num = len(solicitudes)
-        texto = 'En el rango: {0}/{1}/{2}-{3}/{4}/{5}. '.format(fecha_ini.day, fecha_ini.month, fecha_ini.year,
-                                                                fecha_fin.day, fecha_fin.month, fecha_fin.year)
-        if num == 1:
-            p1 = Paragraph(texto + "Se tiene una solicitud", self.estiloPC())
-        else:
-            p1 = Paragraph(texto + "Se tiene " + str(num) + " solicitudes", self.estiloPC())
-        self.story.append(p1)
-        self.story.append(Spacer(1, 0.1 * inch))
+
 
     def crearTabla(self, items):
         data = [["Id", "Nombre", "Estado"]] \
                + [[x.id, x.nombre, x.estado]
                   for x in items]
-
         style = TableStyle([
             ('GRID', (0, 0), (-1, -1), 0.25, colors.black),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
@@ -103,6 +92,26 @@ class ReporteProyecto(object):
         self.story.append(t)
         self.story.append(Spacer(1, 0.5 * inch))
 
+    def solicitudes(self, fecha_ini, fecha_fin):
+        solicitudes = SolicitudCambioEstado.objects.all()
+        solicitud_rango = []
+        for s in solicitudes:
+            if s.justificacion >= fecha_ini and s.justificacion <= fecha_fin:
+                solicitud_rango.append(s)
+
+        data = [["SolicitudId", "Fecha",]] \
+               + [[x.id, x.justificacion,]
+                  for x in solicitud_rango]
+        style = TableStyle([
+                ('GRID', (0, 0), (-1, -1), 0.25, colors.black),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')
+            ])
+
+        t = Table(data)
+        t.setStyle(style)
+        self.story.append(t)
+        self.story.append(Spacer(1, 0.5 * inch))
     def estiloPC(self):
         return ParagraphStyle(name="centrado", alignment=TA_CENTER)
 

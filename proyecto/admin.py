@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Rol, Proyecto, FaseUser, TipodeItem, Fase, Item, Relacion, LineaBase, Files, ProyectoFase, RoturaLineaBase, RoturaLineaBaseComprometida, ActaInforme
+from .models import Rol, Proyecto, FaseUser, TipodeItem, Fase, Item, Relacion, LineaBase, Files, ProyectoFase, RoturaLineaBase, RoturaLineaBaseComprometida, ActaInforme, SolicitudCambioEstado
 
 import reversion
 from reversion.admin import VersionAdmin
@@ -59,3 +59,4 @@ admin.site.register(RoturaLineaBaseComprometida)
 admin.site.register(ProyectoFase)
 admin.site.register(Item, YourModelAdmin)
 admin.site.register(ActaInforme)
+admin.site.register(SolicitudCambioEstado)

@@ -1634,10 +1634,20 @@ def formActaProyecto(request, proyectoid):
 
 
 def reporte(request, proyectoid):
-    proyecto = Proyecto.objects.get(id=proyectoid)
-    fases = proyecto.fases.all()
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="reporte.pdf"'
-    r = ReporteProyecto()
-    response.write(r.run(proyectoid, fases))
-    return response
+    if request.method == "GET":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Renderizar html"""
+        return render(request, "proyecto/Reporte.html", {'proyecto': proyecto})
+    if request.method == "POST":
+        """Obtener proyecto."""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        fecha_ini = request.POST.get('fechainicio')
+        fecha_fin = request.POST.get('fechafin')
+        fases = proyecto.fases.all()
+        print("fechas en proyectoviews",fecha_ini, fecha_fin)
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="reporte.pdf"'
+        r = ReporteProyecto()
+        response.write(r.run(proyectoid, fases, fecha_ini, fecha_fin))
+        return response

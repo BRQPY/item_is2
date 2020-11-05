@@ -72,7 +72,6 @@ urlpatterns = [
     path('proyecto/gestionProyecto/', views.gestionProyecto, name="ProyectoGestion"),
     path('proyecto/modify/', views.proyectoModificar),
     path('proyecto/unable/proyectoid=<str:proyectoid>/', views.proyectoDeshabilitar),
-    path('proyecto/report/proyectoid=<str:proyectoid>/', views.reporte),
     path('proyecto/proyectoUser/', views.proyectoUser),
     path('proyecto/proyectoUser/add/', views.proyectoUserAdd),
     path('proyecto/proyectoUser/remove/proyectoid=<str:proyectoid>/userid=<str:userid>', views.proyectoUserRemove,
@@ -164,4 +163,5 @@ urlpatterns = [
     path('item/SolicitudCambio/itemid=<str:itemid>/faseid=<str:faseid>/proyectoid=<str:proyectoid>/', viewsFase.solicitarCambioEstado, name="SolicitudCambio"),
     path('proyecto/finalizar/proyectoid=<str:proyectoid>/', views.ProyectoFinalizar, name="ProyectoFinalizar"),
     path('proyecto/acta/form/proyectoid=<str:proyectoid>/', views.formActaProyecto, name="formActaProyecto"),
+    path('proyecto/reporte/proyectoid=<str:proyectoid>/', views.reporte, name="reporte"),
 ]

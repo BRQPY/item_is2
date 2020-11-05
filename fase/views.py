@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User, Group, Permission
 from proyecto.models import Proyecto, Fase, TipodeItem, Item, FaseUser, User, Rol, Relacion, LineaBase, Files, \
-    RoturaLineaBase, RoturaLineaBaseComprometida
+    RoturaLineaBase, RoturaLineaBaseComprometida, SolicitudCambioEstado
 from guardian.shortcuts import assign_perm, remove_perm
 from proyecto.views import proyectoView, faseView
 import boto3
 import reversion
-from datetime import datetime
+from datetime import datetime, date
 from reversion.models import Revision, Version
 
 from django.db.models import Q
@@ -1766,9 +1766,10 @@ def itemAddRelacion(request):
         """Si el estado del item es en linea base."""
         if item.estado == "en linea base":
             """Filtrar linea base que aloja al item."""
-            linea_base_item = LineaBase.objects.filter(items=item)
-            """Si el estsado de la linea base es cerrada."""
-            if linea_base_item.get().estado == "cerrada":
+
+            linea_base_item = list(LineaBase.objects.filter(items__id=item.id).exclude(estado="rota"))
+            if linea_base_item[0].estado == "cerrada":
+                """Si el estado de la linea base es cerrada."""
                 """Obtener las fases del proyecto."""
                 fasesProyecto = proyecto.fases.exclude(estado="deshabilitada").order_by('id')
                 """Bandera para detectar fase actual."""
@@ -4301,6 +4302,14 @@ def solicitarCambioEstado(request, itemid, faseid, proyectoid):
             mail = u.user.email
             name = u.user.username
             sendEmailViewFaseSolicitud.delay(mail, name, item.nombre, fase.nombre)
+        """Se genera un objeto solicitud"""
+        solicitud = SolicitudCambioEstado.objects.create(justificacion=date.today())
+        solicitud.save()
+        item.solicitudes.add(solicitud)
+        item.save()
+        """Se guarda el objeto"""
+        solicitud.save()
 
-    # XD
-    return render(request, "home.html")
+
+    return redirect('faseViewInicializado', faseid=faseid, proyectoid=proyectoid,
+                    mensaje="n")

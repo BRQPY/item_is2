@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    {% if proyecto.estado == "pendiente" %}
+        <form action="/proyecto/proyectoVer/proyectoid={{proyecto.id}}">
+             <button type="submit" class="waves-effect waves-teal btn-flat">
+                 Volver a Gestión de Proyecto
+                 <i class="material-icons dark blue-text left">keyboard_return</i>
+             </button>
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        </form>
+    {% else %}
+        <form action="/proyecto/gestionProyecto/">
+             <button type="submit" class="waves-effect waves-teal btn-flat">
+                        Volver a Gestión de Proyecto
+                        <i class="material-icons dark blue-text left">keyboard_return</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        </form>
+    {% endif %}
+    <div class="container">
+        <h1 style="text-align: center">Generacion de Reporte</h1><br>
+        <h5> Se generará un archivo pdf con la siguiente información:</h5>
+        <ul>
+            <li>
+                Lista de Ítems en cada Fase del Proyecto.
+            </li>
+            <li>
+                Lista de Ítems en "en desarrollo" y "pendiente de aprobacion".
+            </li>
+            <li>
+                Listado de Solicitudes de cambio de estado de Ítems en un rango determinado de fechas.
+            </li>
+        </ul>
+        <form action="/proyecto/reporte/proyectoid={{ proyecto.id }}/" method="post">
+            {% csrf_token %}
+            <div>
+                <h6>
+                    <b>Fecha de Inicio del rango:</b>
+                </h6>
+                <input type=date id="fechainicio" name="fechainicio" required>
+            </div>
+            <div>
+                <h6>
+                    <b>Fecha de Finalización del rango:</b>
+                </h6>
+                <input type=date id="fechafin" name="fechafin" required>
+            </div>
+            <button type="submit" class="waves-effect waves-teal btn-flat">
+                Generar Reporte
+                <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
+            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+        </form>
+
+    </div>
+{% endblock%}
