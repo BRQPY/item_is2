@@ -18,7 +18,7 @@ from django.core.mail import EmailMultiAlternatives
 import reversion
 from django.db import transaction
 import threading
-from fase.tasks import sendEmailViewFase, sendEmailViewFaseSolicitud
+from fase.tasks import sendEmailViewFase, sendEmailViewFaseSolicitud, sendEmailHaySolicitudPendiente
 
 
 def gestionFase(request):
@@ -2842,11 +2842,13 @@ def formRoturaLineaBase(request, proyectoid, faseid, lineaBaseid):
         if request.user in comite_miembros:
             """ES miembro del comite"""
             es_comite = True
-
         """Mensaje a mostrar"""
         mensaje = "Su solicitud se envió correctamente. El Comité de Control de Cambios decidirá romper o no la Línea Base."
         # VERIFICAR SI EL USUARIO QUE ENTRA A ESA PAGINA YA EMITIO O NO SU VOTO PARA NO MOSTRARLE ESE TEMPLATE
-
+        for u in comite_miembros:
+            mail = u.email
+            name = u.username
+            sendEmailHaySolicitudPendiente.delay(mail, name, lineaBase.nombre, fase.nombre, proyecto.nombre)
         return redirect('gestionRoturaLineaBase', proyectoid=proyecto.id, faseid=fase.id, lineaBaseid=lineaBase.id,
                         mensaje=mensaje)
 
