@@ -1334,13 +1334,16 @@ def itemCambiarEstado(request):
                     """Si el item pertenece a la fase anterior y su estado es en linea base."""
                     if relacion.fase_item_to == anterior and ir.estado == "en linea base":
                         """Obtener linea base."""
-                        lineaBaseItem = LineaBase.objects.get(items__id=ir.id)
-                        """Si el estado de la linea base es cerrada."""
-                        if lineaBaseItem.estado == "cerrada":
-                            """Setear bandera en true."""
-                            listoAprobacion = True
-                            """Romper ciclo."""
-                            break
+                        lineaBaseItem = list(LineaBase.objects.filter(items__id=ir.id).exclude(estado="rota"))
+
+                        if len(lineaBaseItem) > 0:
+                            lineaBaseItem = lineaBaseItem.pop()
+                            """Si el estado de la linea base es cerrada."""
+                            if lineaBaseItem.estado == "cerrada":
+                                """Setear bandera en true."""
+                                listoAprobacion = True
+                                """Romper ciclo."""
+                                break
                     """Si el item peretenece a la fase actual y su estado es aprobado, o bien en linea base."""
                     if relacion.fase_item_to == fase and (ir.estado == "aprobado" or ir.estado == "en linea base"):
                         """Setear bandera en true."""
