@@ -80,12 +80,12 @@ def proyectoCrear(request):
 
 def proyectoInicializar(request, proyectoid):
     """
-           **proyectoInicializar:**
-            Vista utilizada para inicializar proyectos.
-            Solicita que el usuario que realiza el request
-            cuente con los permisos de gerente de
-             proyecto y que(indirectamente) haya iniciado
-              sesion.
+       **proyectoInicializar:**
+        Vista utilizada para inicializar proyectos.
+        Solicita que el usuario que realiza el request
+        cuente con los permisos de gerente de
+        proyecto y que(indirectamente) haya iniciado
+        sesion.
     """
 
     """Proyecto a inicializar."""
@@ -148,7 +148,10 @@ def proyectoInicializar(request, proyectoid):
     if acta:
         hay_acta = True
     mensaje = "El proyecto se inicializo correctamente."
-    """Template a renderizar: proyectoIniciado.html con parametros -> proyectoid y fases del proyecto"""
+    """
+    Template a renderizar: proyectoIniciado.html 
+    con parametros -> proyectoid y fases del proyecto
+    """
     return render(request, 'proyecto/proyectoIniciado.html', {'proyecto': proyecto, 'fases': fases,
                                                               'fasesUser': sorted(fasesUser,
                                                                                   key=lambda x: x.id,
@@ -158,19 +161,19 @@ def proyectoInicializar(request, proyectoid):
                                                               'tipoItem': tipoItem,
                                                               'comite': comite, 'hay_acta': hay_acta,
                                                               'acta': acta, 'mensaje':mensaje})
-    #"""Redirigir a la vista del proyecto correspondiente."""
-    #return redirect('proyectoView', id=proyectoid)
+
 
 
 def proyectoCancelar(request, proyectoid):
     """
-               **proyectoCancelar:**
-                Vista utilizada para cancelar proyectos.
-                Solicita que el usuario que realiza el request
-                cuente con los permisos de gerente de
-                 proyecto y que(indirectamente) haya iniciado
-                  sesion.
+       **proyectoCancelar:**
+        Vista utilizada para cancelar proyectos.
+        Solicita que el usuario que realiza el request
+        cuente con los permisos de gerente de
+        proyecto y que(indirectamente) haya iniciado
+        sesion.
     """
+
     """Proyecto a cancelar."""
     proyecto = Proyecto.objects.get(id=proyectoid)
 
@@ -181,7 +184,7 @@ def proyectoCancelar(request, proyectoid):
 
     """Establecer estado del poryecto como cancelado."""
     proyecto.estado = "cancelado"
-    # proyecto._history_date = datetime.now()
+
     """Guardar."""
     proyecto.save()
     proyectos = []
@@ -195,37 +198,10 @@ def proyectoCancelar(request, proyectoid):
                 cant = +1
 
 
-    """Redirigir al menu principal del sistema."""
-    return render(request, 'home.html', {'proyectos': proyectos, 'cant': cant, 'mensaje': "El proyecto se canceló correctamente.", })
-    #return redirect("/home/")
-
-
-'''
-def proyectoView(request, id):
     """
-       **proyectoView:**
-        Vista utilizada para visualizar proyectos.
-        Solicita que el usuario que realiza el request
-        cuente con el permiso para ver el proyecto
-        correspondiente,recibiendo el id del mismo y que
-        (indirectamente) haya iniciado sesion
-     """
-    """Proyecto a visualizar"""
-    proyecto = Proyecto.objects.get(id=id)
-    """Solicitar permiso asociado al proyecto correspondiente"""
-    if not(request.user.has_perm("view_proyecto", proyecto)):
-        return redirect('/permissionError/')
-
-    """Fases del proyecto para enviar al template que muestra la informacion"""
-    fases = proyecto.fases.all()
-    fasesUser = []
-    for f in fases:
-        if request.user.has_perm("view_fase", f) and f.estado != "deshabilitada":
-            fasesUser.append(f)
-    """Template a renderizar: proyectoListarFases.html con parametros -> proyectoid y fases del proyecto"""
-    return render(request, 'proyecto/proyectoListarFases.html', {'proyecto': proyecto, 'fases':fases, 'fasesUser': sorted(fasesUser, key=lambda x: x.id, reverse=False)})
-
-'''
+    Redirigir al menu principal del sistema.
+    """
+    return render(request, 'home.html', {'proyectos': proyectos, 'cant': cant, 'mensaje': "El proyecto se canceló correctamente.", })
 
 
 def proyectoFase(request, id):

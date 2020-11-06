@@ -297,8 +297,11 @@ def removePermsView(request):
     usuarios = []
     u = User.objects.all()
     for user in u:
-        """Filtrar que los usuarios nos sean staff o igual al usuario que realizar el request. Tambien
-        que no sea un usuario deshabilitado"""
+        """
+        Filtrar que los usuarios nos sean staff 
+        o igual al usuario que realizar el request. Tambien
+        que no sea un usuario deshabilitado
+        """
         if user.is_staff == False and user != request.user and user.is_active and user.username != "AnonymousUser" and user.has_perm("perms.view_menu"):
             usuarios.append(user)
 
