@@ -418,6 +418,10 @@ def proyectoDeshabilitar(request, proyectoid):
     if request.method == 'GET':
         """Proyecto a deshabilitar"""
         proyecto = Proyecto.objects.get(id=proyectoid)
+        """Verificar permiso necesario en el proyecto correspondiente"""
+        if not (request.user.has_perm("is_gerente", proyecto)):
+            """Al no contar con los permisos, niega el acceso, redirigiendo."""
+            return redirect('/permissionError/')
         """Deshabilitar proyecto, cambio de estado"""
         proyecto.estado = "deshabilitado"
         proyecto.save()
@@ -601,29 +605,33 @@ def proyectoUserRemove(request, proyectoid, userid):
     """
 
 
-
-    """POST request, captura la lista de usuarios para remover del proyecto"""
-    """Lista de usuarios a remover"""
-    # users = request.POST.getlist('users')
-    """ID del proyecto"""
-    # proyectoid = request.POST.get('proyectoid')
-    """Proyecto del cual remover"""
-    proyecto = Proyecto.objects.get(id=proyectoid)
-    """Usuario a remover"""
-    user = User.objects.get(id=userid)
-    """Remover usuario"""
-    proyecto.usuarios.remove(user)
-    """Remover permiso para ver el proyecto"""
-    remove_perm("view_proyecto", user, proyecto)
-    if user in proyecto.comite.all():
-        """Si el usuario era miembro del Comite de Control de Cambio. removerlo."""
-        proyecto.comite.remove(user)
-        """Remover permiso para aprobar la rotura de linea base."""
-        remove_perm("break_lineaBase", user, proyecto)
-    usuarios = proyecto.usuarios.all()
-    cant_user = len(usuarios)
-    return render(request, 'proyecto/proyectoUser.html', {'proyecto': proyecto, 'usuarios': usuarios,
-                                                          'cant_user': cant_user, })
+    if request.method == 'GET':
+        """POST request, captura la lista de usuarios para remover del proyecto"""
+        """Lista de usuarios a remover"""
+        # users = request.POST.getlist('users')
+        """ID del proyecto"""
+        # proyectoid = request.POST.get('proyectoid')
+        """Proyecto del cual remover"""
+        proyecto = Proyecto.objects.get(id=proyectoid)
+        """Verificar permiso necesario en el proyecto correspondiente"""
+        if not (request.user.has_perm("is_gerente", proyecto)):
+            return redirect('/permissionError/')
+        """Usuario a remover"""
+        user = User.objects.get(id=userid)
+        """Remover usuario"""
+        proyecto.usuarios.remove(user)
+        proyecto.save()
+        """Remover permiso para ver el proyecto"""
+        remove_perm("view_proyecto", user, proyecto)
+        if user in proyecto.comite.all():
+            """Si el usuario era miembro del Comite de Control de Cambio. removerlo."""
+            proyecto.comite.remove(user)
+            """Remover permiso para aprobar la rotura de linea base."""
+            remove_perm("break_lineaBase", user, proyecto)
+        usuarios = proyecto.usuarios.all()
+        cant_user = len(usuarios)
+        return render(request, 'proyecto/proyectoUser.html', {'proyecto': proyecto, 'usuarios': usuarios,
+                                                              'cant_user': cant_user, })
 
 
 def proyectoComite(request, proyectoid, mensaje):
@@ -807,9 +815,7 @@ def proyectoComiteRemove(request, proyectoid, userid):
                             s.save()
                 usuarios_votantes_comprometida = []
                 for s in lb.roturaLineaBaseComprometida.all().filter(comprometida_estado="pendiente"):
-                    print("Solicitud", s)
                     for v in s.registrados_votos_comprometida.all():
-                        print("Voto xdxdxd:", v)
                         usuarios_votantes_comprometida.append(int(v.id))
                     if int(user.id) in usuarios_votantes_comprometida:
                         posicion_user = usuarios_votantes_comprometida.index(int(user.id))
@@ -1037,7 +1043,6 @@ def proyectoRolModificar(request, proyectoid, rolid):
         permisos = []
         """Permisos del rol"""
         perms = rol.perms.permissions.all()
-        print("Nombre antes de editar:", rol.perms)
         for p in perms:
             permisos.append(p.codename)
         """Template a renderizar: proyectoRolModificar.html con parametros -> roles del proyecto, proyectoid"""
@@ -1214,54 +1219,24 @@ def proyectoRolEliminar(request, proyectoid, rolid):
         cuente con los permisos de gerente del proyecto
         y que (indirectamente) haya iniciado sesion
     """
-    """GET request, muestra el template correspondiente para remover roles del proeycto"""
-    '''
+
     if request.method == 'GET':
-        """ID del proyecto"""
-        #proyectoid = request.GET.get('proyectoid')
+        # proyectoid = request.POST.get('proyectoid')
         """Proyecto correspondiente"""
         proyecto = Proyecto.objects.get(id=proyectoid)
         """Verificar permiso necesario en el proyecto correspondiente"""
         if not (request.user.has_perm("is_gerente", proyecto)):
             return redirect('/permissionError/')
-
-        """Verifica que el proyecto no se encuentre cancelado"""
-        if proyecto.estado == "cancelado":
-            return redirect('proyectoView', id=proyectoid)
-
         """Lista de roles del proyecto"""
-        rol = Rol.objects.get(id=rolid)
-        """
-        Template a renderizar: proyectoRolEliminar.html con parametros -> roles
-        del proyecto y proyectoid
-         """
-        return render(request, "proyecto/proyectoRolEliminar.html", {'rol': rol, 'proyecto': proyecto, })
-    '''
-    """POST request, captura el rol para remover del proyecto"""
-    """ID del proyecto"""
-    # proyectoid = request.POST.get('proyectoid')
-    """Proyecto correspondiente"""
-    proyecto = Proyecto.objects.get(id=proyectoid)
-    """Lista de roles del proyecto"""
-    roles = proyecto.roles.all()
-    rol = Rol.objects.get(id=rolid)
-    '''
-    """Verificar si el rol ha sido asignado previamente"""
-    if rol.faseUser.filter().exists():
-        """
-        Template a renderizar: proyectoRolEliminar.html con parametros -> roles
-        del proyecto, proyectoid
-        y mensaje de error
-        """
-        return render(request, "proyecto/proyectoRolEliminar.html", {'roles': roles, 'proyectoid': proyectoid,
-                                        'mensaje': "Lo sentimos, no puede remover un rol previamente asignado."})
-    '''
-    """Si el rol no ha sido asignado previamente"""
-    proyecto.roles.remove(rol)
 
-    """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
-    mensaje = "Rol removido correctamente."
-    return redirect('ProyectoRol', proyectoid=proyectoid, mensaje=mensaje)
+        rol = Rol.objects.get(id=rolid)
+
+        """Si el rol no ha sido asignado previamente"""
+        proyecto.roles.remove(rol)
+
+        """Template a renderizar: ProyectoInicializadoConfig.html con parametro -> proyectoid"""
+        mensaje = "Rol removido correctamente."
+        return redirect('ProyectoRol', proyectoid=proyectoid, mensaje=mensaje)
 
 
 def crear_tipo_form(request):
@@ -1343,9 +1318,7 @@ def gestionar_tipo_de_item(request):
             if i.tipoItem == tipos and i.estado != "deshabilitado":
                 tipos_modificable.remove(tipos)
                 tipos_no_modificable.append(tipos)
-    for t in tipos:
-        print("Nombre", t.nombreTipo)
-        print("tamaño:", len(t.campo_extra))
+
     return render(request, "proyecto/gestionartipodeitem.html",
                   {'proyecto': proyecto, 'tipos_modificable': tipos_modificable,
                    'tipos_no_modificable': tipos_no_modificable, })
@@ -1533,10 +1506,15 @@ def remover_tipo_de_item(request, proyectoid, tipoid):
         """
         # proyectoid = request.POST.get('proyectoid')
         proyecto = Proyecto.objects.get(id=proyectoid)
+        """Verificar permiso necesario en el proyecto correspondiente"""
+        if not (request.user.has_perm("is_gerente", proyecto)):
+            """Redireccionar al no contar con los permisos"""
+            return redirect('/permissionError/')
         tipo = TipodeItem.objects.get(id=tipoid)
 
         """Remueve del proyecto actual los tipos de Item seleccionados."""
         proyecto.tipoItem.remove(tipo)
+        proyecto.save()
         tipos = proyecto.tipoItem.all()
         tipos_modificable = list(tipos)
         tipos_no_modificable = []
@@ -1635,7 +1613,6 @@ def reporte(request, proyectoid):
         fecha_ini = request.POST.get('fechainicio')
         fecha_fin = request.POST.get('fechafin')
         fases = proyecto.fases.all()
-        print("fechas en proyectoviews",fecha_ini, fecha_fin)
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="reporte.pdf"'
         r = ReporteProyecto()

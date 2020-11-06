@@ -16,6 +16,8 @@ class TestViews(TestCase):
 
         client = Client()
 
+
+
     def test_proyectoFinalizar_OK(self):
         user = User.objects.create(username="user", password="user")
         user.set_password("user")
@@ -146,375 +148,6 @@ class TestViews(TestCase):
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido a la vista esperada.")
 
-    def test_RechazarRoturaLineaBaseComprometida_OK(self):
-        user = User.objects.create(username="user", password="user")
-        user.set_password("user")
-        user.save()
-        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
-                                           fecha_fin="10/12/2010", gerente=user)
-        proyecto.estado = "inicializado"
-        proyecto.save()
-        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
-        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="cerrada", creador=user)
-        solicitud = RoturaLineaBaseComprometida.objects.create(uno_voto_comprometida=1, dos_voto_comprometida=1)
-
-        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
-        tipo.campo_extra.append("CampoExtra")
-        tipo.campo_extra.append("CampoExtra2")
-        tipo.save()
-        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
-                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , )
-        item.estado = "aprobado"
-        item.save()
-        lineaBase.items.add(item)
-        lineaBase.save()
-        assign_perm("break_lineaBase", user, proyecto)
-
-        self.client.login(username='user', password='user')
-        response = self.client.get(reverse('RechazarRoturaLineaBaseComprometida', kwargs={'proyectoid': proyecto.id, 'faseid': fase.id,
-                                                                          'lineaBaseid': lineaBase.id,
-                                                                          'solicituid': solicitud.id, }))
-
-        lineaBase = LineaBase.objects.get(id=lineaBase.id)
-        item = Item.objects.get(id=item.id)
-        solicitud = RoturaLineaBaseComprometida.objects.get(id=solicitud.id)
-        self.assertEquals(lineaBase.estado, "rota", "No se ha modificado el estado de la linea base.")
-        self.assertEquals(item.estado, "en revision", "No se ha modificado el estado del item de prueba.")
-        self.assertEquals(solicitud.comprometida_estado, "aprobado", "No se ha modificado el estado de la solicitud.")
-        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
-        self.assertTemplateUsed(response, 'fase/faseGestionLineaBase.html',
-                                "El template renderizado debe ser fase/faseGestionLineaBase.html")
-
-    def test_RechazarRoturaLineaBaseComprometida_FAIL1(self):
-        user = User.objects.create(username="user", password="user")
-        user.set_password("user")
-        user.save()
-        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
-                                           fecha_fin="10/12/2010", gerente=user)
-        proyecto.estado = "inicializado"
-        proyecto.save()
-        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
-        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="cerrada", creador=user)
-        solicitud = RoturaLineaBaseComprometida.objects.create(uno_voto_comprometida=1, dos_voto_comprometida=1)
-
-        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
-        tipo.campo_extra.append("CampoExtra")
-        tipo.campo_extra.append("CampoExtra2")
-        tipo.save()
-        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
-                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , )
-        item.estado = "aprobado"
-        item.save()
-        lineaBase.items.add(item)
-        lineaBase.save()
-
-        self.client.login(username='user', password='user')
-        response = self.client.get(
-            reverse('RechazarRoturaLineaBaseComprometida', kwargs={'proyectoid': proyecto.id, 'faseid': fase.id,
-                                                      'lineaBaseid': lineaBase.id,
-                                                      'solicituid': solicitud.id, }))
-
-        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
-        self.assertRedirects(response, '/permissionError/',
-                             status_code=302, fetch_redirect_response=False,
-                             msg_prefix="No se ha redirigido a la vista esperada.")
-
-    def test_RechazarRoturaLineaBaseComprometida_FAIL2(self):
-        user = User.objects.create(username="user", password="user")
-        user.set_password("user")
-        user.save()
-        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
-                                           fecha_fin="10/12/2010", gerente=user)
-        proyecto.estado = "inicializado"
-        proyecto.save()
-        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
-        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="cerrada", creador=user)
-        solicitud = RoturaLineaBaseComprometida.objects.create(uno_voto_comprometida=1)
-
-        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
-        tipo.campo_extra.append("CampoExtra")
-        tipo.campo_extra.append("CampoExtra2")
-        tipo.save()
-        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
-                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , )
-        item.estado = "aprobado"
-        item.save()
-        lineaBase.items.add(item)
-        lineaBase.save()
-        assign_perm("break_lineaBase", user, proyecto)
-
-        self.client.login(username='user', password='user')
-        response = self.client.get(
-            reverse('RechazarRoturaLineaBaseComprometida', kwargs={'proyectoid': proyecto.id, 'faseid': fase.id,
-                                                      'lineaBaseid': lineaBase.id,
-                                                      'solicituid': solicitud.id, }))
-
-        lineaBase = LineaBase.objects.get(id=lineaBase.id)
-        item = Item.objects.get(id=item.id)
-        solicitud = RoturaLineaBaseComprometida.objects.get(id=solicitud.id)
-        self.assertEquals(lineaBase.estado, "cerrada", "Se ha modificado el estado de la linea base.")
-        self.assertEquals(item.estado, "aprobado", "Se ha modificado el estado del item de prueba.")
-        self.assertEquals(solicitud.comprometida_estado, "pendiente", "Se ha modificado el estado del item de prueba.")
-        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
-        self.assertTemplateUsed(response, 'fase/faseGestionLineaBase.html',
-                                "El template renderizado debe ser fase/faseGestionLineaBase.html")
-
-
-    def test_RechazarRoturaLineaBaseComprometida_FAIL3(self):
-        user = User.objects.create(username="user", password="user")
-        user.set_password("user")
-        user.save()
-        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
-                                           fecha_fin="10/12/2010", gerente=user)
-        proyecto.estado = "inicializado"
-        proyecto.save()
-        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
-        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="cerrada", creador=user)
-        solicitud = RoturaLineaBaseComprometida.objects.create(uno_voto_comprometida=1, dos_voto_comprometida=1)
-
-        solicitud.registrados_votos_comprometida.add(user)
-        solicitud.save()
-        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
-        tipo.campo_extra.append("CampoExtra")
-        tipo.campo_extra.append("CampoExtra2")
-        tipo.save()
-        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
-                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , )
-        item.estado = "aprobado"
-        item.save()
-        lineaBase.items.add(item)
-        lineaBase.save()
-        assign_perm("break_lineaBase", user, proyecto)
-
-        self.client.login(username='user', password='user')
-        response = self.client.get(
-            reverse('RechazarRoturaLineaBaseComprometida', kwargs={'proyectoid': proyecto.id, 'faseid': fase.id,
-                                                      'lineaBaseid': lineaBase.id,
-                                                      'solicituid': solicitud.id, }))
-
-        lineaBase = LineaBase.objects.get(id=lineaBase.id)
-        item = Item.objects.get(id=item.id)
-        solicitud = RoturaLineaBaseComprometida.objects.get(id=solicitud.id)
-        self.assertEquals(lineaBase.estado, "cerrada", "Se ha modificado el estado de la linea base.")
-        self.assertEquals(item.estado, "aprobado", "Se ha modificado el estado del item de prueba.")
-        self.assertEquals(solicitud.comprometida_estado, "pendiente", "Se ha modificado el estado del item de prueba.")
-        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
-        self.assertTemplateUsed(response, 'fase/faseGestionLineaBase.html',
-                                "El template renderizado debe ser fase/faseGestionLineaBase.html")
-
-    def test_AprobarRoturaLineaBaseComprometida_OK(self):
-        user = User.objects.create(username="user", password="user")
-        user.set_password("user")
-        user.save()
-        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
-                                           fecha_fin="10/12/2010", gerente=user)
-        proyecto.estado = "inicializado"
-        proyecto.save()
-        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
-        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="cerrada", creador=user)
-        solicitud = RoturaLineaBaseComprometida.objects.create(uno_voto_comprometida=1, dos_voto_comprometida=1)
-
-        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
-        tipo.campo_extra.append("CampoExtra")
-        tipo.campo_extra.append("CampoExtra2")
-        tipo.save()
-        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
-                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , )
-        item.estado = "aprobado"
-        item.save()
-        lineaBase.items.add(item)
-        lineaBase.save()
-        assign_perm("break_lineaBase", user, proyecto)
-
-        self.client.login(username='user', password='user')
-        response = self.client.get(reverse('AprobarRoturaLineaBaseComprometida', kwargs={'proyectoid': proyecto.id, 'faseid': fase.id,
-                                                                          'lineaBaseid': lineaBase.id,
-                                                                          'solicituid': solicitud.id, }))
-
-        lineaBase = LineaBase.objects.get(id=lineaBase.id)
-        item = Item.objects.get(id=item.id)
-        solicitud = RoturaLineaBaseComprometida.objects.get(id=solicitud.id)
-        self.assertEquals(lineaBase.estado, "rota", "No se ha modificado el estado de la linea base.")
-        self.assertEquals(item.estado, "en revision", "No se ha modificado el estado del item de prueba.")
-        self.assertEquals(solicitud.comprometida_estado, "aprobado", "No se ha modificado el estado de la solicitud.")
-        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
-        self.assertTemplateUsed(response, 'fase/faseGestionLineaBase.html',
-                                "El template renderizado debe ser fase/faseGestionLineaBase.html")
-
-    def test_AprobarRoturaLineaBaseComprometida_FAIL1(self):
-        user = User.objects.create(username="user", password="user")
-        user.set_password("user")
-        user.save()
-        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
-                                           fecha_fin="10/12/2010", gerente=user)
-        proyecto.estado = "inicializado"
-        proyecto.save()
-        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
-        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="cerrada", creador=user)
-        solicitud = RoturaLineaBaseComprometida.objects.create(uno_voto_comprometida=1, dos_voto_comprometida=1)
-
-        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
-        tipo.campo_extra.append("CampoExtra")
-        tipo.campo_extra.append("CampoExtra2")
-        tipo.save()
-        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
-                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , )
-        item.estado = "aprobado"
-        item.save()
-        lineaBase.items.add(item)
-        lineaBase.save()
-
-        self.client.login(username='user', password='user')
-        response = self.client.get(
-            reverse('AprobarRoturaLineaBaseComprometida', kwargs={'proyectoid': proyecto.id, 'faseid': fase.id,
-                                                      'lineaBaseid': lineaBase.id,
-                                                      'solicituid': solicitud.id, }))
-
-        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
-        self.assertRedirects(response, '/permissionError/',
-                             status_code=302, fetch_redirect_response=False,
-                             msg_prefix="No se ha redirigido a la vista esperada.")
-
-    def test_AprobarRoturaLineaBaseComprometida_FAIL2(self):
-        user = User.objects.create(username="user", password="user")
-        user.set_password("user")
-        user.save()
-        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
-                                           fecha_fin="10/12/2010", gerente=user)
-        proyecto.estado = "inicializado"
-        proyecto.save()
-        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
-        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="cerrada", creador=user)
-        solicitud = RoturaLineaBaseComprometida.objects.create(uno_voto_comprometida=1)
-
-        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
-        tipo.campo_extra.append("CampoExtra")
-        tipo.campo_extra.append("CampoExtra2")
-        tipo.save()
-        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
-                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , )
-        item.estado = "aprobado"
-        item.save()
-        lineaBase.items.add(item)
-        lineaBase.save()
-        assign_perm("break_lineaBase", user, proyecto)
-
-        self.client.login(username='user', password='user')
-        response = self.client.get(
-            reverse('AprobarRoturaLineaBaseComprometida', kwargs={'proyectoid': proyecto.id, 'faseid': fase.id,
-                                                      'lineaBaseid': lineaBase.id,
-                                                      'solicituid': solicitud.id, }))
-
-        lineaBase = LineaBase.objects.get(id=lineaBase.id)
-        item = Item.objects.get(id=item.id)
-        solicitud = RoturaLineaBaseComprometida.objects.get(id=solicitud.id)
-        self.assertEquals(lineaBase.estado, "cerrada", "Se ha modificado el estado de la linea base.")
-        self.assertEquals(item.estado, "aprobado", "Se ha modificado el estado del item de prueba.")
-        self.assertEquals(solicitud.comprometida_estado, "pendiente", "Se ha modificado el estado del item de prueba.")
-        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
-        self.assertTemplateUsed(response, 'fase/faseGestionLineaBase.html',
-                                "El template renderizado debe ser fase/faseGestionLineaBase.html")
-
-
-    def test_AprobarRoturaLineaBaseComprometida_FAIL3(self):
-        user = User.objects.create(username="user", password="user")
-        user.set_password("user")
-        user.save()
-        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
-                                           fecha_fin="10/12/2010", gerente=user)
-        proyecto.estado = "inicializado"
-        proyecto.save()
-        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
-        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="cerrada", creador=user)
-        solicitud = RoturaLineaBase.objects.create(solicitante=user, descripcion_solicitud="Descripcion",
-                                                   fecha=datetime.now(), voto_uno=1)
-
-        solicitud.votos_registrados.add(user)
-        solicitud.save()
-        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
-        tipo.campo_extra.append("CampoExtra")
-        tipo.campo_extra.append("CampoExtra2")
-        tipo.save()
-        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
-                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , )
-        item.estado = "aprobado"
-        item.save()
-        lineaBase.items.add(item)
-        lineaBase.save()
-        assign_perm("break_lineaBase", user, proyecto)
-
-        self.client.login(username='user', password='user')
-        response = self.client.get(
-            reverse('AprobarRoturaLineaBase', kwargs={'proyectoid': proyecto.id, 'faseid': fase.id,
-                                                      'lineaBaseid': lineaBase.id,
-                                                      'solicituid': solicitud.id, }))
-
-        lineaBase = LineaBase.objects.get(id=lineaBase.id)
-        item = Item.objects.get(id=item.id)
-        solicitud = RoturaLineaBase.objects.get(id=solicitud.id)
-        self.assertEquals(lineaBase.estado, "cerrada", "Se ha modificado el estado de la linea base.")
-        self.assertEquals(item.estado, "aprobado", "Se ha modificado el estado del item de prueba.")
-        self.assertEquals(solicitud.estado, "pendiente", "Se ha modificado el estado del item de prueba.")
-        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
-        self.assertTemplateUsed(response, 'fase/faseGestionRoturaLineaBase.html',
-                                "El template renderizado debe ser fase/faseGestionRoturaLineaBase.html")
-
-    def test_votacionRoturaLineaBaseComprometida_OK(self):
-        user = User.objects.create(username="user", password="user")
-        user.set_password("user")
-        user.save()
-        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
-                                           fecha_fin="10/12/2010", gerente=user)
-        proyecto.estado = "inicializado"
-        proyecto.save()
-        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
-        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="abierta", creador=user)
-        solicitud = RoturaLineaBaseComprometida.objects.create()
-        lineaBase.roturaLineaBaseComprometida.add(solicitud)
-        lineaBase.save()
-        assign_perm("break_lineaBase", user, proyecto)
-
-        self.client.login(username='user', password='user')
-        response = self.client.get(reverse('votacionRoturaLineaBaseComprometida', kwargs={'proyectoid': proyecto.id, 'faseid': fase.id,
-                                                                          'lineaBaseid': lineaBase.id,
-                                                                          }))
-        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
-        self.assertTemplateUsed(response, 'fase/faseRoturaLineaBaseVotarComprometida.html',
-                                "El template renderizado debe ser fase/faseRoturaLineaBaseVotarComprometida.html")
-
-    def test_votacionRoturaLineaBaseComprometida_FAIL(self):
-        user = User.objects.create(username="user", password="user")
-        user.set_password("user")
-        user.save()
-        proyecto = Proyecto.objects.create(nombre="Proyecto1", descripcion="descripcion", fecha_inicio="10/10/2010",
-                                           fecha_fin="10/12/2010", gerente=user)
-        proyecto.estado = "inicializado"
-        proyecto.save()
-        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
-        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="abierta", creador=user)
-        solicitud = RoturaLineaBaseComprometida.objects.create()
-
-        lineaBase.roturaLineaBaseComprometida.add(solicitud)
-        lineaBase.save()
-
-        self.client.login(username='user', password='user')
-        response = self.client.get(
-            reverse('votacionRoturaLineaBaseComprometida', kwargs={'proyectoid': proyecto.id, 'faseid': fase.id,
-                                                       'lineaBaseid': lineaBase.id,
-                                                        }))
-        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
-        self.assertRedirects(response, '/permissionError/',
-                             status_code=302, fetch_redirect_response=False,
-                             msg_prefix="No se ha redirigido a la vista esperada.")
-
     def test_RechazarRoturaLineaBase_OK(self):
         user = User.objects.create(username="user", password="user")
         user.set_password("user")
@@ -550,11 +183,13 @@ class TestViews(TestCase):
         item = Item.objects.get(id=item.id)
         solicitud = RoturaLineaBase.objects.get(id=solicitud.id)
         self.assertEquals(lineaBase.estado, "rota", "No se ha modificado el estado de la linea base.")
-        self.assertEquals(item.estado, "en revision", "No se ha modificado el estado del item de prueba.")
+        self.assertEquals(item.estado, "aprobado", "No se ha modificado el estado del item de prueba.")
         self.assertEquals(solicitud.estado, "aprobado", "No se ha modificado el estado del item de prueba.")
-        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
-        self.assertTemplateUsed(response, 'fase/faseGestionRoturaLineaBase.html',
-                                "El template renderizado debe ser fase/faseGestionRoturaLineaBase.html")
+        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
+        self.assertRedirects(response, '/fase/gestionLineaBase/proyectoid=' + str(proyecto.id) + '/' + 'faseid=' + str(
+            fase.id) + '/' + 'mensaje=' + 'Se%20rechaz%C3%B3%20la%20rotura%20de%20la%20L%C3%ADnea%20Base./',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido a la vista esperada.")
 
     def test_RechazarRoturaLineaBase_FAIL1(self):
         user = User.objects.create(username="user", password="user")
@@ -714,11 +349,13 @@ class TestViews(TestCase):
         item = Item.objects.get(id=item.id)
         solicitud = RoturaLineaBase.objects.get(id=solicitud.id)
         self.assertEquals(lineaBase.estado, "rota", "No se ha modificado el estado de la linea base.")
-        self.assertEquals(item.estado, "en revision", "No se ha modificado el estado del item de prueba.")
+        self.assertEquals(item.estado, "aprobado", "No se ha modificado el estado del item de prueba.")
         self.assertEquals(solicitud.estado, "aprobado", "No se ha modificado el estado del item de prueba.")
-        self.assertEquals(response.status_code, 200, "No se ha renderizado el html.")
-        self.assertTemplateUsed(response, 'fase/faseGestionRoturaLineaBase.html',
-                                "El template renderizado debe ser fase/faseGestionRoturaLineaBase.html")
+        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
+        self.assertRedirects(response, '/fase/gestionLineaBase/proyectoid=' + str(proyecto.id) + '/' + 'faseid=' + str(
+            fase.id) + '/' + 'mensaje=' + 'Se%20aprob%C3%B3%20la%20rotura%20de%20la%20L%C3%ADnea%20Base./',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido a la vista esperada.")
 
     def test_AprobarRoturaLineaBase_FAIL1(self):
         user = User.objects.create(username="user", password="user")
@@ -1190,22 +827,22 @@ class TestViews(TestCase):
         tipo.save()
         item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , )
+                                   , faseid=fase.id)
         item.estado = "en linea base"
         item.save()
         item2 = Item.objects.create(tipoItem=tipo, nombre="Item2", fecha="10/10/2010", observacion="Item1Obs",
                                     costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                    , )
+                                    , faseid=fase.id)
         item2.estado = "en linea base"
         item2.save()
         item3 = Item.objects.create(tipoItem=tipo, nombre="Item3", fecha="10/10/2010", observacion="Item1Obs",
                                     costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                    , )
+                                    , faseid=fase.id)
         item3.estado = "en linea base"
         item3.save()
         item4 = Item.objects.create(tipoItem=tipo, nombre="Item4", fecha="10/10/2010", observacion="Item1Obs",
                                     costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                    , )
+                                    , faseid=fase.id)
         item4.estado = "en linea base"
         item4.save()
         fase_dos.items.add(item)
@@ -1234,81 +871,13 @@ class TestViews(TestCase):
         self.assertEquals(item2 in item.relaciones.all(), True, "Se elimino la relacion.")
         self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
         self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
-            fase_dos.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + 'Error.%20No%20se%20pudo%20remover%20la%20relaci%C3%B3n.' + '/',
+            fase_dos.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + 'Error!%20La%20relaci%C3%B3n%20no%20puede%20ser%20removida%20porque%20el%20item%20quedar%C3%ADa%20sin%20una%20relaci%C3%B3n%20con%20un%20%C3%ADtem%20\'aprobado\'%20o%20\'en%20L%C3%ADnea%20Base\'%20que%20le%20garantice%20seguir%20con%20su%20estado%20actual./' ,
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido a la vista esperada.")
 
-    def test_itemRemoveRelaciones_FAIL2(self):
-        user = User.objects.create(username="user", password="user")
-        user.set_password("user")
-        user.save()
-        proyecto = Proyecto.objects.create(nombre="ProyectoX", descripcion="descripcion", fecha_inicio="10/10/2010",
-                                           fecha_fin="10/12/2010", gerente=user)
-        proyecto.estado = "inicializado"
-        proyecto.save()
-        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
-        fase_dos = Fase.objects.create(nombre="Fase2", descripcion="Descripcion", estado="abierta")
-        proyecto.fases.add(fase)
-        proyecto.save()
-        proyecto.fases.add(fase_dos)
-        proyecto.save()
-        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="cerrada", creador=user)
-        fase_dos.lineasBase.add(lineaBase)
-        fase_dos.save()
-        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
-        tipo.campo_extra.append("CampoExtra")
-        tipo.campo_extra.append("CampoExtra2")
-        tipo.save()
-        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
-                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , )
-        item.estado = "en linea base"
-        item.save()
-        item2 = Item.objects.create(tipoItem=tipo, nombre="Item2", fecha="10/10/2010", observacion="Item1Obs",
-                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                    , )
-        item2.estado = "en linea base"
-        item2.save()
-        item3 = Item.objects.create(tipoItem=tipo, nombre="Item3", fecha="10/10/2010", observacion="Item1Obs",
-                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                    , )
-        item3.estado = "en linea base"
-        item3.save()
-        item4 = Item.objects.create(tipoItem=tipo, nombre="Item4", fecha="10/10/2010", observacion="Item1Obs",
-                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                    , )
-        item4.estado = "en linea base"
-        item4.save()
-        fase_dos.items.add(item)
-        fase_dos.save()
-        fase_dos.items.add(item2)
-        fase_dos.save()
-        fase_dos.items.add(item3)
-        fase_dos.save()
-        fase_dos.items.add(item4)
-        fase_dos.save()
 
-        Relacion.objects.create(item_from=item, item_to=item2, tipo="padre", fase_item_to=fase_dos)
-        Relacion.objects.create(item_from=item2, item_to=item, tipo="hijo", fase_item_to=fase_dos)
-        Relacion.objects.create(item_from=item3, item_to=item, tipo="padre", fase_item_to=fase_dos)
-        Relacion.objects.create(item_from=item, item_to=item3, tipo="hijo", fase_item_to=fase_dos)
-        assign_perm("relacionar_item", user, fase_dos)
 
-        self.client.login(username='user', password='user')
-        response = self.client.get(reverse('itemRelacionesRemover', kwargs={'itemid': item.id, 'item_rm': item2.id,
-                                                                            'faseid': fase_dos.id,
-                                                                            'proyectoid': proyecto.id, }))
-
-        item = Item.objects.get(id=item.id)
-        item2 = Item.objects.get(id=item2.id)
-        self.assertEquals(item in item2.relaciones.all(), True, "Se elimino la relacion.")
-        self.assertEquals(item2 in item.relaciones.all(), True, "Se elimino la relacion.")
-        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
-        self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
-            fase_dos.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + 'Error.%20No%20se%20pudo%20remover%20la%20relaci%C3%B3n.' + '/',
-                             status_code=302, fetch_redirect_response=False,
-                             msg_prefix="No se ha redirigido a la vista esperada.")
-
+    
     def test_itemRemoveRelaciones_OK3(self):
         user = User.objects.create(username="user", password="user")
         user.set_password("user")
@@ -1329,22 +898,22 @@ class TestViews(TestCase):
         tipo.save()
         item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , )
+                                   , faseid=fase.id)
         item.estado = "en linea base"
         item.save()
         item2 = Item.objects.create(tipoItem=tipo, nombre="Item2", fecha="10/10/2010", observacion="Item1Obs",
                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , )
+                                   , faseid=fase.id)
         item2.estado = "en linea base"
         item2.save()
         item3 = Item.objects.create(tipoItem=tipo, nombre="Item3", fecha="10/10/2010", observacion="Item1Obs",
                                     costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                    , )
+                                    , faseid=fase.id)
         item3.estado = "en linea base"
         item3.save()
         item4 = Item.objects.create(tipoItem=tipo, nombre="Item4", fecha="10/10/2010", observacion="Item1Obs",
                                     costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                    , )
+                                    , faseid=fase.id)
         item4.estado = "en linea base"
         item4.save()
         fase.items.add(item)
@@ -1381,74 +950,7 @@ class TestViews(TestCase):
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido a la vista esperada.")
 
-    def test_itemRemoveRelaciones_OK(self):
-        user = User.objects.create(username="user", password="user")
-        user.set_password("user")
-        user.save()
-        proyecto = Proyecto.objects.create(nombre="ProyectoX", descripcion="descripcion", fecha_inicio="10/10/2010",
-                                           fecha_fin="10/12/2010", gerente=user)
-        proyecto.estado = "inicializado"
-        proyecto.save()
-        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
-        proyecto.fases.add(fase)
-        proyecto.save()
-        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="cerrada", creador=user)
-        fase.lineasBase.add(lineaBase)
-        fase.save()
-        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
-        tipo.campo_extra.append("CampoExtra")
-        tipo.campo_extra.append("CampoExtra2")
-        tipo.save()
-        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
-                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , )
-        item.estado = "en linea base"
-        item.save()
-        item2 = Item.objects.create(tipoItem=tipo, nombre="Item2", fecha="10/10/2010", observacion="Item1Obs",
-                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , )
-        item2.estado = "en linea base"
-        item2.save()
-        item3 = Item.objects.create(tipoItem=tipo, nombre="Item3", fecha="10/10/2010", observacion="Item1Obs",
-                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                    , )
-        item3.estado = "en linea base"
-        item3.save()
-        item4 = Item.objects.create(tipoItem=tipo, nombre="Item4", fecha="10/10/2010", observacion="Item1Obs",
-                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                    , )
-        item4.estado = "en linea base"
-        item4.save()
-        fase.items.add(item)
-        fase.save()
-        fase.items.add(item2)
-        fase.save()
-        fase.items.add(item3)
-        fase.save()
-        fase.items.add(item4)
-        fase.save()
-
-        Relacion.objects.create(item_from=item, item_to=item2, tipo="padre", fase_item_to=fase)
-        Relacion.objects.create(item_from=item2, item_to=item, tipo="hijo", fase_item_to=fase)
-        Relacion.objects.create(item_from=item3, item_to=item, tipo="padre", fase_item_to=fase)
-        Relacion.objects.create(item_from=item, item_to=item3, tipo="hijo", fase_item_to=fase)
-        Relacion.objects.create(item_from=item4, item_to=item2, tipo="padre", fase_item_to=fase)
-        Relacion.objects.create(item_from=item2, item_to=item4, tipo="hijo", fase_item_to=fase)
-        assign_perm("relacionar_item", user, fase)
-
-        self.client.login(username='user', password='user')
-        response = self.client.get(reverse('itemRelacionesRemover', kwargs={'itemid': item.id, 'item_rm': item2.id,
-                                                                            'faseid': fase.id, 'proyectoid': proyecto.id, }))
-
-        item = Item.objects.get(id=item.id)
-        item2 = Item.objects.get(id=item2.id)
-        self.assertEquals(item in item2.relaciones.all(), False, "No se elimino la relacion.")
-        self.assertEquals(item2 in item.relaciones.all(), False, "No se elimino la relacion.")
-        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
-        self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
-            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + 'La%20relaci%C3%B3n%20se%20removi%C3%B3%20correctamente.' + '/',
-                             status_code=302, fetch_redirect_response=False,
-                             msg_prefix="No se ha redirigido a la vista esperada.")
+    
 
     def test_itemRemoveRelaciones_OK2(self):
         user = User.objects.create(username="user", password="user")
@@ -1470,22 +972,22 @@ class TestViews(TestCase):
         tipo.save()
         item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , )
+                                   , faseid=fase.id)
         item.estado = "en linea base"
         item.save()
         item2 = Item.objects.create(tipoItem=tipo, nombre="Item2", fecha="10/10/2010", observacion="Item1Obs",
                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                   , )
+                                   , faseid=fase.id)
         item2.estado = "en linea base"
         item2.save()
         item3 = Item.objects.create(tipoItem=tipo, nombre="Item3", fecha="10/10/2010", observacion="Item1Obs",
                                     costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                    , )
+                                    , faseid=fase.id)
         item3.estado = "en linea base"
         item3.save()
         item4 = Item.objects.create(tipoItem=tipo, nombre="Item4", fecha="10/10/2010", observacion="Item1Obs",
                                     costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
-                                    , )
+                                    , faseid=fase.id)
         item4.estado = "en linea base"
         item4.save()
         fase.items.add(item)
@@ -1523,7 +1025,74 @@ class TestViews(TestCase):
                              msg_prefix="No se ha redirigido a la vista esperada.")
 
     
+    def test_itemRemoveRelaciones_OK(self):
+        user = User.objects.create(username="user", password="user")
+        user.set_password("user")
+        user.save()
+        proyecto = Proyecto.objects.create(nombre="ProyectoX", descripcion="descripcion", fecha_inicio="10/10/2010",
+                                           fecha_fin="10/12/2010", gerente=user)
+        proyecto.estado = "inicializado"
+        proyecto.save()
+        fase = Fase.objects.create(nombre="Fase1", descripcion="Descripcion", estado="abierta")
+        proyecto.fases.add(fase)
+        proyecto.save()
+        lineaBase = LineaBase.objects.create(nombre="LineaBase1", estado="cerrada", creador=user)
+        fase.lineasBase.add(lineaBase)
+        fase.save()
+        tipo = TipodeItem.objects.create(nombreTipo="Tipo1", descripcion="DTipo1")
+        tipo.campo_extra.append("CampoExtra")
+        tipo.campo_extra.append("CampoExtra2")
+        tipo.save()
+        item = Item.objects.create(tipoItem=tipo, nombre="Item1", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
+                                   , faseid=fase.id)
+        item.estado = "en linea base"
+        item.save()
+        item2 = Item.objects.create(tipoItem=tipo, nombre="Item2", fecha="10/10/2010", observacion="Item1Obs",
+                                   costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
+                                   , faseid=fase.id)
+        item2.estado = "en linea base"
+        item2.save()
+        item3 = Item.objects.create(tipoItem=tipo, nombre="Item3", fecha="10/10/2010", observacion="Item1Obs",
+                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
+                                    , faseid=fase.id)
+        item3.estado = "en linea base"
+        item3.save()
+        item4 = Item.objects.create(tipoItem=tipo, nombre="Item4", fecha="10/10/2010", observacion="Item1Obs",
+                                    costo=10, campo_extra_valores=["CampoExtra1", "CampoExtra2", ]
+                                    , faseid=fase.id)
+        item4.estado = "en linea base"
+        item4.save()
+        fase.items.add(item)
+        fase.save()
+        fase.items.add(item2)
+        fase.save()
+        fase.items.add(item3)
+        fase.save()
+        fase.items.add(item4)
+        fase.save()
 
+        Relacion.objects.create(item_from=item, item_to=item2, tipo="padre", fase_item_to=fase)
+        Relacion.objects.create(item_from=item2, item_to=item, tipo="hijo", fase_item_to=fase)
+        Relacion.objects.create(item_from=item3, item_to=item, tipo="padre", fase_item_to=fase)
+        Relacion.objects.create(item_from=item, item_to=item3, tipo="hijo", fase_item_to=fase)
+        Relacion.objects.create(item_from=item4, item_to=item2, tipo="padre", fase_item_to=fase)
+        Relacion.objects.create(item_from=item2, item_to=item4, tipo="hijo", fase_item_to=fase)
+        assign_perm("relacionar_item", user, fase)
+
+        self.client.login(username='user', password='user')
+        response = self.client.get(reverse('itemRelacionesRemover', kwargs={'itemid': item.id, 'item_rm': item2.id,
+                                                                            'faseid': fase.id, 'proyectoid': proyecto.id, }))
+
+        item = Item.objects.get(id=item.id)
+        item2 = Item.objects.get(id=item2.id)
+        self.assertEquals(item in item2.relaciones.all(), False, "No se elimino la relacion.")
+        self.assertEquals(item2 in item.relaciones.all(), False, "No se elimino la relacion.")
+        self.assertEquals(response.status_code, 302, "No se ha redirigido a ninguna vista.")
+        self.assertRedirects(response, '/item/relaciones/ver/itemid=' + str(item.id) + '/' + 'faseid=' + str(
+            fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' + 'mensaje=' + 'La%20relaci%C3%B3n%20se%20removi%C3%B3%20correctamente.' + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido a la vista esperada.")
   
 
     def test_cerrarFase_OK(self):
@@ -1978,6 +1547,7 @@ class TestViews(TestCase):
 
 
         self.client.login(username='user', password='user')
+
         response = self.client.get(
             reverse('itemRev', kwargs={'proyectoid': proyecto.id, 'faseid': fase.id,
                                        'itemid': item.id,
@@ -2716,9 +2286,11 @@ class TestViews(TestCase):
         fase = Fase.objects.get(id=fase.id)
         self.assertEquals(fase.nombre, "Fase2", "El nombre de la fase es incorrecto.")
         self.assertEquals(fase.descripcion, "Descripcion2", "La descripcion de la fase es incorrecta.")
-        self.assertEquals(response.status_code, 200, "El template no se ha renderizado.")
-        self.assertTemplateUsed(response, 'fase/fase.html',
-                                "El template renderizado debe ser fase/fase.html.")
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response,
+                             '/fase/faseVer/faseid=' + str(fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido al url esperado.")
 
     def test_faseModificar_POST_FAIL(self):
         user = User.objects.create(username="user", password="user")
@@ -2777,6 +2349,7 @@ class TestViews(TestCase):
         self.assertRedirects(response, '/permissionError/',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido al url esperado.")
+
 
 
     def test_faseDeshabilitar_FAIL2(self):
@@ -3357,13 +2930,13 @@ class TestViews(TestCase):
         assign_perm("unable_item", user, fase)
 
         self.client.login(username='user', password='user')
-        response = self.client.get('/item/unable/', {'proyectoid': proyecto.id,
-                                                                 'faseid': fase.id, 'itemid': item.id, })
-
+        response = self.client.get(
+            reverse('itemDeshabilitarView', kwargs={'proyectoid': proyecto.id, 'faseid': fase.id, 'itemid': item.id}))
         item = Item.objects.get(id=item.id)
         self.assertEquals(item.estado, "deshabilitado", "El estado del item es incorrecto.")
         self.assertEquals(response.status_code, 302, "No se ha redirigido.")
-        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
+        self.assertRedirects(response, '/fase/FaseProyectoInicializado/faseid=' + str(fase.id) + '/' + 'proyectoid=' + str(proyecto.id) + '/' +
+                             'mensaje=' + 'Item%20deshabilitado%20correctamente.',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido al url esperado.")
 
@@ -3388,8 +2961,7 @@ class TestViews(TestCase):
         fase.save()
 
         self.client.login(username='user', password='user')
-        response = self.client.get('/item/unable/', {'proyectoid': proyecto.id,
-                                                                 'faseid': fase.id, 'itemid': item.id, })
+        response = self.client.get(reverse('itemDeshabilitarView', kwargs={ 'proyectoid': proyecto.id,'faseid': fase.id, 'itemid': item.id }))
 
         item = Item.objects.get(id=item.id)
         self.assertEquals(item.estado, "en desarrollo", "El estado del item es incorrecto.")
@@ -3420,14 +2992,17 @@ class TestViews(TestCase):
         assign_perm("unable_item", user, fase)
 
         self.client.login(username='user', password='user')
-        response = self.client.get('/item/unable/', {'proyectoid': proyecto.id,
-                                                                 'faseid': fase.id, 'itemid': item.id, })
+        response = self.client.get(reverse('itemDeshabilitarView', kwargs={ 'proyectoid': proyecto.id,'faseid': fase.id, 'itemid': item.id }))
 
         item = Item.objects.get(id=item.id)
         self.assertEquals(item.estado, "aprobado", "El estado del item es incorrecto.")
-        self.assertEquals(response.status_code, 200, "EL template no ha sido renderizado.")
-        self.assertTemplateUsed(response, 'home.html',
-                                "El template renderizado debe ser item/gestionItem.html.")
+        self.assertEquals(response.status_code, 302, "No se ha redirigido.")
+        self.assertRedirects(response,
+                             '/fase/FaseProyectoInicializado/faseid=' + str(fase.id) + '/' + 'proyectoid=' + str(
+                                 proyecto.id) + '/'
+                                                'mensaje=' + 'El%20estado%20actual%20del%20item%20no%20permite%20la%20deshabilitaci%C3%B3n%20del%20mismo.',
+                             status_code=302, fetch_redirect_response=False,
+                             msg_prefix="No se ha redirigido al url esperado.")
 
 
     def test_itemDeshabilitar_FAIL3(self):
@@ -3452,13 +3027,13 @@ class TestViews(TestCase):
         assign_perm("unable_item", user, fase)
 
         self.client.login(username='user', password='user')
-        response = self.client.get('/item/unable/', {'proyectoid': proyecto.id,
-                                                                 'faseid': fase.id, 'itemid': item.id, })
+        response = self.client.get(reverse('itemDeshabilitarView', kwargs={ 'proyectoid': proyecto.id,'faseid': fase.id, 'itemid': item.id }))
 
         item = Item.objects.get(id=item.id)
         self.assertEquals(item.estado, "en desarrollo", "El estado del item es incorrecto.")
         self.assertEquals(response.status_code, 302, "No se ha redirigido.")
-        self.assertRedirects(response, '/proyecto/proyectoVer/proyectoid=' + str(proyecto.id) + '/',
+        self.assertRedirects(response, '/fase/FaseProyectoInicializado/faseid=' + str(fase.id) + '/' + 'proyectoid='  + str(proyecto.id) + '/'
+                             'mensaje=' + 'El%20estado%20actual%20del%20proyecto%20no%20permite%20la%20deshabilitaci%C3%B3n%20del%20mismo.',
                              status_code=302, fetch_redirect_response=False,
                              msg_prefix="No se ha redirigido al url esperado.")
 
@@ -3522,7 +3097,8 @@ class TestViews(TestCase):
         assign_perm("is_gerente", user, proyecto)
 
         self.client.login(username='user', password='user')
-        response = self.client.get('/proyecto/proyectoInicializar/', {'proyectoid': proyecto.id, })
+        response = self.client.get(
+            reverse('proyectoInicializarView', kwargs={'proyectoid': proyecto.id, }))
 
         proyecto = Proyecto.objects.get(id=proyecto.id)
         self.assertEquals(proyecto.estado, "inicializado", "El estado del proyecto es incorrecto.")
@@ -3543,7 +3119,8 @@ class TestViews(TestCase):
         proyecto.save()
 
         self.client.login(username='user', password='user')
-        response = self.client.get('/proyecto/proyectoInicializar/', {'proyectoid': proyecto.id, })
+        response = self.client.get(
+            reverse('proyectoInicializarView', kwargs={'proyectoid': proyecto.id, }))
 
         proyecto = Proyecto.objects.get(id=proyecto.id)
         self.assertEquals(proyecto.estado, "pendiente", "El estado del proyecto es incorrecto.")
@@ -3565,7 +3142,8 @@ class TestViews(TestCase):
         assign_perm("is_gerente", user, proyecto)
 
         self.client.login(username='user', password='user')
-        response = self.client.get('/proyecto/proyectoInicializar/', {'proyectoid': proyecto.id, })
+        response = self.client.get(
+            reverse('proyectoInicializarView', kwargs={'proyectoid': proyecto.id, }))
 
         proyecto = Proyecto.objects.get(id=proyecto.id)
         self.assertEquals(proyecto.estado, "cancelado", "El estado del proyecto es incorrecto.")
@@ -3585,7 +3163,8 @@ class TestViews(TestCase):
         assign_perm("is_gerente", user, proyecto)
 
         self.client.login(username='user', password='user')
-        response = self.client.get('/proyecto/proyectoInicializar/', {'proyectoid': proyecto.id, })
+        response = self.client.get(
+            reverse('proyectoInicializarView', kwargs={'proyectoid': proyecto.id, }))
 
         proyecto = Proyecto.objects.get(id=proyecto.id)
         self.assertEquals(proyecto.estado, "pendiente", "El estado del proyecto es incorrecto.")
@@ -3604,7 +3183,9 @@ class TestViews(TestCase):
         assign_perm("is_gerente", user, proyecto)
 
         self.client.login(username='user', password='user')
-        response = self.client.get('/proyecto/proyectoCancelar/', {'proyectoid': proyecto.id, })
+
+        response = self.client.get(
+            reverse('proyectoCancelarView', kwargs={'proyectoid': proyecto.id, }))
 
         proyecto = Proyecto.objects.get(id=proyecto.id)
         self.assertEquals(proyecto.estado, "cancelado", "El estado del proyecto es incorrecto.")
@@ -3623,7 +3204,8 @@ class TestViews(TestCase):
         proyecto.save()
 
         self.client.login(username='user', password='user')
-        response = self.client.get('/proyecto/proyectoCancelar/', {'proyectoid': proyecto.id, })
+        response = self.client.get(
+            reverse('proyectoCancelarView', kwargs={'proyectoid': proyecto.id, }))
 
         proyecto = Proyecto.objects.get(id=proyecto.id)
         self.assertEquals(proyecto.estado, "pendiente", "El estado del proyecto es incorrecto.")
