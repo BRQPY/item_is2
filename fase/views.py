@@ -2444,10 +2444,12 @@ def cerrarFase(request, proyectoid, faseid):
         itemsFase = fase.items.exclude(estado="deshabilitado")
         for i in itemsFase:
             if i.estado == "en linea base":
-                lineaBaseItem = LineaBase.objects.exclude(estado="rota").get(items__id=i.id)
-                if lineaBaseItem.estado != "cerrada":
-                    cerrar = False
-                    break
+                lineaBaseItem = list(LineaBase.objects.filter(items__id=i.id).exclude(estado="rota"))
+                if len(lineaBaseItem) > 0:
+                    lineaBaseItem = lineaBaseItem.pop()
+                    if lineaBaseItem.estado != "cerrada":
+                        cerrar = False
+                        break
             else:
                 cerrar = False
                 break
