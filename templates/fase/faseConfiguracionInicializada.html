@@ -57,7 +57,7 @@
                     </div>
                 </div>
             </form>
-            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" and not fase.estado == "cerrada" %}
                 <div class="col s5 m3">
                     <div class="card">
                         <div class="card-image" style="border:1px solid #ff3d00;">

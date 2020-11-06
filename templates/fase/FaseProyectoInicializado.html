@@ -118,7 +118,7 @@
                     </button>
                 </form>
             </div>
-            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" and not fase.estado == "cerrada" %}
                 <div style="position: absolute; right: 0; top: 0; text-align: left">
                     {% if  fase.estado != "cerrada" %}
                         <form action="{%url 'faseConfinicializada' proyecto.id fase.id  %}" >
@@ -131,14 +131,12 @@
                 </div>
             {% else %}
                 <div style="position: absolute; right: 0; top: 0; text-align: left">
-                    {% if  fase.estado != "cerrada" %}
-                        <form action="{%url 'faseConfinicializada' proyecto.id fase.id  %}" >
-                            <a href='#' onclick='this.parentNode.submit(); return false;' style="color: black" class="hvr-icon-rotate">
-                                Ver configuración de Fase
-                                <i class="material-icons black-text left hvr-icon">settings</i>
-                            </a>
-                        </form>
-                    {% endif %}
+                    <form action="{%url 'faseConfinicializada' proyecto.id fase.id  %}" >
+                        <a href='#' onclick='this.parentNode.submit(); return false;' style="color: black" class="hvr-icon-rotate">
+                            Ver configuración de Fase
+                            <i class="material-icons black-text left hvr-icon">settings</i>
+                        </a>
+                    </form>
                 </div>
             {% endif %}
         </div>

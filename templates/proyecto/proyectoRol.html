@@ -20,6 +20,12 @@
           <strong> {{ mensaje }}</strong>
         </div>
     {% endif %}
+    {% if mensaje == "Error! No se pudo crear el rol porque dentro del proyecto ya se cuenta con otro rol con el mismo nombre." %}
+        <div class="alert_message" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
     {% if proyecto.estado == "pendiente" %}
         <form action="/proyecto/proyectoVer/proyectoid={{proyecto.id}}">
              <button type="submit" class="waves-effect waves-teal btn-flat">

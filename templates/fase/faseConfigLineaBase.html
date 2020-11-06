@@ -20,7 +20,7 @@
     <div class="container">
         <h5 style="text-align: center"><b>Items de la Linea Base</b></h5>
         <h5 style="text-align: center" class="grey-text">Panel de Gestión de la Línea Base: "{{ lineaBase.nombre }}" </h5><br>
-        {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+        {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" and not fase.estado == "cerrada" %}
             {% if crear_lb %}
                 <form action="/fase/lineaBaseAddItem/">
                     <button type="submit" class="btn-small blue darken-1 right">
@@ -52,7 +52,7 @@
                                     <div class="col 14 left">
                                         <b>{{ i.nombre }}</b>
                                     </div>
-                                    {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                                    {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" and not fase.estado == "cerrada" %}
                                         <div class="col 14 right">
                                             <a href="{%url 'lineaBaseRemoveItem' proyecto.id fase.id lineaBase.id i.id%}"
                                                title="Quitar ítem de la lista de ítems de la Línea Base"
@@ -69,7 +69,7 @@
                     {% endfor %}
                 </ul>
             </div>
-            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" and not fase.estado == "cerrada" %}
                 {% if lineaBase.items.values  %}
                     {% if lineaBase.creador == user %}
                         <form action="{%url 'lineaBaseCerrar' proyecto.id fase.id lineaBase.id%}"

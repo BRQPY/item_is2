@@ -2,70 +2,94 @@
 {% load static %}
 
 {% block content %}
-  <style>
-  .ListaProyectos h6 {
-      font-weight: bold;
-  }
-  </style>
+
+    <style>
+        .ListaProyectos h6 {
+            font-weight: bold;
+        }
+    </style>
+    {% if mensaje == "El proyecto se canceló correctamente." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    {% if mensaje == "El proyecto finalizó correctamente." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
     <div class="container">
 
-    <section class="section ProyectoCrear" style="padding-right: 10px;">
-        <form action="/proyecto/proyectoCrear/">
-            <h3 style=" padding-left: 5px;">Lista de Proyectos
-            <button type="submit"  class="btn blue darken-1 right">
-                <i class="material-icons white-text left">add_circle</i>
-                Crear Proyecto
-            </button>
-       </h3> </form>
-    </section>
-    <section class="ListaProyectos">
-         <div class="row">
-            {% for p in proyectos %}
+        <section class="section ProyectoCrear" style="padding-right: 10px;">
+            <form action="/proyecto/proyectoCrear/">
+                <h3 style=" padding-left: 5px;">Lista de Proyectos
+                    <button type="submit"  class="btn blue darken-1 right">
+                        <i class="material-icons white-text left">add_circle</i>
+                        Crear Proyecto
+                    </button>
+                </h3> </form>
+        </section>
+        <section class="ListaProyectos">
+            <div class="row">
+                {% for p in proyectos %}
 
-              {%if p.estado != "deshabilitado"%}
-                    <div class="col s4 md6 xl3">
-                        <div
-                                {% if p.estado == "pendiente" %}
-                                    style= "border:1px solid #03a9f4;"
-                                    class="card-panel"
-                                {% endif %}
-                                {% if p.estado == "inicializado" %}
-                                    style= "border:1.5px solid #1b5e20;"
-                                    class="card-panel"
-                                {% endif %}
-                                {% if p.estado == "cancelado" %}
-                                    style= "border:1px solid #c62828;"
-                                    class="card-panel"
-                                {% endif %}
-                                {% if p.estado == "finalizado" %}
-                                    style= "border:1px solid black;"
-                                    class="card-panel"
-                                {% endif %}
-                                {% if p.gerente == request.user.username %}
-                                    class="card-panel"
-                                {% endif %}
-                        >
+                    {%if p.estado != "deshabilitado"%}
+                        <div class="col s4 md6 xl3">
+                            <div
+                                    {% if p.estado == "pendiente" %}
+                                        style= "border:1px solid #03a9f4;"
+                                        class="card-panel"
+                                    {% endif %}
+                                    {% if p.estado == "inicializado" %}
+                                        style= "border:1.5px solid #1b5e20;"
+                                        class="card-panel"
+                                    {% endif %}
+                                    {% if p.estado == "cancelado" %}
+                                        style= "border:1px solid #c62828;"
+                                        class="card-panel"
+                                    {% endif %}
+                                    {% if p.estado == "finalizado" %}
+                                        style= "border:1px solid black;"
+                                        class="card-panel"
+                                    {% endif %}
+                                    {% if p.gerente == request.user.username %}
+                                        class="card-panel"
+                                    {% endif %}
+                            >
 
-                           <h6><b> {{ p.nombre }}</b></h6>
-                           <p><b>Estado:</b> {{ p.estado }}</p>
-                             <p style="font-size: 15px;"><b>Gerente:</b> {{ p.gerente }}<br>
-                            <a href="{%url 'proyectoView' p.id%}" class="btn blue darken-6">
-                                Ver
+                                <h6><b> {{ p.nombre }}</b></h6>
+                                <p><b>Estado:</b> {{ p.estado }}</p>
+                                <p style="font-size: 15px;"><b>Gerente:</b> {{ p.gerente }}<br>
+                                    <a href="{%url 'proyectoView' p.id%}" class="btn blue darken-6">
+                                        Ver
 
-                            </a>
+                                    </a>
+                            </div>
                         </div>
+                    {%endif%}
+
+                {% empty %}
+
+                    <br>
+                    <div class="noproject-wrapper center"><br><br>
+                        <h4 class="grey-text">Aún no formas parte de algún proyecto :(</h4>
                     </div>
-              {%endif%}
-
-            {% empty %}
-
-                <br>
-                <div class="noproject-wrapper center"><br><br>
-                    <h4 class="grey-text">Aún no formas parte de algún proyecto :(</h4>
-                </div>
-            {% endfor %}
+                {% endfor %}
             </div>
-    </section>
-  </div>
+        </section>
+    </div>
+    <script>
+        var close = document.getElementsByClassName("closebtn");
+        var i;
 
+        for (i = 0; i < close.length; i++) {
+          close[i].onclick = function(){
+            var div = this.parentElement;
+            div.style.opacity = "0";
+            setTimeout(function(){ div.style.display = "none"; }, 600);
+          }
+        }
+    </script>
 {% endblock%}

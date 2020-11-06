@@ -21,7 +21,7 @@
     {% endif %}
     <div class="container">
         <h4 style="text-align: center"> Tipos de Ítems de la fase {{ fase.nombre }}</h4><br>
-        {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+        {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" and not fase.estado == "cerrada" %}
             {% if add_tipo %}
                 <form action="/fase/addTipoItem/">
                     <button type="submit" class="btn btn-small blue darken-1 right">
@@ -53,7 +53,7 @@
                                     <div class="col 14 left">
                                         <b>{{t.nombreTipo}}</b>
                                     </div>
-                                    {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                                    {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" and not fase.estado == "cerrada" %}
                                         <div class="col 9 right">
                                             <a href="{%url 'faseRemoveTipo' proyecto.id fase.id t.id%}"
                                                onclick="return confirm('Está seguro de remover el tipo de ítem {{ t.nombreTipo }} de la fase?');"
@@ -88,7 +88,7 @@
                                     <div class="col 14 left">
                                         <b>{{t.nombreTipo}}</b>
                                     </div>
-                                    {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                                    {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" and not fase.estado == "cerrada" %}
                                         <div class="col 9 right">
                                             <a
                                                     title="El Tipo de Item no puede ser removido porque está siendo utilizado por un ítem de esta fase."

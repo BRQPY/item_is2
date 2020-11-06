@@ -129,8 +129,37 @@ def proyectoInicializar(request, proyectoid):
             assign_perm("view_fase", user, f)
 
     proyecto.save()
-    """Redirigir a la vista del proyecto correspondiente."""
-    return redirect('proyectoView', id=proyectoid)
+
+    """Fases del proyecto para enviar al template que muestra la informacion"""
+    fases = proyecto.fases.all()
+    fasesUser = []
+    for f in fases:
+        if (request.user.has_perm("view_fase", f) or request.user.has_perm("is_gerente",proyecto)) and f.estado != "deshabilitada":
+            fasesUser.append(f)
+
+    usuarios = proyecto.usuarios.all()
+    roles = proyecto.roles.all()
+    tipoItem = proyecto.tipoItem.all()
+    comite = proyecto.comite.all()
+    hay_acta = False
+    acta = list(proyecto.acta.all())
+    if len(acta) > 0:
+        acta = acta.pop()
+    if acta:
+        hay_acta = True
+    mensaje = "El proyecto se inicializo correctamente."
+    """Template a renderizar: proyectoIniciado.html con parametros -> proyectoid y fases del proyecto"""
+    return render(request, 'proyecto/proyectoIniciado.html', {'proyecto': proyecto, 'fases': fases,
+                                                              'fasesUser': sorted(fasesUser,
+                                                                                  key=lambda x: x.id,
+                                                                                  reverse=False),
+                                                              'usuarios': usuarios,
+                                                              'roles': roles,
+                                                              'tipoItem': tipoItem,
+                                                              'comite': comite, 'hay_acta': hay_acta,
+                                                              'acta': acta, 'mensaje':mensaje})
+    #"""Redirigir a la vista del proyecto correspondiente."""
+    #return redirect('proyectoView', id=proyectoid)
 
 
 def proyectoCancelar(request, proyectoid):
@@ -155,8 +184,18 @@ def proyectoCancelar(request, proyectoid):
     # proyecto._history_date = datetime.now()
     """Guardar."""
     proyecto.save()
+    usuario = User.objects.get(id=request.user.id)
+    if usuario.has_perm("perms.view_menu"):
+        proyectos = Proyecto.objects.filter(usuarios__id=request.user.id)
+        cant = 0
+        for p in proyectos:
+            if not p.estado == "deshabilitado":
+                cant = +1
+
+
     """Redirigir al menu principal del sistema."""
-    return redirect("/home/")
+    return render(request, 'home.html', {'proyectos': proyectos, 'cant': cant, 'mensaje': "El proyecto se canceló correctamente.", })
+    #return redirect("/home/")
 
 
 '''
@@ -504,7 +543,7 @@ def proyectoUser(request):
     user_sistema = User.objects.all()
     usuarios_add = []
     for u in user_sistema:
-        if u.is_active and u.username != "AnonymousUser":
+        if u.is_active and u.username != "AnonymousUser" and u.has_perm("perms.view_menu"):
             if not u in proyecto.usuarios.all():
                 usuarios_add.append(u)
     comite = proyecto.comite.all()
@@ -872,8 +911,8 @@ def proyectoRolCrear(request):
         """Verificar si ya existe un rol con el nombre especificado en el proyecto, este debe ser unico"""
         if proyecto.roles.filter(nombre=nombre).exists():
             """Template a renderizar: proyectoRolCrear.html con parametros -> mensaje de error"""
-            return render(request, 'proyecto/proyectoRolCrear.html', {'proyectoid': proyectoid,
-                                                                      'mensaje': "Lo sentimos, el nombre del Rol ya ha sido asignado en el proyecto.", })
+            mensaje = "Error! No se pudo crear el rol porque dentro del proyecto ya se cuenta con otro rol con el mismo nombre."
+            return redirect('ProyectoRol', proyectoid=proyectoid, mensaje=mensaje)
 
         """Crear el rol con el nombre especificado"""
         rol = Rol.objects.create(nombre=nombre)
@@ -1587,7 +1626,17 @@ def ProyectoFinalizar(request, proyectoid):
             proyecto.save()
 
         """Redireccionar a vista de proyecto"""
-        return redirect('proyectoView', id=proyectoid)
+        usuario = User.objects.get(id=request.user.id)
+        if usuario.has_perm("perms.view_menu"):
+            proyectos = Proyecto.objects.filter(usuarios__id=request.user.id)
+            cant = 0
+            for p in proyectos:
+                if not p.estado == "deshabilitado":
+                    cant = +1
+
+        """Redirigir al menu principal del sistema."""
+        return render(request, 'home.html',{'proyectos': proyectos, 'cant': cant, 'mensaje': "El proyecto finalizó correctamente.", })
+        #return redirect('proyectoView', id=proyectoid)
 
 
 def formActaProyecto(request, proyectoid):

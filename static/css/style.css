@@ -99,3 +99,12 @@ form ul li.category {
   transition:opacity 0.3s;
   margin-bottom:15px;
 }
+.warning_mensaje {
+
+  background-color:#ff9800;
+  padding:20px;
+  color:white;
+  opacity:1;
+  transition:opacity 0.3s;
+  margin-bottom:15px;
+}

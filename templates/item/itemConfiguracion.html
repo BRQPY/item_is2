@@ -89,7 +89,7 @@
             </li>
         </ul>
         <div class="row">
-            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" and not fase.estado == "cerrada" %}
             <form
                     action="/item/modify/"
                     id="formModifItem"
@@ -109,7 +109,7 @@
                 </div>
             </form>
             {% endif %}
-            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" and not fase.estado == "cerrada" %}
                 {% if fase.estado != "cerrada" %}
                     <form
                             action="/item/relaciones/ver/itemid={{ item.id }}/faseid={{ fase.id }}/proyectoid={{ proyecto.id }}/mensaje='' "
@@ -215,7 +215,7 @@
                     </div>
                 </div>
             </form>
-            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" and not fase.estado == "cerrada" %}
                 {% if fase.estado != "cerrada" and item.estado == "en desarrollo" %}
                     <div class="col s5 m3">
                         <div class="card">

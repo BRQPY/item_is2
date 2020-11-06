@@ -2,7 +2,12 @@
 {% load static %}
 
 {% block content %}
-
+    {% if mensaje == "El proyecto se inicializo correctamente." %}
+        <div class="exito_mensaje" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
 
     <div class="container"><br>
         <div style="position: relative;">

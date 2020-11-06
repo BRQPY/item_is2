@@ -124,7 +124,7 @@
                             {% endfor %}
                         </div>
                     </div>
-                    {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                    {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" and  fase.estado == "cerrada" %}
                         {% if item.estado == "en desarrollo" %}
                             <form action="{%url 'itemRev'  proyecto.id faseid item.id i.revision.date_created %}"
                                   onsubmit="return confirm('Está seguro de volver a esta versión del ítem?');"

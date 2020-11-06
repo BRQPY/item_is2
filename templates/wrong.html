@@ -1,18 +1,17 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>WRONG</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/wrong.css' %}">
-</head>
-<body>
-    <style> body{background-color: lavender }</style>
-    <div id="pantalla">
-        <form action="/accounts/logout">
-            <h4>{{user.username}}<br> Aun no cuenta con permisos para acceder al sistema</h4>
-            <input type="submit" value="Salir" />
-        </form>
+
+{% block content %}
+    <div class="container">
+        <h1
+                style="text-align: center; font-family: Lobster"
+        >
+            Acceso Denegado !
+        </h1>
+        <h5
+                style="text-align: center;"
+        >
+            Aún no formas parte del Sistema :(
+        </h5><br>
     </div>
-</body>
-</html>
+{% endblock %}

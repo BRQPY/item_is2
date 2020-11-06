@@ -1,8 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User, Group
 from django.contrib.postgres.fields import ArrayField
-import reversion
-from reversion.models import Version
 
 
 class TipodeItem(models.Model):
@@ -63,7 +61,7 @@ class RoturaLineaBaseComprometida(models.Model):
     registrados_votos_comprometida  = models.ManyToManyField(User, default=None, related_name="comprometidavotantes")
     comprometida_estado  = models.CharField(max_length=40, null=False, default="pendiente")
 
-@reversion.register(follow=['items'])
+
 class LineaBase(models.Model):
     nombre = models.CharField(max_length=40, null=False, default=None)
     items = models.ManyToManyField(Item, default=None)

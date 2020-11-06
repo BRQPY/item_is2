@@ -1,20 +1,17 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>PERMISSION ERROR</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/permissionError.css' %}">
 
-</head>
-<body>
-    <style> body{background-color: lavender }</style>
-    <section>
-        <p>Logged in as: {{user.username}}</p>
-        <h4>Lo sentimos...Al parecer no cuenta con los permisos para acceder a esta seccion.</h4>
-        <form action="/home/">
-            <input type="submit" value="Volver a Menu Principal"/>
-        </form>
-    </section>
-</body>
-</html>
+{% block content %}
+    <div class="container">
+        <h1
+                style="text-align: center; font-family: Lobster"
+        >
+            Error !
+        </h1>
+        <h5
+                style="text-align: center;"
+        >
+            No cuentas con los permisos para acceder a esa funcionalidad.
+        </h5><br>
+    </div>
+{% endblock %}

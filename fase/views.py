@@ -1128,7 +1128,7 @@ def itemModificar(request):
                        'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
                        'desarrolloPermiso': request.user.has_perm("establecer_itemDesarrollo", fase),
                        'lineaBase' : linea_base_item,
-                       'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', 'en linea base'], 'esta_en_lb_comprometida':esta_en_lb_comprometida })
+                       'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado'], 'esta_en_lb_comprometida':esta_en_lb_comprometida })
 
     """POST request, captura la informacion para actualizar los datos del item"""
     """Captura toda la informacion proveida por el usuario."""
@@ -2063,7 +2063,9 @@ def faseAddLineaBase(request):
             item = Item.objects.get(id=i)
             """Actualizar estado de item."""
             item.estado = "en linea base"
-            # item._history_date = datetime.now()
+            """Actualizar el numero de version del item"""
+            num = Item.objects.last()
+            item.version = num.version + 1
             """Guardar item."""
             item.save()
             """Agregar item a linea base."""
@@ -3413,7 +3415,7 @@ def RechazarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid
                             i.save()
 
 
-                    mensaje = "Se rechazó la rotura de la Línea Base."
+                    mensaje = "Se aprobó la rotura de la Línea Base."
                     lineaBase.estado = "rota"
                     """Guardar linea base"""
                     lineaBase.save()

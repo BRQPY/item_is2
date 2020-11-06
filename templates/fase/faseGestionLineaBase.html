@@ -69,7 +69,7 @@
     <div class="container">
         <h3 style="text-align: center">Lineas Base</h3>
         <h4 style="text-align: center" class="grey-text">Lista de lineas base de la fase {{ fase.nombre }}</h4>
-        {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+        {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" and not fase.estado == "cerrada" %}
             {% if crear_lb %}
                 <form action="/fase/addLineaBase/">
                     <button type="submit" class="btn btn-small blue darken-1 right">
@@ -163,7 +163,7 @@
                                             {{lbc.nombre}}
                                         </div>
                                         {% if lbc.estado == "cerrada" %}
-                                            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                                            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" and not fase.estado == "cerrada" %}
                                                 {% if puede_solicitar or es_comite %}
                                                     <div class="col 14 right">
                                                         <a href="{%url 'gestionRoturaLineaBase' proyecto.id fase.id lbc.id 'd' %}"
@@ -219,7 +219,7 @@
                                             <b>Nombre:</b>
                                             {{c.nombre}}
                                         </div>
-                                        {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                                        {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" and not fase.estado == "cerrada" %}
                                             {% if c.estado == "comprometida" %}
                                                 {% if puede_solicitar or es_comite %}
                                                     <div class="col 14 right">

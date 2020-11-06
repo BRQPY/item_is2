@@ -21,7 +21,7 @@
     {% endif %}
     <div class="container">
         <h5 style="text-align: center"><b>Usuarios miembros de la Fase y sus roles</b></h5>
-        {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+        {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" and not fase.estado == "cerrada" %}
             {% if agregar_mas_users and hay_roles %}
                 <form action="/fase/addUser/">
                     <button type="submit" class="btn btn-small blue darken-1 right">
@@ -55,7 +55,7 @@
                                     <div class="col 14 left">
                                         <b>{{u}}</b>
                                     </div>
-                                    {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                                    {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" and not fase.estado == "cerrada" %}
                                         <div class="col 9 right">
                                             <a href="{%url 'faseRemoverUser' proyecto.id fase.id u.id%}"
                                                onclick="return confirm('Está seguro de remover a {{ u }} de la fase?');"

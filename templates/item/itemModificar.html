@@ -212,11 +212,7 @@
                             <div>
                                 <select id="estado" name="estado" class="browser-default">
                                     <option value="en revision" selected>en revision</option>
-                                    {%for c in choices%}
-                                        {%if c == "en linea base"%}
-                                            <option value="{{c}}">{{c}}</option>
-                                        {%endif%}
-                                    {%endfor%}
+                                    <option value="en linea base">en linea base</option>
                                 </select>
                                 <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
                                 <input  type="hidden" value={{faseid}} id="faseid" name="faseid">

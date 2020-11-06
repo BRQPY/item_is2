@@ -19,14 +19,6 @@
                             <b>Nombre:</b>
                             {{proyecto.nombre}}
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col l4 left">
-                            <b>Descripcion:</b>
-                            {{proyecto.descripcion}}
-                        </div>
-                    </div>
-                    <div class="row">
                         <div class="col l4 left">
                             <b>Fecha inicio:</b>
                             {{proyecto.fecha_inicio}}
@@ -35,8 +27,6 @@
                             <b>Fecha fin:</b>
                             {{proyecto.fecha_fin}}
                         </div>
-                    </div>
-                    <div class="row">
                         <div class="col l4 left">
                             <b>Gerente:</b>
                             {{proyecto.gerente}}
@@ -44,6 +34,12 @@
                         <div class="col l4 left">
                             <b>Creador:</b>
                             {{proyecto.creador}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col l4 left">
+                            <b>Descripcion:</b>
+                            {{proyecto.descripcion}}
                         </div>
                     </div>
                 </div>
@@ -60,7 +56,7 @@
                         <div class="card">
                             <div class="card-image" style="border:1px solid #024e82;">
                                 <a href="#" onclick="document.getElementById('formModificacion').submit()">
-                                    <img src="{% static 'img/DatosdelProyecto.jpg' %}" alt="DatosdelProyecto" width="80"
+                                    <img src="{% static 'img/ModificarProyecto.jpg' %}" alt="DatosdelProyecto" width="80"
                                          height="180">
                                     <input type="hidden" value={{ proyecto.id }} id="proyectoid" name="proyectoid">
                                 </a>
@@ -134,6 +130,24 @@
                     </div>
                 </div>
             </form>
+            <form
+                    action="/proyecto/reporte/proyectoid={{ proyecto.id }}/"
+                    id="FormReporte"
+            >
+                <div class="col s5 m3">
+                    <div class="card">
+                        <div class="card-image" style="border:1px solid #024e82;">
+                            <a
+                                    href="#"
+                                    onclick="document.getElementById('FormComite').submit()"
+                            >
+                                <img src="{% static 'img/Reporte.jpg' %}" alt="GenerarProyecto" width="80"
+                                     height="180">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
             {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
                 {% if finalizar %}
                     <div class="col s5 m3">
@@ -169,6 +183,7 @@
                         <div class="card-image" style="border:1px solid #f4c80c;">
                             <a href="/proyecto/proyectoCancelar/proyectoid={{ proyecto.id }}/"
                                onclick="return confirm('Está seguro de cancelar el Proyecto?');"
+
                             >
                                 <img src="{% static 'img/CancelarProyecto.jpg' %}" alt="CancelarProyecto" width="80"
                                      height="180">
@@ -178,32 +193,28 @@
                     </div>
                 </div>
             {% endif %}
-            <form
-                    action=
-                    id="FormDeshabilitar"
-            >
-                <div class="col s5 m3">
-                    <div class="card">
-                        <div class="card-image" style="border:1px solid #ff3d00;">
-                            <a
-                                    href="/proyecto/unable/proyectoid={{ proyecto.id }}/"
-                                    onclick="return confirm('Está seguro de deshabilitar el Proyecto?');"
-                            >
-                                <img src="{% static 'img/DeshabilitarProyecto.jpg' %}" alt="CancelarProyecto" width="80"
-                                     height="180">
-                                <input type="hidden" value={{ proyecto.id }} id="proyectoid" name="proyectoid">
-                            </a>
+            {% if proyecto.estado == "cancelado" or proyecto.estado == "finalizado" %}
+                <form
+                        action=
+                                id="FormDeshabilitar"
+                >
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style="border:1px solid #ff3d00;">
+                                <a
+                                        href="/proyecto/unable/proyectoid={{ proyecto.id }}/"
+                                        onclick="return confirm('Está seguro de deshabilitar el Proyecto?');"
+                                >
+                                    <img src="{% static 'img/DeshabilitarProyecto.jpg' %}" alt="CancelarProyecto" width="80"
+                                         height="180">
+                                    <input type="hidden" value={{ proyecto.id }} id="proyectoid" name="proyectoid">
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </form>
+                </form>
+            {% endif %}
 
-             <form action="/proyecto/reporte/proyectoid={{ proyecto.id }}/">
-            <button type="submit" class="waves-effect waves-teal btn-flat">
-                REPORTE
-                <i class="material-icons dark blue-text left">keyboard_return</i>
-            </button>
-        </form>
 
 
 
