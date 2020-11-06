@@ -102,6 +102,12 @@
           <strong> {{ mensaje }}</strong>
         </div>
     {% endif %}
+     {% if mensaje == "No es posible cambiar el estado del item ya que este cuenta con relaciones." %}
+        <div class="alert_message" >
+          <span class="closebtn">&times;</span>
+          <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
     <div class="container"><br>
         <div style="position: relative;">
             <div style="position: absolute; left: 0; top: 0; text-align: left">

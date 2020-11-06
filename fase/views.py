@@ -1228,8 +1228,9 @@ def itemCambiarEstado(request):
     """Item al cual modificar el estado."""
     item = Item.objects.get(id=dato['itemid'])
 
+
     "Verificar que si el item esta aprobado, no debe cambiar su estado si este ya posee relaciones."
-    if item.estado == "aprobado" or item.estado == "en revision":
+    if item.estado == "aprobado":
         relaciones = item.relaciones.exclude(estado="deshabilitado")
         cambiar_estado = True
         for r in relaciones:
@@ -1247,14 +1248,8 @@ def itemCambiarEstado(request):
             # permiso para establecer item como parobado, choices
             # con los distintos estados del item y el mensaje correspondiente.
 
-            return render(request, 'item/item.html',
-                          {'faseid': dato['faseid'], 'proyectoid': dato['proyectoid'], 'item': item,
-                           'campos': zip(item.tipoItem.campo_extra, item.campo_extra_valores),
-                           'pendientePermiso': request.user.has_perm("establecer_itemPendienteAprob", fase),
-                           'aprobadoPermiso': request.user.has_perm("aprove_item", fase),
-                           'desarrolloPermiso': request.user.has_perm("establecer_itemDesarrollo", fase),
-                           'choices': ['en desarrollo', 'pendiente de aprobacion', 'aprobado', ],
-                           'mensaje_error': mensaje_error, })
+            return redirect('faseViewInicializado', faseid=dato['faseid'], proyectoid=dato['proyectoid'],
+                            mensaje=mensaje_error)
 
     mensaje = ""
     mensaje_error = ""
@@ -3025,9 +3020,7 @@ def AprobarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid)
                     """Guardar solicitud"""
                     solicitud.save()
                     """Establecer a la línea base como rota"""
-                    lineaBase.estado = "rota"
-                    """Guardar linea base"""
-                    lineaBase.save()
+
                     """Lista de items en revision"""
                     en_revision = []
                     """Lista de items en revision, en linea base"""
@@ -3047,7 +3040,9 @@ def AprobarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid)
                                 """verificar si el item relacionado es antecesor"""
                                 relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
                                 """Si el iten relacionado no es antecesor"""
-                                if not relacionItem:
+                                relacionItemPadre = Relacion.objects.filter(item_from=r, item_to=i,
+                                                                            tipo="padre").exists()
+                                if not relacionItem and not relacionItemPadre:
                                     """COlocar el estado del item relacionado como en revision"""
                                     r.estado = "en revision"
                                     # r._history_date = datetime.now()
@@ -3062,7 +3057,9 @@ def AprobarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid)
                                         """Agregar a la lista"""
                                         en_revision_lb.append(r)
                                         """Obtener liena base"""
-                                        lineaBaseItem = LineaBase.objects.get(items__id=r.id)
+                                        print(r.id)
+                                        lineaBaseItem = list(LineaBase.objects.filter(items__id=r.id).exclude(estado="rota"))
+                                        lineaBaseItem = lineaBaseItem.pop()
                                         """Si el estado de la linea base es cerrada."""
                                         if lineaBaseItem.estado == "cerrada":
                                             """Actualizar estado a comprometida"""
@@ -3084,7 +3081,9 @@ def AprobarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid)
                                     for r in i.relaciones.all():
                                         relacionItem = Relacion.objects.filter(item_from=r, item_to=i,
                                                                                tipo="antecesor").exists()
-                                        if not relacionItem:
+                                        relacionItemPadre = Relacion.objects.filter(item_from=r, item_to=i,
+                                                                               tipo="padre").exists()
+                                        if not relacionItem and not relacionItemPadre:
                                             if not r in en_revision:
                                                 seguir = True
 
@@ -3097,7 +3096,9 @@ def AprobarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid)
                                         for r in i.relaciones.all():
                                             relacionItem = Relacion.objects.filter(item_from=r, item_to=i,
                                                                                    tipo="antecesor").exists()
-                                            if not relacionItem:
+                                            relacionItemPadre = Relacion.objects.filter(item_from=r, item_to=i,
+                                                                                        tipo="padre").exists()
+                                            if not relacionItem and not relacionItemPadre:
                                                 if not r in en_revision:
                                                     r.estado = "en revision"
                                                     # r._history_date = datetime.now()
@@ -3125,7 +3126,9 @@ def AprobarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid)
                                         for r in i.relaciones.all():
                                             relacionItem = Relacion.objects.filter(item_from=r, item_to=i,
                                                                                    tipo="antecesor").exists()
-                                            if not relacionItem:
+                                            relacionItemPadre = Relacion.objects.filter(item_from=r, item_to=i,
+                                                                                        tipo="padre").exists()
+                                            if not relacionItem and not relacionItemPadre:
                                                 if not r in en_revision:
                                                     seguir = True
                         else:
@@ -3135,6 +3138,9 @@ def AprobarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid)
                             i.save()
                     mensaje = "Se aprobó la rotura de la Línea Base."
                     """Renderizar html"""
+                    lineaBase.estado = "rota"
+                    """Guardar linea base"""
+                    lineaBase.save()
                     return redirect('LineaBase', proyectoid=proyecto.id, faseid=fase.id, mensaje=mensaje)
 
             else:
@@ -3265,10 +3271,6 @@ def RechazarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid
                     solicitud.estado = "aprobado"
                     """Guardar solicitud"""
                     solicitud.save()
-                    """Establecer a la línea base como rota"""
-                    lineaBase.estado = "rota"
-                    """Guardar linea base"""
-                    lineaBase.save()
                     """Lista de items en revision"""
                     en_revision = []
                     """Lista de items en revision, en linea base"""
@@ -3288,7 +3290,9 @@ def RechazarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid
                                 """verificar si el item relacionado es antecesor"""
                                 relacionItem = Relacion.objects.filter(item_from=r, item_to=i, tipo="antecesor").exists()
                                 """Si el iten relacionado no es antecesor"""
-                                if not relacionItem:
+                                relacionItemPadre = Relacion.objects.filter(item_from=r, item_to=i,
+                                                                            tipo="padre").exists()
+                                if not relacionItem and not relacionItemPadre:
                                     """COlocar el estado del item relacionado como en revision"""
                                     r.estado = "en revision"
                                     # r._history_date = datetime.now()
@@ -3326,7 +3330,9 @@ def RechazarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid
 
                                         relacionItem = Relacion.objects.filter(item_from=r, item_to=i,
                                                                                tipo="antecesor").exists()
-                                        if not relacionItem:
+                                        relacionItemPadre = Relacion.objects.filter(item_from=r, item_to=i,
+                                                                                    tipo="padre").exists()
+                                        if not relacionItem and not relacionItemPadre:
                                             if not r in en_revision:
                                                 seguir = True
 
@@ -3340,7 +3346,9 @@ def RechazarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid
 
                                             relacionItem = Relacion.objects.filter(item_from=r, item_to=i,
                                                                                    tipo="antecesor").exists()
-                                            if not relacionItem:
+                                            relacionItemPadre = Relacion.objects.filter(item_from=r, item_to=i,
+                                                                                        tipo="padre").exists()
+                                            if not relacionItem and not relacionItemPadre:
                                                 if not r in en_revision:
                                                     r.estado = "en revision"
                                                     # r._history_date = datetime.now()
@@ -3369,7 +3377,9 @@ def RechazarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid
 
                                             relacionItem = Relacion.objects.filter(item_from=r, item_to=i,
                                                                                    tipo="antecesor").exists()
-                                            if not relacionItem:
+                                            relacionItemPadre = Relacion.objects.filter(item_from=r, item_to=i,
+                                                                                        tipo="padre").exists()
+                                            if not relacionItem and not relacionItemPadre:
                                                 if not r in en_revision:
                                                     seguir = True
                         else:
@@ -3377,6 +3387,9 @@ def RechazarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid
                             i.save()
 
                 mensaje = "Se rechazó la rotura de la Línea Base."
+                lineaBase.estado = "rota"
+                """Guardar linea base"""
+                lineaBase.save()
                 """Renderizar html"""
                 return redirect('LineaBase', proyectoid=proyecto.id, faseid=fase.id, mensaje=mensaje)
 
