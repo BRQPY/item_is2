@@ -57,19 +57,21 @@
                     </div>
                 </div>
             </form>
-            <div class="col s5 m3">
-                <div class="card">
-                    <div class="card-image" style="border:1px solid #ff3d00;">
-                        <a href="{% url 'cerrarFaseView' proyecto.id fase.id %}"
-                           onclick="return confirm('Está seguro de cerrar la fase?');"
-                        >
-                            <img src="{% static 'img/CerrarFase.jpg' %}" alt="CerrarFase" width="80" height="180">
-                            <input type="hidden" value={{ proyecto.id }} id="proyectoid" name="proyectoid">
-                            <input type="hidden" value={{ fase.id }} id="faseid" name="faseid">
-                        </a>
+            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                <div class="col s5 m3">
+                    <div class="card">
+                        <div class="card-image" style="border:1px solid #ff3d00;">
+                            <a href="{% url 'cerrarFaseView' proyecto.id fase.id %}"
+                               onclick="return confirm('Está seguro de cerrar la fase?');"
+                            >
+                                <img src="{% static 'img/CerrarFase.jpg' %}" alt="CerrarFase" width="80" height="180">
+                                <input type="hidden" value={{ proyecto.id }} id="proyectoid" name="proyectoid">
+                                <input type="hidden" value={{ fase.id }} id="faseid" name="faseid">
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
+            {% endif %}
         </div>
     </div>
 {% endblock %}

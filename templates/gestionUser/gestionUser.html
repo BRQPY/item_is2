@@ -52,6 +52,12 @@
             <strong> {{ mensaje }}</strong>
         </div>
     {% endif %}
+    {% if mensaje == "Error! El usuario forma parte de un proyecto pendiente o inicializado. Remuevalo del proyecto para poder eliminarlo del Sistema." %}
+        <div class="alert_message">
+            <span class="closebtn">&times;</span>
+            <strong> {{ mensaje }}</strong>
+        </div>
+    {% endif %}
     <form action="/home/">
         <button type="submit" class="waves-effect waves-teal btn-flat">
             Volver a Home

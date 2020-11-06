@@ -14,15 +14,27 @@
                         </button>
                 </form>
             </div>
-            <div style="position: absolute; right: 0; top: 0; text-align: left">
-                <form action="/proyecto/gestionProyecto/">
-                    <a href='#' onclick='this.parentNode.submit(); return false;' style="color: black" class="hvr-icon-rotate">
-                        Configurar Proyecto
-                        <i class="material-icons black-text left hvr-icon">settings</i>
-                    </a>
-                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                </form>
-            </div>
+            {% if not proyecto.estado == "cancelado" and not proyecto == "finalizado" %}
+                <div style="position: absolute; right: 0; top: 0; text-align: left">
+                    <form action="/proyecto/gestionProyecto/">
+                        <a href='#' onclick='this.parentNode.submit(); return false;' style="color: black" class="hvr-icon-rotate">
+                            Configurar Proyecto
+                            <i class="material-icons black-text left hvr-icon">settings</i>
+                        </a>
+                        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                    </form>
+                </div>
+            {% else %}
+                <div style="position: absolute; right: 0; top: 0; text-align: left">
+                    <form action="/proyecto/gestionProyecto/">
+                        <a href='#' onclick='this.parentNode.submit(); return false;' style="color: black" class="hvr-icon-rotate">
+                            Ver configuración de Proyecto
+                            <i class="material-icons black-text left hvr-icon">settings</i>
+                        </a>
+                        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                    </form>
+                </div>
+            {% endif %}
         </div>
         <br>
         {% if proyecto.estado == "finalizado" %}
@@ -67,33 +79,34 @@
     <div class="container">
         {% if proyecto.estado == "cancelado" %}
             <h5 style="text-align: left" class="bold grey-text">Acta de Cancelación del Proyecto</h5>
-            {% if  request.user == proyecto.gerente %}
-                {% if hay_acta %}
-                    <ul class="z-depth-1">
-                        <li>
-                            <div class="card-panel z-depth-4 expense" style="border:1px solid #03a9f4;">
-                                <div class="row">
-                                    <div class="col l4 left">
-                                        <b>Gerente:</b>
-                                        {{ proyecto.gerente }}
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col l4 left">
-                                        <b>Fecha de Cancelación:</b>
-                                        {{ acta.fechafin }}
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col l4 left">
-                                        <b>Justificacion:</b>
-                                        {{ acta.justificacion }}
-                                    </div>
+            {% if hay_acta %}
+                <ul class="z-depth-1">
+                    <li>
+                        <div class="card-panel z-depth-4 expense" style="border:1px solid #03a9f4;">
+                            <div class="row">
+                                <div class="col l4 left">
+                                    <b>Gerente:</b>
+                                    {{ proyecto.gerente }}
                                 </div>
                             </div>
-                        </li>
-                    </ul>
-                {% else %}
+                            <div class="row">
+                                <div class="col l4 left">
+                                    <b>Fecha de Cancelación:</b>
+                                    {{ acta.fechafin }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col l4 left">
+                                    <b>Justificacion:</b>
+                                    {{ acta.justificacion }}
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            {% else %}
+                {% if  request.user == proyecto.gerente %}
+
                     <form action="/proyecto/acta/form/proyectoid={{ proyecto.id }}/">
                         <button type="submit" class="btn btn-small blue darken-1 right">
                             Crear acta
@@ -104,34 +117,36 @@
             {% endif %}
         {% endif %}
         {% if proyecto.estado == "finalizado" %}
-            <h5 style="text-align: left" class="bold grey-text">Acta de Cancelación del Proyecto</h5>
-            {% if  request.user == proyecto.gerente %}
-                {% if hay_acta %}
-                    <ul class="z-depth-1">
-                        <li>
-                            <div class="card-panel z-depth-4 expense" style="border:1px solid #03a9f4;">
-                                <div class="row">
-                                    <div class="col l4 left">
-                                        <b>Gerente:</b>
-                                        {{ proyecto.gerente }}
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col l4 left">
-                                        <b>Fecha de Finalización:</b>
-                                        {{ acta.fechafin }}
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col l4 left">
-                                        <b>Justificacion:</b>
-                                        {{ acta.justificacion }}
-                                    </div>
+            <h5 style="text-align: left" class="bold grey-text">Acta de Finalización del Proyecto</h5>
+
+            {% if hay_acta %}
+                <ul class="z-depth-1">
+                    <li>
+                        <div class="card-panel z-depth-4 expense" style="border:1px solid #03a9f4;">
+                            <div class="row">
+                                <div class="col l4 left">
+                                    <b>Gerente:</b>
+                                    {{ proyecto.gerente }}
                                 </div>
                             </div>
-                        </li>
-                    </ul>
-                {% else %}
+                            <div class="row">
+                                <div class="col l4 left">
+                                    <b>Fecha de Finalización:</b>
+                                    {{ acta.fechafin }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col l4 left">
+                                    <b>Justificacion:</b>
+                                    {{ acta.justificacion }}
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            {% else %}
+                {% if  request.user == proyecto.gerente %}
+
                     <form action="/proyecto/acta/form/proyectoid={{ proyecto.id }}/">
                         <button type="submit" class="btn btn-small blue darken-1 right">
                             Crear acta

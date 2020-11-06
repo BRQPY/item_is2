@@ -51,24 +51,42 @@
                 </li>
             </ul>
         </div>
-        <form
-                action="/fase/roturaLineaBase/votacion/aprobado/proyectoid={{ proyecto.id }}/faseid= {{ fase.id }}/lineaBaseid={{ lineaBase.id }}/solicituid={{ solicitud.id }}"
-                onsubmit="return confirm('Está seguro de votar a favor de la rotura de la Linea Base?');"
-        >
-            <button type="submit" class="btn btn-small green darken-1 right">
+        {% if voto %}
+            <button style="cursor: default"
+                    class="btn btn-small #eeeeee grey lighten-3 black-text right"
+                    title="Ya emitiste voto por la rotura de esta Línea Base.">
                 Aprobar Rotura de Línea Base
-                <i class="material-icons white-text left">check</i>
+                <i class="material-icons black-text left">check</i>
             </button>
-        </form>
-        <form
-                action="/fase/roturaLineaBase/votacion/rechazado/proyectoid={{ proyecto.id }}/faseid= {{ fase.id }}/lineaBaseid={{ lineaBase.id }}/solicituid={{ solicitud.id }}"
-                onsubmit="return confirm('Está seguro de votar en contra de la rotura de la Linea Base?');"
-        >
-            <button type="submit" class="btn btn-small red darken-1 left">
+        {% else %}
+            <form
+                    action="/fase/roturaLineaBase/votacion/aprobado/proyectoid={{ proyecto.id }}/faseid= {{ fase.id }}/lineaBaseid={{ lineaBase.id }}/solicituid={{ solicitud.id }}"
+                    onsubmit="return confirm('Está seguro de votar a favor de la rotura de la Linea Base?');"
+            >
+                <button type="submit" class="btn btn-small green darken-1 right">
+                    Aprobar Rotura de Línea Base
+                    <i class="material-icons white-text left">check</i>
+                </button>
+            </form>
+        {% endif %}
+        {% if voto %}
+            <button style="cursor: default"
+                    class="btn btn-small #eeeeee grey lighten-3 black-text left"
+                    title="Ya emitiste voto por la rotura de esta Línea Base.">
                 Rechazar Rotura de Línea Base
-                <i class="material-icons white-text left">close</i>
+                <i class="material-icons black-text left">close</i>
             </button>
-        </form>
+        {% else %}
+            <form
+                    action="/fase/roturaLineaBase/votacion/rechazado/proyectoid={{ proyecto.id }}/faseid= {{ fase.id }}/lineaBaseid={{ lineaBase.id }}/solicituid={{ solicitud.id }}"
+                    onsubmit="return confirm('Está seguro de votar en contra de la rotura de la Linea Base?');"
+            >
+                <button type="submit" class="btn btn-small red darken-1 left">
+                    Rechazar Rotura de Línea Base
+                    <i class="material-icons white-text left">close</i>
+                </button>
+            </form>
+        {% endif %}
     </div>
 
 

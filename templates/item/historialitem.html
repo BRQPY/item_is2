@@ -45,7 +45,7 @@
 
     var counter = 0;
     </style>
-    <form action="{%url 'itemConfigurar' item.id faseid proyectoid%}">
+    <form action="{%url 'itemConfigurar' item.id faseid proyecto.id%}">
         <button type="submit" class="waves-effect waves-teal btn-flat">
             Volver a la Gestión del ítem
             <i class="material-icons dark blue-text left">keyboard_return</i>
@@ -53,7 +53,7 @@
     </form>
     <div class="container">
         <h3 style="text-align: center">{{ item.nombre }}</h3>
-        <h5 style="text-align: center" class="grey-text">Historial del item</h5>
+        <h5 style="text-align: center" class="grey-text">Historial de cambios del ítem</h5>
         <h8 style="text-align: left" class="grey-text">Haga click en el ícono + para desplegar la informacion sobre la version del item .</h8>
         {% for i in versions %}
             <button class="accordion" >
@@ -124,27 +124,29 @@
                             {% endfor %}
                         </div>
                     </div>
-                    {% if item.estado == "en desarrollo" %}
-                        <form action="{%url 'itemRev'  proyectoid faseid item.id i.revision.date_created %}"
-                              onsubmit="return confirm('Está seguro de volver a esta versión del ítem?');"
-                        >
-                            <button
-                                    type="submit" class="btn btn-small blue darken-5 right"
-                                    title="Volver a ésta versión del ítem"
+                    {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                        {% if item.estado == "en desarrollo" %}
+                            <form action="{%url 'itemRev'  proyecto.id faseid item.id i.revision.date_created %}"
+                                  onsubmit="return confirm('Está seguro de volver a esta versión del ítem?');"
                             >
-                                Revertir
-                                <i class="material-icons white-text left">autorenew</i>
-                            </button><br><br>
-                        </form>
-                    {% else %}
-                        <button
+                                <button
+                                        type="submit" class="btn btn-small blue darken-5 right"
+                                        title="Volver a ésta versión del ítem"
+                                >
+                                    Revertir
+                                    <i class="material-icons white-text left">autorenew</i>
+                                </button><br><br>
+                            </form>
+                        {% else %}
+                            <button
                                     type="submit"
                                     class="btn btn-small #eeeeee grey lighten-3 black-text right"
                                     title="El ítem debe estar 'en desarrollo' para poder realizar una reversión."
                             >
-                                Reversionar
+                                Revertir
                                 <i class="material-icons white-text left">autorenew</i>
                             </button><br><br>
+                        {% endif %}
                     {% endif %}
                 </section>
             </div>

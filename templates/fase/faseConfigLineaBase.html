@@ -20,7 +20,7 @@
     <div class="container">
         <h5 style="text-align: center"><b>Items de la Linea Base</b></h5>
         <h5 style="text-align: center" class="grey-text">Panel de Gestión de la Línea Base: "{{ lineaBase.nombre }}" </h5><br>
-
+        {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
             {% if crear_lb %}
                 <form action="/fase/lineaBaseAddItem/">
                     <button type="submit" class="btn-small blue darken-1 right">
@@ -33,15 +33,15 @@
                 </form><br>
             {% else %}
                 <button
-                    title="Todos los ítems aprobados de la fase ya forman parte de alguna Línea Base."
-                    style="cursor: default"
-                    class="btn btn-small #eeeeee grey lighten-3 black-text right"
+                        title="Todos los ítems aprobados de la fase ya forman parte de alguna Línea Base."
+                        style="cursor: default"
+                        class="btn btn-small #eeeeee grey lighten-3 black-text right"
                 >
                     Añadir Ítems a la Linea Base
                     <i class="material-icons white-text left">add_circle</i>
                 </button><br>
             {% endif %}
-
+        {% endif %}
         {% if items %}
             <div class="col s12 md6 x8">
                 <ul class="z-depth-1">
@@ -52,39 +52,43 @@
                                     <div class="col 14 left">
                                         <b>{{ i.nombre }}</b>
                                     </div>
-                                    <div class="col 14 right">
-                                        <a href="{%url 'lineaBaseRemoveItem' proyecto.id fase.id lineaBase.id i.id%}"
-                                           title="Quitar ítem de la lista de ítems de la Línea Base"
-                                           onclick="return confirm('Está seguro de remover el ítem de la Línea Base?');"
-                                        >
-                                            Remover Ítem de la Linea Base
-                                            <i class="material-icons red-text left">delete</i>
-                                        </a>
-                                    </div>
+                                    {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                                        <div class="col 14 right">
+                                            <a href="{%url 'lineaBaseRemoveItem' proyecto.id fase.id lineaBase.id i.id%}"
+                                               title="Quitar ítem de la lista de ítems de la Línea Base"
+                                               onclick="return confirm('Está seguro de remover el ítem de la Línea Base?');"
+                                            >
+                                                Remover Ítem de la Linea Base
+                                                <i class="material-icons red-text left">delete</i>
+                                            </a>
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </li>
                     {% endfor %}
                 </ul>
             </div>
-            {% if lineaBase.items.values  %}
-                {% if lineaBase.creador == user %}
-                    <form action="{%url 'lineaBaseCerrar' proyecto.id fase.id lineaBase.id%}"
-                          onsubmit="return confirm('Está seguro de cerrar la Línea Base {{ lineaBase.nombre }} ?');"
-                    >
-                        <button type="submit" class="btn btn-small red darken-1 right">
+            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                {% if lineaBase.items.values  %}
+                    {% if lineaBase.creador == user %}
+                        <form action="{%url 'lineaBaseCerrar' proyecto.id fase.id lineaBase.id%}"
+                              onsubmit="return confirm('Está seguro de cerrar la Línea Base {{ lineaBase.nombre }} ?');"
+                        >
+                            <button type="submit" class="btn btn-small red darken-1 right">
+                                Cerrar Linea Base
+                                <i class="material-icons white-text left">lock</i>
+                            </button>
+                        </form><br>
+                    {% else %}
+                        <button
+                                style="cursor: default"
+                                class="btn btn-small #eeeeee grey lighten-3 black-text right"
+                        >
                             Cerrar Linea Base
                             <i class="material-icons white-text left">lock</i>
                         </button>
-                    </form><br>
-                {% else %}
-                    <button
-                            style="cursor: default"
-                            class="btn btn-small #eeeeee grey lighten-3 black-text right"
-                    >
-                        Cerrar Linea Base
-                        <i class="material-icons white-text left">lock</i>
-                    </button>
+                    {% endif %}
                 {% endif %}
             {% endif %}
         {% else %}

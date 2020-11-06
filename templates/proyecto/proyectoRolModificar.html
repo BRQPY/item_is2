@@ -52,12 +52,11 @@
             }
         </script>
     </head>
-    <form action="/proyecto/proyectoRol/">
+    <form action="/proyecto/proyectoRol/proyectoid={{ proyecto.id }}/mensaje=''/">
          <button type="submit" class="waves-effect waves-teal btn-flat">
              Volver a Gestión de Roles de Proyecto
              <i class="material-icons dark blue-text left">keyboard_return</i>
          </button>
-        <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
     </form>
 	<div class="container">
         <form action="/proyecto/proyectoRol/modify/proyectoid={{ proyecto.id }}/rolid={{ rol.id }}/" method="post">

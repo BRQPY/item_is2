@@ -10,6 +10,8 @@
     </form>
 
 	<div class="container">
+        <h3 style="text-align: center">{{ item.nombre }}</h3>
+        <h4 style="text-align: center" class="grey-text">Modificación de datos y estado del Ítem</h4><br>
         {%if proyecto.estado != "cancelado"%}
             {% if item.estado != "en linea base" %}
                 {% if item.estado == "en desarrollo" %}
@@ -123,7 +125,9 @@
                 {% else %}
                     {% if item.estado != "en revision" %}
                         {%if pendientePermiso or aprobadoPermiso%}
-                            <h5>El estado actual del item permite únicamente el cambio de estado.</h5>
+                            <div class="alert_message" >
+                                <strong>El estado actual del item permite únicamente el cambio de estado.</strong>
+                            </div>
                             <form action="/item/itemCambiarEstado/">
                                 <div>
                                     <h5 style="text-align: left" class="grey-text">Estado:</h5>

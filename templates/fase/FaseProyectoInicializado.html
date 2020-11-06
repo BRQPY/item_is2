@@ -118,16 +118,29 @@
                     </button>
                 </form>
             </div>
-            <div style="position: absolute; right: 0; top: 0; text-align: left">
-                {% if  fase.estado != "cerrada" %}
-                    <form action="{%url 'faseConfinicializada' proyecto.id fase.id  %}" >
-                        <a href='#' onclick='this.parentNode.submit(); return false;' style="color: black" class="hvr-icon-rotate">
-                            Configurar Fase
-                            <i class="material-icons black-text left hvr-icon">settings</i>
-                        </a>
-                    </form>
-                {% endif %}
-            </div>
+            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                <div style="position: absolute; right: 0; top: 0; text-align: left">
+                    {% if  fase.estado != "cerrada" %}
+                        <form action="{%url 'faseConfinicializada' proyecto.id fase.id  %}" >
+                            <a href='#' onclick='this.parentNode.submit(); return false;' style="color: black" class="hvr-icon-rotate">
+                                Configurar Fase
+                                <i class="material-icons black-text left hvr-icon">settings</i>
+                            </a>
+                        </form>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div style="position: absolute; right: 0; top: 0; text-align: left">
+                    {% if  fase.estado != "cerrada" %}
+                        <form action="{%url 'faseConfinicializada' proyecto.id fase.id  %}" >
+                            <a href='#' onclick='this.parentNode.submit(); return false;' style="color: black" class="hvr-icon-rotate">
+                                Ver configuración de Fase
+                                <i class="material-icons black-text left hvr-icon">settings</i>
+                            </a>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
         <br>
         <h3 style="text-align: center">{{ fase.nombre }}</h3>
@@ -137,24 +150,26 @@
             </div>
             <div style="position: absolute; right: 0; top: 0; text-align: left">
                 {% if  fase.estado != "cerrada" %}
-                    {% if tipos %}
-                        <form action="/item/itemCrear/">
-                            <button type="submit" class="btn blue darken-5 right">
+                    {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                        {% if tipos %}
+                            <form action="/item/itemCrear/">
+                                <button type="submit" class="btn blue darken-5 right">
+                                    Crear nuevo ítem
+                                    <i class="material-icons white-text left">add_circle</i>
+                                </button>
+                                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                                <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
+                            </form>
+                        {% else %}
+                            <button
+                                    title="La fase no cuenta con Tipos de ítems. Ve a la Configuración de Fase para agregarlos y poder crear ítems."
+                                    style="cursor: default"
+                                    class="btn btn-small #eeeeee grey lighten-3 black-text right"
+                            >
                                 Crear nuevo ítem
                                 <i class="material-icons white-text left">add_circle</i>
-                            </button>
-                            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-                            <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
-                        </form>
-                    {% else %}
-                        <button
-                            title="La fase no cuenta con Tipos de ítems. Ve a la Configuración de Fase para agregarlos y poder crear ítems."
-                            style="cursor: default"
-                            class="btn btn-small #eeeeee grey lighten-3 black-text right"
-                        >
-                            Crear nuevo ítem
-                            <i class="material-icons white-text left">add_circle</i>
-                        </button><br>
+                            </button><br>
+                        {% endif %}
                     {% endif %}
                 {% endif %}
             </div>
@@ -176,6 +191,7 @@
         <button class="btnItem" onclick="filterSelection('comprometida')"> Línea Base comprometida</button>
     </div>
     <div class="container">
+        {% if items %}
         <section class="section section-expenses">
             <ul class="z-depth-1">
                 <div class="filterDiv desarrollo">
@@ -588,6 +604,12 @@
                 </div>
             </ul>
         </section>
+        {% else %}
+            <br>
+            <h5>
+                La fase no cuenta con items.
+            </h5>
+        {% endif %}
     </div>
 
     <script>

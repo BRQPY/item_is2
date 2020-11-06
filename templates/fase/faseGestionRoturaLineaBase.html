@@ -38,12 +38,21 @@
         <h4 style="text-align: center"> Linea Base {{ lineaBase.nombre }}</h4>
         <h5 style="text-align: center"> Listado de Solicitudes de Rotura</h5><br>
         {% if puede_solicitar %}
-            <form action="/fase/roturaLineaBase/form/proyectoid={{ proyecto.id }}/faseid= {{ fase.id }}/lineaBaseid={{ lineaBase.id }}/">
-                <button type="submit" class="btn btn-small blue darken-1 right">
+            {% if hay_comite_lleno %}
+                <form action="/fase/roturaLineaBase/form/proyectoid={{ proyecto.id }}/faseid= {{ fase.id }}/lineaBaseid={{ lineaBase.id }}/">
+                    <button type="submit" class="btn btn-small blue darken-1 right">
+                        Solicitar Rotura de Línea Base
+                        <i class="material-icons white-text left">add_circle</i>
+                    </button>
+                </form><br>
+            {% else %}
+                <button style="cursor: default"
+                        class="btn btn-small #eeeeee grey lighten-3 black-text right"
+                        title="El proyecto debe contar con los tres miembros del Comité para enviar solicitudes de rotura">
                     Solicitar Rotura de Línea Base
                     <i class="material-icons white-text left">add_circle</i>
-                </button>
-            </form><br>
+                </button><br>
+            {% endif %}
         {% endif %}
         {% if solicitudes %}
             <div class="col s12 md6 x8">

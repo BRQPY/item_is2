@@ -21,6 +21,9 @@
         </form>
     {% endif %}
     <div class="container">
+        <h3 style="text-align: center">{{ proyecto.nombre }}</h3>
+        <h4 style="text-align: center" class="grey-text">Panel de modificación de datos del Proyecto</h4>
+
         <form action="/proyecto/modify/" method="post">
             {% csrf_token %}
             <p>{{mensaje}}</p>

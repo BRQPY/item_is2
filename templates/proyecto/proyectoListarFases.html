@@ -10,7 +10,7 @@
     </form>
     <div class="container">
         <h2 style="text-align: center">{{ proyecto.nombre}}</h2>
-        <h5 style="text-align: center" class="grey-text">Lista de Fases de  {{ proyecto.nombre}}</h5>
+        <h5 style="text-align: center" class="grey-text">Lista de fases del proyecto  {{ proyecto.nombre}}</h5>
 
         {% if proyecto.estado == 'pendiente' %}
             <form action="/fase/faseCrear/" >
