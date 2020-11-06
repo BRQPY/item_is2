@@ -20,25 +20,27 @@
         </form>
     {% endif %}
 	<div class="container">
-            <h3 style="text-align: center">Tipos de Ítem del Proyecto</h3>
-        <h5 style="text-align: center" class="grey-text">Panel de Configuración de Tipos de ítem</h5><br>
-        <form action="/proyecto/importTdeItem/">
-            <button  type="submit"
-                     class="btn-small blue darken-2 left"
-                     title="Permite importar tipos de item de otro proyecto creado en el sistema."
-            >
-                Importar Tipo de Item
-                <i class="material-icons white-text left">import_export</i>
-            </button>
-            <input class="cla"  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-        </form>
-        <form action="/proyecto/creartipo/">
-            <button  type="submit" class="btn-small blue darken-2 right" >
-                Crear Tipo de Item
-                <i class="material-icons white-text left">add_circle</i>
-            </button>
-            <input class="cla"  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-        </form>
+        <h3 style="text-align: center">Tipos de Ítem</h3>
+        <h5 style="text-align: center" class="grey-text">Panel de Configuración de Tipos de Ítem del proyecto {{ proyecto.nombre }}</h5><br>
+        {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+            <form action="/proyecto/importTdeItem/">
+                <button  type="submit"
+                         class="btn-small blue darken-2 left"
+                         title="Permite importar tipos de item de otro proyecto creado en el sistema."
+                >
+                    Importar Tipo de Item
+                    <i class="material-icons white-text left">import_export</i>
+                </button>
+                <input class="cla"  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            </form>
+            <form action="/proyecto/creartipo/">
+                <button  type="submit" class="btn-small blue darken-2 right" >
+                    Crear Tipo de Item
+                    <i class="material-icons white-text left">add_circle</i>
+                </button>
+                <input class="cla"  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            </form>
+        {% endif %}
         <br>
         {% if tipos_modificable or tipos_no_modificable %}
             {% if tipos_modificable %}
@@ -53,7 +55,8 @@
                                             <b>Nombre:</b>
                                             {{ t.nombreTipo }}
                                         </div>
-                                        <div class="col 11 right">
+                                        {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                                            <div class="col 11 right">
                                                 <a href="{%url 'removertipo' proyecto.id t.id%}"
                                                    title="Eliminar Tipo de Item del Proyecto."
                                                    onclick="return confirm('Está seguro de remover el rol {{ r.nombre }} del proyecto?');"
@@ -62,14 +65,15 @@
                                                     Remover Tipo de Item
                                                 </a>
                                             </div>
-                                        <div class="col 11 right">
-                                            <a href="{%url 'modificartipo' proyecto.id t.id%}"
-                                               title="Modificar datos o campos extra de {{ t.nombreTipo }}"
-                                            >
-                                                <i class="material-icons darken-4 blue-text left">edit</i>
-                                                Modificar Tipo de Item
-                                            </a>
-                                        </div>
+                                            <div class="col 11 right">
+                                                <a href="{%url 'modificartipo' proyecto.id t.id%}"
+                                                   title="Modificar datos o campos extra de {{ t.nombreTipo }}"
+                                                >
+                                                    <i class="material-icons darken-4 blue-text left">edit</i>
+                                                    Modificar Tipo de Item
+                                                </a>
+                                            </div>
+                                        {% endif %}
                                     </div>
                                     <div class="row">
                                         <div class="col 11 left">
@@ -97,7 +101,8 @@
                                             <b>Nombre:</b>
                                             {{ t.nombreTipo }}
                                         </div>
-                                        <div class="col 11 right">
+                                        {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                                            <div class="col 11 right">
                                                 <a href="/"
                                                    title="Eliminar Tipo de Item del Proyecto."
                                                    class="disabled"
@@ -107,15 +112,16 @@
                                                     Remover Tipo de Item
                                                 </a>
                                             </div>
-                                        <div class="col 11 right">
-                                            <a href="{%url 'modificartipo' proyecto.id t.id%}"
-                                               class="disabled"
-                                               title="Modificar datos o campos extra de {{ t.nombreTipo }}"
-                                            >
-                                                <i class="disable material-icons darken-4 blue-text left">edit</i>
-                                                Modificar Tipo de Item
-                                            </a>
-                                        </div>
+                                            <div class="col 11 right">
+                                                <a href="{%url 'modificartipo' proyecto.id t.id%}"
+                                                   class="disabled"
+                                                   title="Modificar datos o campos extra de {{ t.nombreTipo }}"
+                                                >
+                                                    <i class="disable material-icons darken-4 blue-text left">edit</i>
+                                                    Modificar Tipo de Item
+                                                </a>
+                                            </div>
+                                        {% endif %}
                                     </div>
                                     <div class="row">
                                         <div class="col 11 left">

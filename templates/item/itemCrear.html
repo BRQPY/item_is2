@@ -10,7 +10,7 @@
     </form>
 	<div class="container">
         {% if select is None %}
-            <h3 style="text-align: center">Crear Ítems</h3>
+            <h3 style="text-align: center">Crear Ítem</h3>
             <h5 style="text-align: center" class="grey-text">Seleccione un tipo de ítem</h5>
             <form action="." method="POST">{% csrf_token %}
                 <input  type="hidden" value={{proyectoid}} id="proyectoid" name="proyectoid">
@@ -26,6 +26,7 @@
                 </button>
             </form>
         {% else %}
+            <h3 style="text-align: center">Crear Ítem</h3>
             <Form action="." method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div>

@@ -20,7 +20,9 @@
         </form>
     {% endif %}
     <div class="container">
-        <h4 style="text-align: center">Añadir items a la linea base</h4>
+        <h3 style="text-align: center">{{ lineaBase.nombre }}</h3>
+        <h4 style="text-align: center" class="grey-text">Añadir items a la linea base</h4>
+        <h4 style="text-align: center"></h4>
         <h5 style="text-align: left">Seleccione items para agregar a la linea base</h5>
         <form action="/fase/lineaBaseAddItem/" method="post">
             {% csrf_token %}
@@ -37,7 +39,7 @@
             <input  type="hidden" value={{lineaBase.id}} id="lineaBaseid" name="lineaBaseid">
             <button type="submit" class="btn-small blue darken-2 right">
                 Añadir item
-                <i class="material-icons white-text left">person_add</i>
+                <i class="material-icons white-text left">add_circle_outline</i>
             </button>
         </form>
     </div>

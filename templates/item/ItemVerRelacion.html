@@ -70,6 +70,14 @@
             <i class="material-icons dark blue-text left">keyboard_return</i>
         </button>
     </form>
+    {% if item.estado == "aprobado" and sucesores %}
+        <div class="alert_message" >
+            <strong>
+                Atencion! Debido a una rotura de Línea Base el ítem se encuentra inconsistente al poseer relaciones con la fase siguiente teniendo un estado de 'aprobado'.
+                Para recuperar la consistencia, el ítem debe formar parte de una línea base cerrada.
+            </strong>
+        </div>
+    {% endif %}
     <div class="container">
         <h4 style="text-align: center">Relaciones del item {{ item.nombre }}</h4>
     </div>
@@ -240,12 +248,13 @@
                             <h8>El ítem no posee relaciones con la fase posterior.</h8>
                         {% endif %}
                 {% else %}
-                    <h6 style="text-align: center">
+                    {% if es_ultima %}
+                        El ítem se encuentra en la última fase.<br>No cuenta con fase siguiente.<br>
+                    {% else %}
                         {% if not item.estado == "en linea base" and not item.estado == "en revision"  %}
                             El ítem no posee relaciones con la fase posterior.
-                        {% else %}
-                            El ítem se encuentra en la última fase.<br>No cuenta con fase siguiente.<br>
                         {% endif %}
+                    {% endif %}
                     </h6>
                 {% endif %}
             </div>

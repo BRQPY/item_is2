@@ -9,6 +9,8 @@
             </button>
     </form>
 	<div class="container">
+        <h3 style="text-align: center">{{ fase.nombre }}</h3>
+        <h4 style="text-align: center" class="grey-text">Panel de modificación de la fase</h4>
         <form action="/fase/modify/" method="post">
             {% csrf_token %}
             <p>{{mensaje}}</p>

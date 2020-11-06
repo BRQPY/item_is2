@@ -39,24 +39,26 @@
     {% endif %}
     <div class="container">
         <h3 style="text-align: center">Comité de Control de Cambios</h3>
-        <h5 style="text-align: center" class="grey-text">Panel de Configuración del Comité</h5><br>
-        {% if agregar_mas_users %}
-            <form action="/proyecto/proyectoComite/add/">
-                <button type="submit" class="btn btn-small blue darken-1 right">
+        <h5 style="text-align: center" class="grey-text">Panel de Configuración del Comité del proyecto {{ proyecto.nombre }}</h5><br>
+        {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+            {% if agregar_mas_users %}
+                <form action="/proyecto/proyectoComite/add/">
+                    <button type="submit" class="btn btn-small blue darken-1 right">
+                        Añadir Usuario al Comité
+                        <i class="material-icons white-text left">add_circle</i>
+                    </button>
+                    <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+                </form><br>
+            {% else %}
+                <button
+                        title="El proyecto ya cuenta con 3 (tres) miembros en el Comité o el proyecto no cuenta con más miembros para ser parte del Comité."
+                        style="cursor: default"
+                        class="btn btn-small #eeeeee grey lighten-3 black-text right"
+                >
                     Añadir Usuario al Comité
                     <i class="material-icons white-text left">add_circle</i>
-                </button>
-                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-            </form><br>
-        {% else %}
-            <button
-                    title="El proyecto ya cuenta con 3 (tres) miembros en el Comité."
-                    style="cursor: default"
-                    class="btn btn-small #eeeeee grey lighten-3 black-text right"
-            >
-                Añadir Usuario al Comité
-                <i class="material-icons white-text left">add_circle</i>
-            </button><br>
+                </button><br>
+            {% endif %}
         {% endif %}
         {% if comite %}
             <div class="col s12 md6 x8">
@@ -69,15 +71,17 @@
                                     <b>Username:</b>
                                     {{c.username}}
                                 </div>
-                                {% if request.user == proyecto.gerente %}
-                                    <div class="col 9 right">
-                                        <a href="{%url 'ComiteRemove' proyecto.id c.id  %}"
-                                           onclick="return confirm('Está seguro de remover a {{ c }} del Comité?');"
-                                        >
-                                            <i class="material-icons darken-4 red-text left">delete</i>
-                                            Remover Usuario del Comité
-                                        </a>
-                                    </div>
+                                {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                                    {% if request.user == proyecto.gerente %}
+                                        <div class="col 9 right">
+                                            <a href="{%url 'ComiteRemove' proyecto.id c.id  %}"
+                                               onclick="return confirm('Está seguro de remover a {{ c }} del Comité?');"
+                                            >
+                                                <i class="material-icons darken-4 red-text left">delete</i>
+                                                Remover Usuario del Comité
+                                            </a>
+                                        </div>
+                                    {% endif %}
                                 {% endif %}
                             </div>
                         </div>

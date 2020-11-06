@@ -38,15 +38,17 @@
         </form>
     {% endif %}
 	<div class="container">
-        <h3 style="text-align: center">Roles del Proyecto</h3>
-        <h5 style="text-align: center" class="grey-text">Panel de Configuración de Roles</h5>
-        <form action="/proyecto/proyectoRol/create/">
-            <button type="submit" class="btn btn-small blue darken-1 right">
-                Crear Rol
-                <i class="material-icons white-text left">add_circle</i>
-            </button>
-            <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
-        </form><br>
+        <h3 style="text-align: center">Roles</h3>
+        <h5 style="text-align: center" class="grey-text">Panel de Configuración del Roles del proyecto {{ proyecto.nombre }}</h5><br>
+        {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+            <form action="/proyecto/proyectoRol/create/">
+                <button type="submit" class="btn btn-small blue darken-1 right">
+                    Crear Rol
+                    <i class="material-icons white-text left">add_circle</i>
+                </button>
+                <input  type="hidden" value={{proyecto.id}} id="proyectoid" name="proyectoid">
+            </form><br>
+        {% endif %}
         {% if roles %}
             <div class="col s12 md6 x8">
                 <ul class="z-depth-1">
@@ -58,35 +60,48 @@
                                         <b>Rol:</b>
                                         {{ r.nombre }}
                                     </div>
-                                    {% if not r.faseUser.values %}
+                                    {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                                        {% if not r.faseUser.values %}
+                                            <div class="col 11 right">
+                                                <a href="{%url 'ProyectoRolRemove' proyecto.id r.id%}"
+                                                   title="Eliminar rol del Proyecto."
+                                                   class="disabled"
+                                                   onclick="return confirm('Está seguro de remover el rol {{ r.nombre }} del proyecto?');"
+                                                >
+                                                    <i class=" disabled material-icons darken-4 red-text left">delete</i>
+                                                    Remover Rol del Proyecto
+                                                </a>
+                                            </div>
+                                        {% else %}
+                                            <div class="col 11 right">
+                                                <a title="No se puede remover este rol porque está asignado a algún miembro del proyecto."
+                                                   style="color:#C5C5C5"
+                                                >
+                                                    Remover Rol
+                                                    <i class=" disabled material-icons darken-4 grey-text left">delete</i>
+                                                </a>
+                                            </div>
+                                        {% endif %}
                                         <div class="col 11 right">
-                                            <a href="{%url 'ProyectoRolRemove' proyecto.id r.id%}"
-                                               title="Eliminar rol del Proyecto."
-                                               class="disabled"
-                                               onclick="return confirm('Está seguro de remover el rol {{ r.nombre }} del proyecto?');"
+                                            <a href="{%url 'ProyectoRolModify' proyecto.id r.id%}"
+                                               title="Agregar o remover permisos de sistema del rol {{ r.nombre }}"
                                             >
-                                                <i class=" disabled material-icons darken-4 red-text left">delete</i>
-                                                Remover Rol del Proyecto
-                                            </a>
-                                        </div>
-                                    {% else %}
-                                        <div class="col 11 right">
-                                            <a title="No se puede remover este rol porque está asignado a algún miembro del proyecto."
-                                               style="color:#C5C5C5"
-                                            >
-                                                Remover Rol
-                                                <i class=" disabled material-icons darken-4 grey-text left">delete</i>
+                                                <i class="material-icons darken-4 blue-text left">edit</i>
+                                                Modificar Rol
                                             </a>
                                         </div>
                                     {% endif %}
-                                    <div class="col 11 right">
-                                        <a href="{%url 'ProyectoRolModify' proyecto.id r.id%}"
-                                           title="Agregar o remover permisos de sistema del rol {{ r.nombre }}"
-                                        >
-                                            <i class="material-icons darken-4 blue-text left">edit</i>
-                                            Modificar Rol
-                                        </a>
-                                    </div>
+                                </div>
+                                <div class="row">
+                                    <b>Permisos:</b>
+                                    <ul>
+                                        {% for p in r.perms.permissions.all %}
+                                            <div class="col 11 left">
+                                                {{ p.codename }}
+
+                                            </div>
+                                        {% endfor %}
+                                    </ul>
                                 </div>
                             </div>
                         </li>

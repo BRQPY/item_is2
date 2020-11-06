@@ -375,8 +375,6 @@ def proyectoModificar(request):
             return redirect('/permissionError/')
 
         """Verifica que el proyecto no se encuentre cancelado"""
-        if proyecto.estado == "cancelado":
-            return redirect('proyectoView', id=proyectoid)
 
         """Template a renderizar: proyectoModificar con parametro -> proyecto"""
         return render(request, 'proyecto/proyectoModificar.html', {'proyecto': proyecto, })
@@ -500,16 +498,21 @@ def proyectoUser(request):
     if not (request.user.has_perm("is_gerente", proyecto)):
         return redirect('/permissionError/')
 
-    """Verifica que el proyecto no se encuentre cancelado"""
-    if proyecto.estado == "cancelado":
-        return redirect('proyectoView', id=proyectoid)
 
     """Lista de miembros del proyecto para mostrar en el template."""
     usuarios = proyecto.usuarios.all()
+    user_sistema = User.objects.all()
+    usuarios_add = []
+    for u in user_sistema:
+        if u.is_active and u.username != "AnonymousUser":
+            if not u in proyecto.usuarios.all():
+                usuarios_add.append(u)
+    comite = proyecto.comite.all()
     cant_user = len(usuarios)
+    add_user = len(usuarios_add)
     """Template a renderizar; proyectoUser.html con parametros -> proyectoid y usuarios del proyecto"""
     return render(request, 'proyecto/proyectoUser.html', {'proyecto': proyecto, 'usuarios': usuarios,
-                                                          'cant_user': cant_user, })
+                                                          'cant_user': cant_user, 'comite': comite, 'add_user':add_user})
 
 
 def proyectoUserAdd(request):
@@ -572,9 +575,20 @@ def proyectoUserAdd(request):
         assign_perm("view_proyecto", user, proyecto)
 
     usuarios = proyecto.usuarios.all()
+    user_sistema = User.objects.all()
+    usuarios_add = []
+    for u in user_sistema:
+        if u.is_active and u.username != "AnonymousUser":
+            if not u in proyecto.usuarios.all():
+                usuarios_add.append(u)
+
+    comite = proyecto.comite.all()
     cant_user = len(usuarios)
+    add_user = len(usuarios_add)
+    """Template a renderizar; proyectoUser.html con parametros -> proyectoid y usuarios del proyecto"""
     return render(request, 'proyecto/proyectoUser.html', {'proyecto': proyecto, 'usuarios': usuarios,
-                                                          'cant_user': cant_user, })
+                                                          'cant_user': cant_user, 'comite': comite,
+                                                          'add_user': add_user})
 
 
 def proyectoUserRemove(request, proyectoid, userid):
@@ -586,36 +600,7 @@ def proyectoUserRemove(request, proyectoid, userid):
         y que (indirectamente) haya iniciado sesion
     """
 
-    """GET request, muestra el template correspondiente para remover miembros del proyecto"""
-    if request.method == 'GET':
-        """ID del proyecto"""
-        """Proyecto al cual remover miembros"""
-        proyecto = Proyecto.objects.get(id=proyectoid)
-        """Verificar permiso necesario en el proyecto correspondiente"""
-        if not (request.user.has_perm("is_gerente", proyecto)):
-            return redirect('/permissionError/')
 
-        """Verifica que el proyecto no se encuentre cancelado"""
-        if proyecto.estado == "cancelado":
-            return redirect('proyectoView', id=proyectoid)
-
-        proyecto = Proyecto.objects.get(id=proyectoid)
-        """Gerente del proyecto"""
-        gerente = Proyecto.objects.get(id=proyectoid).gerente
-
-        """Lista de miembros del proyecto"""
-        user = User.objects.get(id=userid)
-        """ Para saber si hay algun user removible del proyecto"""
-        eliminable = True
-        if user.is_staff == True or user == request.user or user == gerente:
-            """Si no puede ser removido del proyecto, establece eliminable a false"""
-            eliminable = False
-        """
-         Template a renderizar: proyectoUserRemove.html con parametro->
-         usuarios posibles para remover y proyectoid
-        """
-        return render(request, "proyecto/proyectoUserRemove.html", {'usuarios': user, 'proyectoid': proyectoid,
-                                                                    'eliminar': eliminable})
 
     """POST request, captura la lista de usuarios para remover del proyecto"""
     """Lista de usuarios a remover"""
@@ -658,9 +643,7 @@ def proyectoComite(request, proyectoid, mensaje):
     if not (request.user.has_perm("is_gerente", proyecto)):
         return redirect('/permissionError/')
 
-    """Verifica que el proyecto no se encuentre cancelado"""
-    if proyecto.estado == "cancelado":
-        return redirect('proyectoView', id=proyectoid)
+
 
     """Lista de miembros del comite para mostrar en el template"""
     comite = proyecto.comite.all()
@@ -859,9 +842,7 @@ def proyectoRol(request, proyectoid, mensaje):
     if not (request.user.has_perm("is_gerente", proyecto)):
         return redirect('/permissionError/')
 
-    """Verifica que el proyecto no se encuentre cancelado"""
-    if proyecto.estado == "cancelado":
-        return redirect('proyectoView', id=proyectoid)
+
 
     """Lista de roles del proyecto para visualizar en el template"""
     roles = proyecto.roles.all()
@@ -1309,7 +1290,19 @@ def crear_tipo_form(request):
         obj.save()
         """Se asigna el proyecto en el cual se encuentra proyectoidel usuario el nuevo tipo de Item creado"""
         proyecto.tipoItem.add(obj)
-        return redirect('proyectoView', id=proyectoid)
+        tipos = proyecto.tipoItem.all()
+        tipos_modificable = list(tipos)
+        tipos_no_modificable = []
+        fasesProyecto = proyecto.fases.all()
+        for f in fasesProyecto:
+            itemsFase = f.items.all()
+            for i in itemsFase:
+                if i.tipoItem == tipos and i.estado != "deshabilitado":
+                    tipos_modificable.remove(tipos)
+                    tipos_no_modificable.append(tipos)
+        return render(request, "proyecto/gestionartipodeitem.html",
+                      {'proyecto': proyecto, 'tipos_modificable': tipos_modificable,
+                       'tipos_no_modificable': tipos_no_modificable, })
 
     """En caso de recibir un método GET, renderiza al html creartipo.html"""
     proyectoid = request.GET.get('proyectoid')
@@ -1340,9 +1333,6 @@ def gestionar_tipo_de_item(request):
     if not (request.user.has_perm("is_gerente", proyecto)):
         return redirect('/permissionError/')
 
-    """Verifica que el proyecto no se encuentre cancelado"""
-    if proyecto.estado == "cancelado":
-        return redirect('proyectoView', id=proyectoid)
 
     tipos_modificable = list(tipos)
     tipos_no_modificable = []

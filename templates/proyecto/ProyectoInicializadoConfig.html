@@ -10,24 +10,66 @@
     </form>
     <div class="container">
         <h3 style="text-align: center">{{ proyecto.nombre }}</h3>
-        <h5 style="text-align: center" class="grey-text">Panel de Configuración del Proyecto</h5><br>
-        <div class="row">
-            <form
-                    action="/proyecto/modify/"
-                    id="formModificacion"
-            >
-                <div class="col s5 m3">
-                    <div class="card">
-                        <div class="card-image" style="border:1px solid #024e82;">
-                            <a href="#" onclick="document.getElementById('formModificacion').submit()">
-                                <img src="{% static 'img/DatosdelProyecto.jpg' %}" alt="DatosdelProyecto" width="80"
-                                     height="180">
-                                <input type="hidden" value={{ proyecto.id }} id="proyectoid" name="proyectoid">
-                            </a>
+        <h5 style="text-align: center" class="grey-text">Panel de Configuración del Proyecto</h5>
+        <ul class="z-depth-1">
+            <li>
+                <div class="card-panel z-depth-4 expense" style="border:1px solid #03a9f4;">
+                    <div class="row">
+                        <div class="col l4 left">
+                            <b>Nombre:</b>
+                            {{proyecto.nombre}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col l4 left">
+                            <b>Descripcion:</b>
+                            {{proyecto.descripcion}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col l4 left">
+                            <b>Fecha inicio:</b>
+                            {{proyecto.fecha_inicio}}
+                        </div>
+                        <div class="col l4 left">
+                            <b>Fecha fin:</b>
+                            {{proyecto.fecha_fin}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col l4 left">
+                            <b>Gerente:</b>
+                            {{proyecto.gerente}}
+                        </div>
+                        <div class="col l4 left">
+                            <b>Creador:</b>
+                            {{proyecto.creador}}
                         </div>
                     </div>
                 </div>
-            </form>
+            </li>
+        </ul>
+
+        <div class="row">
+            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                <form
+                        action="/proyecto/modify/"
+                        id="formModificacion"
+                >
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style="border:1px solid #024e82;">
+                                <a href="#" onclick="document.getElementById('formModificacion').submit()">
+                                    <img src="{% static 'img/DatosdelProyecto.jpg' %}" alt="DatosdelProyecto" width="80"
+                                         height="180">
+                                    <input type="hidden" value={{ proyecto.id }} id="proyectoid" name="proyectoid">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            {% endif %}
+
             <form
                     action="/proyecto/proyectoUser/"
                     id="formUsuarios"
@@ -92,48 +134,50 @@
                     </div>
                 </div>
             </form>
-            {% if finalizar %}
-                <div class="col s5 m3">
-                    <div class="card">
-                        <div class="card-image" style="border:1px solid #028839;">
-                            <a href="/proyecto/finalizar/proyectoid={{ proyecto.id }}/"
-                               onclick="return confirm('Está seguro de finalizar el Proyecto?');"
-                            >
-                                <img src="{% static 'img/FinalizarProyecto.jpg' %}" alt="IniciarProyecto" width="80" height="180">
-                            </a>
+            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                {% if finalizar %}
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style="border:1px solid #028839;">
+                                <a href="/proyecto/finalizar/proyectoid={{ proyecto.id }}/"
+                                   onclick="return confirm('Está seguro de finalizar el Proyecto?');"
+                                >
+                                    <img src="{% static 'img/FinalizarProyecto.jpg' %}" alt="IniciarProyecto" width="80" height="180">
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
-            {% else %}
+                {% else %}
+                    <div class="col s5 m3">
+                        <div class="card">
+                            <div class="card-image" style="border:1px solid #7d7d7d;"
+                            >
+                                <a
+                                        style="cursor: default"
+                                        title="Todas las fases deben estar cerradas para poder finalizar el proyecto."
+                                >
+                                    <img src="{% static 'img/finalizarproyectogris.png' %}" alt="RolesProyecto" width="80"
+                                         height="180" style="padding-top: 22px">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
                 <div class="col s5 m3">
                     <div class="card">
-                        <div class="card-image" style="border:1px solid #7d7d7d;"
-                        >
-                            <a
-                                    style="cursor: default"
-                                    title="Todas las fases deben estar cerradas para poder finalizar el proyecto."
+                        <div class="card-image" style="border:1px solid #f4c80c;">
+                            <a href="/proyecto/proyectoCancelar/proyectoid={{ proyecto.id }}/"
+                               onclick="return confirm('Está seguro de cancelar el Proyecto?');"
                             >
-                                <img src="{% static 'img/finalizarproyectogris.png' %}" alt="RolesProyecto" width="80"
-                                     height="180" style="padding-top: 22px">
+                                <img src="{% static 'img/CancelarProyecto.jpg' %}" alt="CancelarProyecto" width="80"
+                                     height="180">
+                                <input type="hidden" value={{ proyecto.id }} id="proyectoid" name="proyectoid">
                             </a>
                         </div>
                     </div>
                 </div>
             {% endif %}
-
-            <div class="col s5 m3">
-                <div class="card">
-                    <div class="card-image" style="border:1px solid #f4c80c;">
-                        <a href="/proyecto/proyectoCancelar/proyectoid={{ proyecto.id }}/"
-                           onclick="return confirm('Está seguro de cancelar el Proyecto?');"
-                        >
-                            <img src="{% static 'img/CancelarProyecto.jpg' %}" alt="CancelarProyecto" width="80"
-                                 height="180">
-                            <input type="hidden" value={{ proyecto.id }} id="proyectoid" name="proyectoid">
-                        </a>
-                    </div>
-                </div>
-            </div>
             <form
                     action=
                     id="FormDeshabilitar"

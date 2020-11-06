@@ -9,7 +9,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.template.loader import get_template
 from gestionUser.tasks import sendEmailView
-
+from django.db.models import Q
 
 
 
@@ -393,12 +393,22 @@ def unableUserView(request,userid):
         usuarios y que (indirectamente) haya iniciado sesion
     """
     """GET request, envia una lista de usuarios para ser sleccionados y deshabilitados."""
+
     if request.method == 'GET':
         usuario = User.objects.get(id=userid)
-        """Usuario puesto como inactivo(deshabilitado)"""
-        usuario.is_active = False
-        usuario.save()
-        mensaje = "Se removió correctamente al usuario."
+        """Traer los proyectos que le contengan al user excluyendo a los finalizados, cancelados o deshabilitados """
+        proyectos = Proyecto.objects.filter(usuarios__id=usuario.id).exclude(Q(estado="finalizado") | Q(estado="cancelado") | Q(estado="deshabilitado"))
+        remover = True
+        if len(proyectos) > 0:
+            remover = False
+        if remover:
+
+            """Usuario puesto como inactivo(deshabilitado)"""
+            usuario.is_active = False
+            usuario.save()
+            mensaje = "Se removió correctamente al usuario."
+        else:
+            mensaje = "Error! El usuario forma parte de un proyecto pendiente o inicializado. Remuevalo del proyecto para poder eliminarlo del Sistema."
 
     """Template a renderizar gestionUser.html"""
     return redirect('gestionUserView', mensaje=mensaje )

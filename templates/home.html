@@ -37,6 +37,10 @@
                                     style= "border:1px solid #c62828;"
                                     class="card-panel"
                                 {% endif %}
+                                {% if p.estado == "finalizado" %}
+                                    style= "border:1px solid black;"
+                                    class="card-panel"
+                                {% endif %}
                                 {% if p.gerente == request.user.username %}
                                     class="card-panel"
                                 {% endif %}

@@ -336,7 +336,7 @@ def faseModificar(request):
     fase.save()
 
     """Template a renderizar: gestionFase con parametro -> proyectoid, faseid"""
-    return render(request, 'fase/fase.html', {'proyecto': proyecto, 'fase': fase, })
+    return redirect('faseView', faseid=faseid, proyectoid=proyectoid)
 
 
 def faseDeshabilitar(request):
@@ -1555,6 +1555,19 @@ def itemVerRelaciones(request, itemid, faseid, proyectoid, mensaje):
                         'id')
             else:
                 itemsFaseSiguiente = None
+
+        """Para saber si es la ultima fase"""
+        es_ultima = True
+        actual = False
+        for fp in fasesProyecto:
+            if actual == True:
+                siguiente = fp
+                break
+            if fp == fase:
+                actual = True
+        if siguiente is not None:
+            es_ultima = False
+
         itemsFaseActual = fase.items.exclude(
             Q(estado="deshabilitado") | Q(id=itemid) | Q(id__in=relaciones)).order_by('id')
 
@@ -1569,7 +1582,7 @@ def itemVerRelaciones(request, itemid, faseid, proyectoid, mensaje):
                                                              'faseSiguiente': siguiente, 'varias_fases': varias_fases,
                                                              'puede_relacionarse': puede_relacionarse,
                                                              'habilitar_Add_relacion': habilitar_Add_relacion,
-                                                             'mensaje': mensaje})
+                                                             'mensaje': mensaje, 'es_ultima':es_ultima})
 
 
 def itemRelacionesRemover(request, itemid, item_rm, faseid, proyectoid):
@@ -2268,9 +2281,17 @@ def lineaBaseRemoveItem(request, proyectoid, faseid, lineaBaseid, itemid):
         item_remover.save()
         """Obtener items de la linea base ordenados por id."""
         itemsLineaBase = lineaBase.items.all().order_by('id')
+        items_disponibles = fase.items.filter(estado="aprobado")
+        """SI existen items disonibles en la fase."""
+        if items_disponibles:
+            """Se puede crear una nueva linea base."""
+            crear_lb = True
+        else:
+            """SI no existen items disponibles, no se podra crear linea base."""
+            crear_lb = False
         """Renderizar fase/faseConfigLineaBase.html."""
         return render(request, "fase/faseConfigLineaBase.html",
-                      {'fase': fase, 'proyecto': proyecto, 'items': itemsLineaBase, 'lineaBase': lineaBase, })
+                      {'fase': fase, 'proyecto': proyecto, 'items': itemsLineaBase, 'lineaBase': lineaBase, 'crear_lb':crear_lb })
 
 
 def faseCerrarLineaBase(request, proyectoid, faseid, lineaBaseid):
@@ -2337,7 +2358,7 @@ def itemHistorial(request):
         for p, k in p2:
             prueba[p] = k
         return render(request, 'item/historialitem.html',
-                      {'faseid': faseid, 'proyectoid': proyectoid,
+                      {'faseid': faseid, 'proyecto': proyecto,
                        'item': item,
                        'campos': prueba, 'versions': versions})
 
@@ -2748,7 +2769,9 @@ def gestionRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, mensaje):
         if request.user in comite_miembros:
             """Es miembro del comite"""
             es_comite = True
-
+        hay_comite_lleno = False
+        if len(proyecto.comite.all()) == 3:
+            hay_comite_lleno = True
         puede_solicitar = request.user.has_perm("solicitar_roturaLineaBase", fase)
         """Renderizar html"""
         return render(request, "fase/faseGestionRoturaLineaBase.html", {'proyecto': proyecto, 'fase': fase,
@@ -2756,7 +2779,7 @@ def gestionRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, mensaje):
                                                                         'solicitudes': solicitudes,
                                                                         'es_comite': es_comite,
                                                                         'puede_solicitar': puede_solicitar,
-                                                                        'mensaje': mensaje})
+                                                                        'mensaje': mensaje, 'hay_comite_lleno' : hay_comite_lleno})
 
 
 def gestionRoturaLineaBaseComprometida(request, proyectoid, faseid, lineaBaseid):
@@ -2819,7 +2842,7 @@ def formRoturaLineaBase(request, proyectoid, faseid, lineaBaseid):
         descripcion = request.POST.get('descripcion')
         """Se crea un objeto de tipo Rotura de Linea Base"""
         solicitud = RoturaLineaBase.objects.create(solicitante=request.user, descripcion_solicitud=descripcion,
-                                                   fecha=datetime.now())
+                                                   fecha=date.today())
         """Recupera los items a modificar seleccionados por el usuario"""
         items_a_modificar = request.POST.getlist('items')
         """Recorrer los items a modificar"""
@@ -2883,6 +2906,7 @@ def votacionRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid
             """Es miembro del comite"""
             es_comite = True
         mensaje = "a"
+        ya_voto = True
         registro_votos = {}
         votantes = list(solicitud.votos_registrados.all())
         """Array para guardar votos registrados"""
@@ -2912,10 +2936,12 @@ def votacionRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid
             else:
                 registro_votos[c.username]= "Aún no votó."
 
+        if not request.user in votantes:
+            ya_voto = False
         return render(request, "fase/faseRoturaLineaBaseVotar.html", {'proyecto': proyecto, 'fase': fase,
                                                                       'lineaBase': lineaBase,
                                                                       'solicitud': solicitud, 'es_comite': es_comite,
-                                                                      'mensaje': mensaje, 'registro_votos': registro_votos})
+                                                                      'mensaje': mensaje, 'registro_votos': registro_votos, 'voto':ya_voto})
 
 
 def AprobarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid):
@@ -3374,7 +3400,7 @@ def RechazarRoturaLineaBase(request, proyectoid, faseid, lineaBaseid, solicituid
                             i.estado = "aprobado"
                             i.save()
 
-                mensaje = "Se rechazó la rotura de la Línea Base."
+                    mensaje = "Su voto se registro correctamente. Se rechazó la rotura de la Línea Base."
                 """Renderizar html"""
                 return redirect('LineaBase', proyectoid=proyecto.id, faseid=fase.id, mensaje=mensaje)
 

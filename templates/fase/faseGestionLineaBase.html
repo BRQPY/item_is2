@@ -67,7 +67,9 @@
         <input  type="hidden" value={{fase.id}} id="faseid" name="faseid">
     </form>
     <div class="container">
-        <h4 style="text-align: center"> Lineas Base de la fase {{ fase.nombre }}</h4>
+        <h3 style="text-align: center">Lineas Base</h3>
+        <h4 style="text-align: center" class="grey-text">Lista de lineas base de la fase {{ fase.nombre }}</h4>
+        {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
             {% if crear_lb %}
                 <form action="/fase/addLineaBase/">
                     <button type="submit" class="btn btn-small blue darken-1 right">
@@ -79,14 +81,15 @@
                 </form><br>
             {% else %}
                 <button
-                    title="Todos los ítems aprobados de la fase ya forman parte de alguna Línea Base."
-                    style="cursor: default"
-                    class="btn btn-small #eeeeee grey lighten-3 black-text right"
+                        title="Todos los ítems aprobados de la fase ya forman parte de alguna Línea Base."
+                        style="cursor: default"
+                        class="btn btn-small #eeeeee grey lighten-3 black-text right"
                 >
                     Crear Línea Base
                     <i class="material-icons white-text left">add_circle</i>
                 </button><br>
             {% endif %}
+        {% endif %}
     </div>
     <div class="container" id="myBtnContainer">
         <button class="btnItem active" onclick="filterSelection('all')"> Todas</button>
@@ -96,7 +99,7 @@
         <button class="btnItem" onclick="filterSelection('rota')">Rotas</button>
     </div>
     <div class="container">
-        {% if lineasBase %}
+        {% if lineasBase or lb_rota %}
             <section class="section section-expenses">
                 <ul class="z-depth-1">
                     <div class="filterDiv abierta">
@@ -160,17 +163,19 @@
                                             {{lbc.nombre}}
                                         </div>
                                         {% if lbc.estado == "cerrada" %}
-                                            {% if puede_solicitar or es_comite %}
-                                                <div class="col 14 right">
-                                                    <a href="{%url 'gestionRoturaLineaBase' proyecto.id fase.id lbc.id 'd' %}"
-                                                       title="Gestionar rotura de la Línea Base."
-                                                       style="color: black"
+                                            {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                                                {% if puede_solicitar or es_comite %}
+                                                    <div class="col 14 right">
+                                                        <a href="{%url 'gestionRoturaLineaBase' proyecto.id fase.id lbc.id 'd' %}"
+                                                           title="Gestionar rotura de la Línea Base."
+                                                           style="color: black"
 
-                                                    >
-                                                        Gestionar Rotura de Línea Base
-                                                        <i class="material-icons black-text left">lock_open</i>
-                                                    </a>
-                                                </div>
+                                                        >
+                                                            Gestionar Rotura de Línea Base
+                                                            <i class="material-icons black-text left">lock_open</i>
+                                                        </a>
+                                                    </div>
+                                                {% endif %}
                                             {% endif %}
                                             <div class="col 14 right">
                                                 <a href="{%url 'consultarLineaBase' proyecto.id fase.id lbc.id%}"
@@ -214,18 +219,20 @@
                                             <b>Nombre:</b>
                                             {{c.nombre}}
                                         </div>
-                                        {% if c.estado == "comprometida" %}
-                                            {% if puede_solicitar or es_comite %}
-                                                <div class="col 14 right">
-                                                    <a href="{%url 'gestionRoturaLineaBase' proyecto.id fase.id c.id 'd' %}"
-                                                       title="Gestionar rotura de la Línea Base."
-                                                       style="color: black"
+                                        {% if not proyecto.estado == "cancelado" and not proyecto.estado == "finalizado" %}
+                                            {% if c.estado == "comprometida" %}
+                                                {% if puede_solicitar or es_comite %}
+                                                    <div class="col 14 right">
+                                                        <a href="{%url 'gestionRoturaLineaBase' proyecto.id fase.id c.id 'd' %}"
+                                                           title="Gestionar rotura de la Línea Base."
+                                                           style="color: black"
 
-                                                    >
-                                                        Gestionar Rotura de Línea Base
-                                                        <i class="material-icons black-text left">lock_open</i>
-                                                    </a>
-                                                </div>
+                                                        >
+                                                            Gestionar Rotura de Línea Base
+                                                            <i class="material-icons black-text left">lock_open</i>
+                                                        </a>
+                                                    </div>
+                                                {% endif %}
                                             {% endif %}
                                         {% endif %}
 

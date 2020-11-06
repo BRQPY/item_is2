@@ -9,7 +9,7 @@ from reportlab.platypus import (
     TableStyle,
     Paragraph)
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from .models import Proyecto, Fase, SolicitudCambioEstado
+from .models import Proyecto, Fase, SolicitudCambioEstado, RoturaLineaBase
 
 
 class ReporteProyecto(object):
@@ -21,7 +21,7 @@ class ReporteProyecto(object):
         self.doc = SimpleDocTemplate(self.buf)
         self.story = []
         proyecto = Proyecto.objects.get(pk=proyectoid)
-        self.titulo("Reporte : " + proyecto.nombre)
+        self.titulo("Reporte Proyecto : " + proyecto.nombre)
         self.encabezado("Items del Proyecto en Estado 'Pendiente' y 'Desarrollo'")
         self.tabla_items_proyecto(proyecto)
 
@@ -34,7 +34,7 @@ class ReporteProyecto(object):
             self.encabezado("No ha seleccionado fases")
 
         self.solicitudes(fecha_ini, fecha_fin)
-
+        self.solicitudes_LB(fecha_ini, fecha_fin)
         self.doc.build(self.story, onFirstPage=self.numeroPagina,
                        onLaterPages=self.numeroPagina)
         pdf = self.buf.getvalue()
@@ -101,6 +101,27 @@ class ReporteProyecto(object):
 
         data = [["SolicitudId", "Fecha",]] \
                + [[x.id, x.justificacion,]
+                  for x in solicitud_rango]
+        style = TableStyle([
+                ('GRID', (0, 0), (-1, -1), 0.25, colors.black),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')
+            ])
+
+        t = Table(data)
+        t.setStyle(style)
+        self.story.append(t)
+        self.story.append(Spacer(1, 0.5 * inch))
+
+    def solicitudes_LB(self, fecha_ini, fecha_fin):
+        solicitudes = RoturaLineaBase.objects.all()
+        solicitud_rango = []
+        for s in solicitudes:
+            if s.fecha >= fecha_ini and s.fecha <= fecha_fin:
+                solicitud_rango.append(s)
+
+        data = [["SolicitudIdRotura", "Fecha",]] \
+               + [[x.id, x.fecha,]
                   for x in solicitud_rango]
         style = TableStyle([
                 ('GRID', (0, 0), (-1, -1), 0.25, colors.black),

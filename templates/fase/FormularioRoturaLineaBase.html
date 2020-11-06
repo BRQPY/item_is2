@@ -7,6 +7,12 @@
           color: #3b444b;
         }
     </style>
+        <form action="{%url 'gestionRoturaLineaBase' proyecto.id fase.id lineaBase.id 'd' %}">
+            <button type="submit" class="waves-effect waves-teal btn-flat">
+                Volver a la Gestion de Líneas Base.
+                <i class="material-icons dark blue-text left">keyboard_return</i>
+            </button>
+        </form>
     <div class="container">
         <form action="/fase/roturaLineaBase/form/proyectoid={{ proyecto.id }}/faseid= {{ fase.id }}/lineaBaseid={{ lineaBase.id }}/" method="post">
             {% csrf_token %}
