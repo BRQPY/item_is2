@@ -131,7 +131,7 @@ tox==3.14.3
 tqdm==4.48.2
 twine==3.1.1
 typed-ast==1.4.1
-urllib3==1.25.8
+urllib3==1.26.5
 vine==5.0.0
 virtualenv==20.0.30
 wcwidth==0.2.5
